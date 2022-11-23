@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.safing.android.R;
 import io.safing.portmaster.android.ui.MainActivity;
-import vpn.Vpn;
+import tunnel.Tunnel;
 //import io.safing.portmaster.android.R;
 
 public class PortmasterTunnelService extends VpnService implements Handler.Callback {
@@ -152,8 +152,9 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       }
     }
   }
+
   private void disconnect() {
-    Vpn.stop();
+    Tunnel.stop();
     mHandler.sendEmptyMessage(R.string.disconnected);
     setConnectingThread(null);
     setConnection(null);

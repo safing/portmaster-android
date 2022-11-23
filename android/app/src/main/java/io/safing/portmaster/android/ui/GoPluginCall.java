@@ -8,7 +8,7 @@ import com.getcapacitor.PluginCall;
 
 import org.json.JSONException;
 
-public class GoPluginCall implements vpn.PluginCall {
+public class GoPluginCall implements tunnel.PluginCall {
 
   private PluginCall call;
 
@@ -19,6 +19,26 @@ public class GoPluginCall implements vpn.PluginCall {
   @Override
   public String getArgs() {
     return call.getData().toString();
+  }
+
+  @Override
+  public boolean getBool(String s) {
+    return call.getBoolean(s);
+  }
+
+  @Override
+  public float getFloat(String s) {
+    return call.getFloat(s);
+  }
+
+  @Override
+  public int getInt(String s) {
+    return call.getInt(s);
+  }
+
+  @Override
+  public String getString(String s) {
+    return call.getString(s);
   }
 
   @Override

@@ -45,7 +45,7 @@ public class GoInterfaceGenerator {
   }
 
 
-  private String fileName = "src/main/java/io/safing/portmaster/android/ui/UIBridge.java";
+  private String fileName = "src/main/java/io/safing/portmaster/android/ui/GoBridge.java";
   String newLine = System.getProperty("line.separator");
 
 
@@ -61,14 +61,14 @@ public class GoInterfaceGenerator {
       "import com.getcapacitor.PluginMethod;",
       "import com.getcapacitor.annotation.CapacitorPlugin;",
       "",
-      "@CapacitorPlugin(name = \"UIBridge\")",
-      "public class UIBridge extends Plugin {",
-    "{{#methods}}",
-    "",
-    "    @PluginMethod()",
-    "    public void {{name}}(PluginCall call) {",
-    "        vpn.Vpn.{{name}}(new GoPluginCall(call));",
-    "    }",
+      "@CapacitorPlugin(name = \"GoBridge\")",
+      "public class GoBridge extends Plugin {",
+      "{{#methods}}",
+      "",
+      "    @PluginMethod()",
+      "    public void {{name}}(PluginCall call) {",
+      "        tunnel.Tunnel.{{name}}(new GoPluginCall(call));",
+      "    }",
       "{{/methods}}",
       "}"
       );
@@ -83,7 +83,7 @@ public class GoInterfaceGenerator {
       return false;
     }
 
-    return m.getParameterTypes()[0] == vpn.PluginCall.class;
+    return m.getParameterTypes()[0] == tunnel.PluginCall.class;
   }
 
   @Test
@@ -95,7 +95,7 @@ public class GoInterfaceGenerator {
     scopes.put("testName", this.getClass().getName());
 
     List<GoFunction> list = new LinkedList<>();
-    for(Method method : vpn.Vpn.class.getMethods()) {
+    for(Method method : tunnel.Tunnel.class.getMethods()) {
       if (isUIFunction(method)) {
         list.add(new GoFunction(method.getName()));
       }

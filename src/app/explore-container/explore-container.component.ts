@@ -2,7 +2,8 @@ import { Component, OnInit, Input, Output } from '@angular/core';
 
 
 import { Plugins } from '@capacitor/core';
-const { UIBridge } = Plugins;
+const { GoBridge } = Plugins;
+const { JavaBridge } = Plugins;
 
 
 @Component({
@@ -15,9 +16,7 @@ export class ExploreContainerComponent implements OnInit {
   @Output() buttonClass: String;
   @Output() buttonText: String;
 
-  interval;
   isVPNEnabled;
-
 
   constructor() {
     this.isVPNEnabled = false
@@ -27,46 +26,30 @@ export class ExploreContainerComponent implements OnInit {
     this.status = "Disabled";
     this.buttonClass = "enable-button"
     this.buttonText = "Enable SPN"
+    this.stateUpdater()
   }
   
   async enableSPN() {
     if(this.isVPNEnabled) {
-      this.status = "Disabled";
-      this.buttonClass = "disabled"
+      await JavaBridge.disableTunnel()
     } else {
-      this.status = "Enabled";
-      this.buttonClass = "disabled"
+      await JavaBridge.enableTunnel()
     }
-    
-    // clearInterval(this.interval)
-    // await UIBridge.connectVPN()
-    // var result = await UIBridge.isVPNActive()
-    // this.isVPNEnabled = result.value
-    // console.log("Result: ", result.value);
-    // this.updateUI(this.isVPNEnabled)
-    // this.startTimer()
-    var result = await UIBridge.isActiveUI()
-    console.log("Is active: ", result.active)
   }
 
-  startTimer() {
-    this.interval = setInterval(async () => {
-      var result = await UIBridge.isVPNActive()
-      console.log("Result: ", result.value)
-      this.isVPNEnabled = result.value
-      this.updateUI(this.isVPNEnabled)
-    }, 1000)
-  }
-
-  updateUI(isVPNActive) {
-    if(isVPNActive) {
-      this.status = "Enabled"
-      this.buttonClass = "disable-button"
-      this.buttonText = "Disable SPN"
-    } else {
-      this.status = "Disabled"
-      this.buttonClass = "enable-button"
-      this.buttonText = "Enable SPN"
+  async stateUpdater() {
+    while(true) {
+      var state = await GoBridge.onStateChange()
+      this.isVPNEnabled = state.active
+      if(state.active) {
+        this.status = "Enabled"
+        this.buttonClass = "disable-button"
+        this.buttonText = "Disable SPN"
+      } else {
+        this.status = "Disabled"
+        this.buttonClass = "enable-button"
+        this.buttonText = "Enable SPN"
+      }
     }
   }
 

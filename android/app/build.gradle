@@ -58,7 +58,7 @@ try {
 }
 
 task copyPlaceholder(type: Copy) {
-  from(file('libs/UIBridge.java'))
+  from(file('libs/GoBridge.java'))
   into('src/main/java/io/safing/portmaster/android/ui/')
 }
 

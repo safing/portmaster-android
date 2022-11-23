@@ -5,5 +5,5 @@ package io.safing.portmaster.android.ui;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-@CapacitorPlugin(name = "UIBridge")
-public class UIBridge extends Plugin {}
+@CapacitorPlugin(name = "GoBridge")
+public class GoBridge extends Plugin {}

@@ -9,11 +9,11 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-@CapacitorPlugin(name = "UIBridge")
-public class UIBridge extends Plugin {
+@CapacitorPlugin(name = "GoBridge")
+public class GoBridge extends Plugin {
 
     @PluginMethod()
-    public void isActiveUI(PluginCall call) {
-        vpn.Vpn.isActiveUI(new GoPluginCall(call));
+    public void onStateChange(PluginCall call) {
+        tunnel.Tunnel.onStateChange(new GoPluginCall(call));
     }
 }

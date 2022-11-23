@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
-import vpn.Vpn;
+import tunnel.Tunnel;
 public class MainActivity extends BridgeActivity {
 
   private static final int SERVICE_ACTION_CONNECT = 1;
@@ -17,7 +17,8 @@ public class MainActivity extends BridgeActivity {
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    registerPlugin(UIBridge.class);
+    registerPlugin(GoBridge.class);
+    registerPlugin(JavaBridge.class);
     super.onCreate(savedInstanceState);
     Log.v("Class ID", PortmasterTunnelService.class.getName());
   }
@@ -34,20 +35,20 @@ public class MainActivity extends BridgeActivity {
     }
   }
 
-//  public void disconnectVPN() {
-//    Intent intent = VpnService.prepare(getApplicationContext());
-//
-//    if (intent != null) {
-//      // if we have an intent we need to ask the user for permission
-//      // first
-//      bridge.getActivity().startActivityForResult(intent, SERVICE_ACTION_DISCONNECT);
-//    } else {
-//      onActivityResult(SERVICE_ACTION_DISCONNECT, RESULT_OK, null);
-//    }
-//  }
+  public void disconnectVPN() {
+    Intent intent = VpnService.prepare(getApplicationContext());
+
+    if (intent != null) {
+      // if we have an intent we need to ask the user for permission
+      // first
+      bridge.getActivity().startActivityForResult(intent, SERVICE_ACTION_DISCONNECT);
+    } else {
+      onActivityResult(SERVICE_ACTION_DISCONNECT, RESULT_OK, null);
+    }
+  }
 
   public boolean isActive() {
-    return Vpn.isActive();
+    return Tunnel.isActive();
   }
 
   @Override
@@ -56,7 +57,7 @@ public class MainActivity extends BridgeActivity {
 
     if (resultCode == RESULT_OK) {
       Intent startIntent = new Intent(this, PortmasterTunnelService.class);
-      if(Vpn.isActive()) {
+      if(Tunnel.isActive()) {
         startIntent.setAction(PortmasterTunnelService.ACTION_DISCONNECT);
       } else {
         startIntent.setAction(PortmasterTunnelService.ACTION_CONNECT);

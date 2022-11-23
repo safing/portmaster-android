@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.safing.android.BuildConfig;
-import vpn.Vpn;
+import tunnel.Tunnel;
 
 public class PortmasterTunnel implements Runnable {
   /**
@@ -87,14 +87,15 @@ public class PortmasterTunnel implements Runnable {
       Log.i(getTag(), "Connecting...");
       // We can enable tunneling even if there is no internet access
       ParcelFileDescriptor vpnInterface = startVPN();
-      Vpn.start(vpnInterface.getFd());
+      Tunnel.setNetworkInterfaces(getInterfacesAsJson());
+      Tunnel.start(vpnInterface.getFd());
     } catch (Exception e) {
       Log.e(getTag(), "Connection failed, exiting", e);
     }
 
     // Sleep while the connection is active
     // TODO: Can this be handled with an event?
-    while(Vpn.isActive()) {
+    while(Tunnel.isActive()) {
       try {
         Thread.sleep(500);
       } catch (InterruptedException e) {

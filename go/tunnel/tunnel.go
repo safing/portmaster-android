@@ -1,10 +1,12 @@
-package vpn
+package tunnel
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 	"net"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"gvisor.dev/gvisor/pkg/tcpip"
@@ -22,44 +24,42 @@ const vpnLibVersion = "v0.0.3-alpha"
 
 type NetInterface struct {
 	Interface *net.Interface
-	AltAddrs  []net.Addr
+	Addresses []tcpip.ProtocolAddress
 	Flags     net.Flags
 }
 
-var networkInterfaces []NetInterface
-var netStack *stack.Stack = nil
+var (
+	netStack          *stack.Stack
+	networkInterfaces []NetInterface
+	connections       []*Connection
 
-var connections []*Connection
-
-type PluginCall interface {
-	Resolve()
-	ResolveJson(obj string)
-	GetArgs() string
-}
+	stateChannel = make(chan bool)
+)
 
 // Version version fo the module
 func Version() string {
 	return vpnLibVersion
 }
 
+// onConnectionEnd end connection callback
 func onConnectionEnd(conn *Connection) {
+	conn.close()
 	for i, c := range connections {
 		if c == conn {
-			c.close()
 			connections = append(connections[:i], connections[i+1:]...)
 			return
 		}
 	}
 }
 
+// Starts the tunneling
 func Start(fd int) error {
-
 	log.Printf("Starting spn")
 	mtu := uint32(1400)
 
 	maddr, err := net.ParseMAC("aa:00:17:17:17:17")
 	if err != nil {
-		log.Fatalf("spn: Bad MAC address")
+		log.Fatalf("spn: invalid mac address")
 	}
 
 	// try to make the socket non-blocking
@@ -74,16 +74,16 @@ func Start(fd int) error {
 		Address:        tcpip.LinkAddress(maddr),
 		ClosedFunc: func(err tcpip.Error) {
 			if err != nil {
-				log.Printf("spn: File descriptor closed: %s", err)
+				log.Printf("spn: file descriptor closed: %s", err)
 			}
-			log.Printf("spn: File descriptor for linkID closed")
+			log.Printf("spn: file descriptor for linkID closed")
 		},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create linkID: %w", err)
 	}
 
-	log.Printf("spn: created LinkID: %s", linkID)
+	log.Printf("spn: created LinkID: %+v", linkID)
 
 	nicID := tcpip.NICID(1)
 
@@ -94,6 +94,7 @@ func Start(fd int) error {
 
 	newStack := stack.New(opts)
 
+	// TODO (vladimir): do we need TCP SACK?
 	sackEnabledOpt := tcpip.TCPSACKEnabled(true)
 	tcpipErr := newStack.SetTransportProtocolOption(tcp.ProtocolNumber, &sackEnabledOpt)
 	if tcpipErr != nil {
@@ -119,17 +120,23 @@ func Start(fd int) error {
 		},
 	})
 
-	protocolAddress := tcpip.ProtocolAddress{
-		AddressWithPrefix: tcpip.AddressWithPrefix{
-			Address:   tcpip.Address("10.0.2.15"),
-			PrefixLen: 24,
-		},
+	// Getting the tunnel interface that was send from Java
+	var tunnelInterface *NetInterface
+	for index, i := range networkInterfaces {
+		if strings.HasPrefix(i.Interface.Name, "tun") {
+			tunnelInterface = &networkInterfaces[index]
+		}
 	}
 
-	newStack.AddProtocolAddress(nicID, protocolAddress, stack.AddressProperties{
-		PEB:        stack.CanBePrimaryEndpoint, // zero value default
-		ConfigType: stack.AddressConfigStatic,  // zero value default
-	})
+	// Setting the IP4/6 addresses to the interface
+	if tunnelInterface != nil {
+		for _, addr := range tunnelInterface.Addresses {
+			newStack.AddProtocolAddress(nicID, addr, stack.AddressProperties{
+				PEB:        stack.CanBePrimaryEndpoint, // zero value default
+				ConfigType: stack.AddressConfigStatic,  // zero value default
+			})
+		}
+	}
 
 	if err := newStack.SetPromiscuousMode(nicID, true); err != nil {
 		return fmt.Errorf("failed to enable promiscuous mode: %s", err)
@@ -139,7 +146,9 @@ func Start(fd int) error {
 	// 	log.Printf("spn: received probe: %+v", state.ID)
 	// })
 
-	tcpForwarder := tcp.NewForwarder(newStack, 30000, 5000, func(fr *tcp.ForwarderRequest) {
+	// Setup TCP forwarding
+	// TODO (vladimir): Max in-flight is it to high?
+	tcpForwarder := tcp.NewForwarder(newStack, 0, 5000, func(fr *tcp.ForwarderRequest) {
 		remote := fmt.Sprintf("%s:%d", fr.ID().LocalAddress.String(), fr.ID().LocalPort)
 		conn, err := tryToConnectTCP(remote, fr)
 		if err != nil {
@@ -152,6 +161,7 @@ func Start(fd int) error {
 	})
 	newStack.SetTransportProtocolHandler(tcp.ProtocolNumber, tcpForwarder.HandlePacket)
 
+	// Setup UDP forwarding
 	udpForwarder := udp.NewForwarder(newStack, func(fr *udp.ForwarderRequest) {
 		remote := fmt.Sprintf("%s:%d", fr.ID().LocalAddress.String(), fr.ID().LocalPort)
 		conn, err := tryToConnectUDP(newStack, remote, fr)
@@ -168,20 +178,25 @@ func Start(fd int) error {
 	// newStack.SetNICForwarding(nicID, ipv4.ProtocolNumber, true)
 
 	netStack = newStack
+	stateChannel <- true
 
 	return nil
 }
 
+// Stops the tunneling
 func Stop() {
-	for _, c := range connections {
-		c.close()
+	if connections != nil {
+		for _, c := range connections {
+			c.close()
+		}
+		connections = nil
 	}
-	connections = nil
 
 	if netStack != nil {
 		netStack.Close()
 		netStack.Wait()
 		netStack = nil
+		stateChannel <- false
 	}
 }
 
@@ -189,10 +204,7 @@ func IsActive() bool {
 	return netStack != nil
 }
 
-func IsActiveUI(call PluginCall) {
-	call.ResolveJson(`{"active": true}`)
-}
-
+// SetNetworkInterfaces parses network interfaces from a json string. Send from Java.
 func SetNetworkInterfaces(jsonString string) {
 
 	log.Println(jsonString)
@@ -237,7 +249,7 @@ func SetNetworkInterfaces(jsonString string) {
 				Index: i.Index,
 				MTU:   i.MTU,
 			},
-			AltAddrs: []net.Addr{},
+			Addresses: []tcpip.ProtocolAddress{},
 		}
 
 		if i.Up {
@@ -254,7 +266,28 @@ func SetNetworkInterfaces(jsonString string) {
 			newIf.Flags |= net.FlagBroadcast
 		}
 
+		for _, strAddr := range i.Addresses {
+			addrAndPrefix := strings.Split(strAddr, "/")
+			if len(addrAndPrefix) != 2 {
+				continue
+			}
+
+			netPrefix, err := strconv.Atoi(strings.TrimSpace(addrAndPrefix[1]))
+			if err != nil {
+				continue
+			}
+
+			protocolAddress := tcpip.ProtocolAddress{
+				AddressWithPrefix: tcpip.AddressWithPrefix{
+					Address:   tcpip.Address(addrAndPrefix[0]),
+					PrefixLen: netPrefix,
+				},
+			}
+			newIf.Addresses = append(newIf.Addresses, protocolAddress)
+		}
+
 		networkInterfaces = append(networkInterfaces, newIf)
 	}
-	log.Printf("parsed %+v", networkInterfaces)
+
+	log.Printf("spn: %d interfaces parsed", len(networkInterfaces))
 }
