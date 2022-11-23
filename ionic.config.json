@@ -1,0 +1,7 @@
+{
+  "name": "portmaster-android",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
