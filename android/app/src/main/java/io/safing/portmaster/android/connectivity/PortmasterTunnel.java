@@ -61,7 +61,7 @@ public class PortmasterTunnel implements Runnable {
 
   // Allowed/Disallowed packages for VPN usage
   private final boolean mAllow;
-  private final Set<String> mPackages;
+  private final Set<String> disabledPackages;
 
   public PortmasterTunnel(final VpnService service, final int connectionId,
                           final String serverName,
@@ -70,7 +70,7 @@ public class PortmasterTunnel implements Runnable {
     mConnectionId = connectionId;
     mServerName = serverName;
     mAllow = allow;
-    mPackages = packages;
+    disabledPackages = packages;
   }
   /**
    * Optionally, set an intent to configure the VPN. This is {@code null} by default.
@@ -167,9 +167,16 @@ public class PortmasterTunnel implements Runnable {
     try {
       // Disable routing this app traffic through the tunnel interface
       builder.addDisallowedApplication(BuildConfig.APPLICATION_ID);
+
+      // Disable routing for user selected applications
+      for (String packageName : this.disabledPackages) {
+          builder.addDisallowedApplication(packageName);
+      }
     }catch (PackageManager.NameNotFoundException ex) {
       Log.v(getTag(), ex.toString());
     }
+//    Activity.getApplicationContext();
+//    Settings.getDisabledApps(getActivity());
 
     builder.setSession(mServerName).setConfigureIntent(mConfigureIntent);
 

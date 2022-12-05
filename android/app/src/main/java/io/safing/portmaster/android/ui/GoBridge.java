@@ -13,6 +13,11 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class GoBridge extends Plugin {
 
     @PluginMethod()
+    public void getState(PluginCall call) {
+        tunnel.Tunnel.getState(new GoPluginCall(call));
+    }
+
+    @PluginMethod()
     public void onStateChange(PluginCall call) {
         tunnel.Tunnel.onStateChange(new GoPluginCall(call));
     }

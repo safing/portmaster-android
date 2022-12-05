@@ -20,7 +20,7 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
-const vpnLibVersion = "v0.0.3-alpha"
+const spnLibVersion = "v0.0.3-alpha"
 
 type NetInterface struct {
 	Interface *net.Interface
@@ -38,7 +38,7 @@ var (
 
 // Version version fo the module
 func Version() string {
-	return vpnLibVersion
+	return spnLibVersion
 }
 
 // onConnectionEnd end connection callback

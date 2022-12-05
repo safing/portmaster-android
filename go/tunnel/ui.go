@@ -21,3 +21,7 @@ func OnStateChange(call PluginCall) {
 		call.ResolveJson(fmt.Sprintf(`{"active": %t}`, newState))
 	}()
 }
+
+func GetState(call PluginCall) {
+	call.ResolveJson(fmt.Sprintf(`{"active": %t}`, IsActive()))
+}

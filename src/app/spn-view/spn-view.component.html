@@ -1,0 +1,6 @@
+<div id="container">
+  <p>
+    <ion-label>{{Status}}</ion-label>
+  </p>
+  <ion-toggle (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="IsSPNEnabled" [enableOnOffLabels]="true" size="large"></ion-toggle>
+</div>

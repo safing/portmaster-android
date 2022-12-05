@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { ExploreContainerComponent } from './explore-container.component';
+import { SPNViewComponent } from './spn-view.component';
 
 @NgModule({
   imports: [ CommonModule, FormsModule, IonicModule],
-  declarations: [ExploreContainerComponent],
-  exports: [ExploreContainerComponent]
+  declarations: [SPNViewComponent],
+  exports: [SPNViewComponent]
 })
-export class ExploreContainerComponentModule {}
+export class SPNViewComponentModule {}

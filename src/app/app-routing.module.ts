@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+    loadChildren: () => import('./enabled-apps/enabled-apps.module').then(m => m.EnabledAppsComponentModule)
   }
 ];
 @NgModule({

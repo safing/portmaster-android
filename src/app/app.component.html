@@ -1,13 +1,16 @@
 <ion-app>
   <ion-header>
-    <ion-navbar>
-      <ion-title>
-        SPN
-      </ion-title>
-     </ion-navbar>
-    </ion-header>
+    <ion-item>
+        <ion-title>
+          SPN
+        </ion-title>
+      <ion-button (click)="openAppList()" fill="clear" style="float:right;"><ion-icon name="settings-outline"></ion-icon></ion-button>
+    </ion-item>
+  </ion-header>
+  <ion-nav root="nav-home"></ion-nav>
   
-    <ion-content padding>
-      <app-explore-container></app-explore-container>
-    </ion-content>
+  <ion-content padding>
+    <app-explore-container></app-explore-container>    
+  </ion-content>
+  
 </ion-app>

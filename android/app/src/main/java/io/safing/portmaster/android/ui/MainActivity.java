@@ -13,7 +13,7 @@ import tunnel.Tunnel;
 public class MainActivity extends BridgeActivity {
 
   private static final int SERVICE_ACTION_CONNECT = 1;
-  private static final int SERVICE_ACTION_DISCONNECT = 1;
+  private static final int SERVICE_ACTION_DISCONNECT = 2;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -57,10 +57,10 @@ public class MainActivity extends BridgeActivity {
 
     if (resultCode == RESULT_OK) {
       Intent startIntent = new Intent(this, PortmasterTunnelService.class);
-      if(Tunnel.isActive()) {
-        startIntent.setAction(PortmasterTunnelService.ACTION_DISCONNECT);
-      } else {
+      if(requestCode == SERVICE_ACTION_CONNECT) {
         startIntent.setAction(PortmasterTunnelService.ACTION_CONNECT);
+      } else if (requestCode == SERVICE_ACTION_DISCONNECT){
+        startIntent.setAction(PortmasterTunnelService.ACTION_DISCONNECT);
       }
       startService(startIntent);
     }

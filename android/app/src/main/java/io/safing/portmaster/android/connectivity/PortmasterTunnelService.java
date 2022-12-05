@@ -7,6 +7,7 @@ import android.net.VpnService;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.safing.android.R;
+import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.ui.MainActivity;
 import tunnel.Tunnel;
 //import io.safing.portmaster.android.R;
@@ -111,16 +113,18 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     mHandler.sendEmptyMessage(R.string.connecting);
     // Extract information from the shared preferences.
 
+    final Set<String> disabledPackages = Settings.getDisabledApps(this);
 
     final SharedPreferences prefs = getSharedPreferences(Prefs.NAME, MODE_PRIVATE);
     final String server = prefs.getString(Prefs.SERVER_ADDRESS, "");
     final boolean allow = prefs.getBoolean(Prefs.ALLOW, true);
-    final Set<String> packages = prefs.getStringSet(Prefs.PACKAGES, Collections.emptySet());
+//    final Set<String> packages = prefs.getStringSet(Prefs.PACKAGES, Collections.emptySet());
 
     startConnection(new PortmasterTunnel(
       this, mNextConnectionId.getAndIncrement(), server,
-      allow, packages));
+      allow, disabledPackages));
   }
+
   private void startConnection(final PortmasterTunnel connection) {
     System.out.println("starting portmaster tunnel thread");
     // Replace any existing connecting thread with the  new one.
@@ -135,12 +139,14 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     });
     thread.start();
   }
+
   private void setConnectingThread(final Thread thread) {
     final Thread oldThread = mConnectingThread.getAndSet(thread);
     if (oldThread != null) {
       oldThread.interrupt();
     }
   }
+
   private void setConnection(final Connection connection) {
     final Connection oldConnection = mConnection.getAndSet(connection);
     if (oldConnection != null) {
