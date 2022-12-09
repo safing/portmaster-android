@@ -211,7 +211,6 @@ func SetNetworkInterfaces(jsonString string) {
 
 	// example json:
 	// [
-	// ...
 	// {
 	//      "name": "tun0",
 	//      "index": 38,
