@@ -7,7 +7,7 @@ const { JavaBridge } = Plugins;
 
 
 @Component({
-  selector: 'app-explore-container',
+  selector: 'spn-view-container',
   templateUrl: './spn-view.component.html',
   styleUrls: ['./spn-view.component.scss'],
 })
