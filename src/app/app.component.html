@@ -10,7 +10,8 @@
   <ion-nav root="nav-home"></ion-nav>
   
   <ion-content padding>
-    <app-explore-container></app-explore-container>    
+    <app-login-container [user]="user" (onLogin)="login($event);" *ngIf="!user.loggedIn"></app-login-container>
+    <spn-view-container [user]="user" (onLogout)="logout($event);" *ngIf="user.loggedIn"></spn-view-container>
   </ion-content>
   
 </ion-app>

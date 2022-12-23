@@ -7,6 +7,7 @@ import com.getcapacitor.MessageHandler;
 import com.getcapacitor.PluginCall;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class GoPluginCall implements tunnel.PluginCall {
 

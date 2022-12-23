@@ -9,6 +9,10 @@ import android.os.Bundle;
 import android.util.Log;
 
 import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
+import io.safing.portmaster.android.go_interface.GoInterface;
+import io.safing.portmaster.android.util.AppDir;
+import io.safing.portmaster.android.util.NetworkAddresses;
+import io.safing.portmaster.android.util.NetworkInterfaces;
 import tunnel.Tunnel;
 public class MainActivity extends BridgeActivity {
 
@@ -21,6 +25,20 @@ public class MainActivity extends BridgeActivity {
     registerPlugin(JavaBridge.class);
     super.onCreate(savedInstanceState);
     Log.v("Class ID", PortmasterTunnelService.class.getName());
+
+    GoInterface goInterface = new GoInterface();
+    goInterface.registerFunction(new AppDir("GetAppDataDir", this));
+    goInterface.registerFunction(new NetworkInterfaces("GetNetworkInterfaces"));
+    goInterface.registerFunction(new NetworkAddresses("GetNetworkAddresses"));
+
+
+    tunnel.Tunnel.onCreate(goInterface);
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    tunnel.Tunnel.onDestroy();
   }
 
   public void connectVPN() {

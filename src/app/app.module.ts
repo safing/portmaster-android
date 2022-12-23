@@ -5,15 +5,16 @@ import { CommonModule } from '@angular/common';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
-import { AppRoutingModule } from './app-routing.module';
+// import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { SPNViewComponentModule } from './spn-view/spn-view.module';
-import { EnabledAppsComponent } from './enabled-apps/enabled-apps.component';
+import { LoginComponentModule } from './login/login.module';
+import { EnabledAppsModule } from './enabled-apps/enabled-apps.module';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, SPNViewComponentModule],
+  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), SPNViewComponentModule, LoginComponentModule, EnabledAppsModule],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })

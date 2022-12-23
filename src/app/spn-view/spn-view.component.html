@@ -1,6 +1,13 @@
-<div id="container">
-  <p>
-    <ion-label>{{Status}}</ion-label>
-  </p>
-  <ion-toggle (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="IsSPNEnabled" [enableOnOffLabels]="true" size="large"></ion-toggle>
-</div>
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>{{Status}}</ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-toggle (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="IsSPNEnabled" [enableOnOffLabels]="true" size="large"></ion-toggle>
+  </ion-card-content>
+</ion-card>
+<ion-item>
+  <ion-label>User: {{user.username}}</ion-label>
+  <ion-button color="danger" (click)="logout();">Logout</ion-button>
+</ion-item>

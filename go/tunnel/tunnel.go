@@ -1,14 +1,13 @@
 package tunnel
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 	"syscall"
 
+	"github.com/safing/portmaster-android/go/app_interface"
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 	"gvisor.dev/gvisor/pkg/tcpip/link/fdbased"
@@ -20,26 +19,17 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
-const spnLibVersion = "v0.0.3-alpha"
-
 type NetInterface struct {
 	Interface *net.Interface
 	Addresses []tcpip.ProtocolAddress
-	Flags     net.Flags
 }
 
 var (
-	netStack          *stack.Stack
-	networkInterfaces []NetInterface
-	connections       []*Connection
+	netStack    *stack.Stack
+	connections []*Connection
 
-	stateChannel = make(chan bool)
+	stateChannel = make(chan bool, 10)
 )
-
-// Version version fo the module
-func Version() string {
-	return spnLibVersion
-}
 
 // onConnectionEnd end connection callback
 func onConnectionEnd(conn *Connection) {
@@ -121,16 +111,20 @@ func Start(fd int) error {
 	})
 
 	// Getting the tunnel interface that was send from Java
-	var tunnelInterface *NetInterface
-	for index, i := range networkInterfaces {
-		if strings.HasPrefix(i.Interface.Name, "tun") {
-			tunnelInterface = &networkInterfaces[index]
+	var tunnelInterface *app_interface.NetworkInterface
+	interfaces, err := app_interface.GetNetworkInterfaces()
+	if err != nil {
+		return fmt.Errorf("failed to get network interfaces: %s", err)
+	}
+	for _, i := range interfaces {
+		if strings.HasPrefix(i.Name, "tun") {
+			tunnelInterface = &i
 		}
 	}
 
 	// Setting the IP4/6 addresses to the interface
 	if tunnelInterface != nil {
-		for _, addr := range tunnelInterface.Addresses {
+		for _, addr := range tunnelInterface.GetProtocolAddresses() {
 			newStack.AddProtocolAddress(nicID, addr, stack.AddressProperties{
 				PEB:        stack.CanBePrimaryEndpoint, // zero value default
 				ConfigType: stack.AddressConfigStatic,  // zero value default
@@ -178,7 +172,9 @@ func Start(fd int) error {
 	// newStack.SetNICForwarding(nicID, ipv4.ProtocolNumber, true)
 
 	netStack = newStack
-	stateChannel <- true
+	if len(stateChannel) < cap(stateChannel) {
+		stateChannel <- true
+	}
 
 	return nil
 }
@@ -196,97 +192,12 @@ func Stop() {
 		netStack.Close()
 		netStack.Wait()
 		netStack = nil
-		stateChannel <- false
+		if len(stateChannel) < cap(stateChannel) {
+			stateChannel <- false
+		}
 	}
 }
 
 func IsActive() bool {
 	return netStack != nil
-}
-
-// SetNetworkInterfaces parses network interfaces from a json string. Send from Java.
-func SetNetworkInterfaces(jsonString string) {
-
-	log.Println(jsonString)
-
-	// example json:
-	// [
-	// {
-	//      "name": "tun0",
-	//      "index": 38,
-	//      "MTU": 1500,
-	//      "up": true,
-	//      "multicast": false,
-	//      "loopback": false,
-	//      "p2p": true,
-	//      "addresses": "[fe80::35ff:6787:42a4:4357%tun0\/64 , 10.0.2.15\/24 ]"
-	// }
-	// ...
-	// ]
-
-	var parsedInterfaces []struct {
-		Name      string
-		Index     int
-		MTU       int
-		Up        bool
-		Multicast bool
-		Loopback  bool
-		P2P       bool
-		Addresses []string
-	}
-
-	err := json.Unmarshal([]byte(jsonString), &parsedInterfaces)
-	if err != nil {
-		log.Printf("Failed to unmarshal json: %s", err)
-		return
-	}
-
-	for _, i := range parsedInterfaces {
-		newIf := NetInterface{
-			Interface: &net.Interface{
-				Name:  i.Name,
-				Index: i.Index,
-				MTU:   i.MTU,
-			},
-			Addresses: []tcpip.ProtocolAddress{},
-		}
-
-		if i.Up {
-			newIf.Flags |= net.FlagUp
-		}
-		if i.Loopback {
-			newIf.Flags |= net.FlagLoopback
-		}
-		if i.P2P {
-			newIf.Flags |= net.FlagPointToPoint
-		}
-		if i.Multicast {
-			newIf.Flags |= net.FlagMulticast
-			newIf.Flags |= net.FlagBroadcast
-		}
-
-		for _, strAddr := range i.Addresses {
-			addrAndPrefix := strings.Split(strAddr, "/")
-			if len(addrAndPrefix) != 2 {
-				continue
-			}
-
-			netPrefix, err := strconv.Atoi(strings.TrimSpace(addrAndPrefix[1]))
-			if err != nil {
-				continue
-			}
-
-			protocolAddress := tcpip.ProtocolAddress{
-				AddressWithPrefix: tcpip.AddressWithPrefix{
-					Address:   tcpip.Address(addrAndPrefix[0]),
-					PrefixLen: netPrefix,
-				},
-			}
-			newIf.Addresses = append(newIf.Addresses, protocolAddress)
-		}
-
-		networkInterfaces = append(networkInterfaces, newIf)
-	}
-
-	log.Printf("spn: %d interfaces parsed", len(networkInterfaces))
 }

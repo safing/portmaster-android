@@ -5,7 +5,11 @@
   </ion-item>
   <ion-item>
     <ion-label>Password:</ion-label>
-    <ion-input type="password" [(ngModel)]="Password"></ion-input>
+    <ion-input type="{{PasswordFieldType}}" [(ngModel)]="Password"></ion-input>
+    <ion-button fill="clear" (click)="togglePasswordVisibility($event);"icon-only>
+      <ion-icon name="eye" *ngIf="!ShowPassword"></ion-icon>
+      <ion-icon name="eye-off" *ngIf="ShowPassword"></ion-icon>
+    </ion-button>
   </ion-item>
-  <ion-button expand="full" (click)="onLogin($event);">Login</ion-button>
+  <ion-button expand="full" (click)="login($event);">Login</ion-button>
 </ion-content>

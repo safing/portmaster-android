@@ -87,7 +87,6 @@ public class PortmasterTunnel implements Runnable {
       Log.i(getTag(), "Connecting...");
       // We can enable tunneling even if there is no internet access
       ParcelFileDescriptor vpnInterface = startVPN();
-      Tunnel.setNetworkInterfaces(getInterfacesAsJson());
       Tunnel.start(vpnInterface.getFd());
     } catch (Exception e) {
       Log.e(getTag(), "Connection failed, exiting", e);
@@ -102,56 +101,6 @@ public class PortmasterTunnel implements Runnable {
         // ignore error
       }
     }
-  }
-
-  // Returns a list of network interfaces in JSON array
-  String getInterfacesAsJson() {
-    List<NetworkInterface> interfaces = null;
-    try {
-      interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
-    } catch (Exception e) {
-      return "";
-    }
-
-    JSONArray jsonInterfaces = new JSONArray();
-    for (NetworkInterface nif : interfaces) {
-      try {
-
-        JSONObject jobj = new JSONObject()
-          .put("name", nif.getName())
-          .put("index", nif.getIndex())
-          .put("MTU", nif.getMTU())
-          .put("up", nif.isUp())
-          .put("multicast", nif.supportsMulticast())
-          .put("loopback", nif.isLoopback())
-          .put("p2p", nif.isPointToPoint());
-
-        byte[] macBytes = nif.getHardwareAddress();
-        if(macBytes != null) {
-          StringBuilder mac = new StringBuilder();
-          for (byte b : macBytes) {
-            mac.append(String.format("%02X:", b));
-          }
-          jobj.put("mac", mac.toString());
-        }
-
-        JSONArray addresses = new JSONArray();
-        for (InterfaceAddress ia : nif.getInterfaceAddresses()) {
-          String[] parts = ia.toString()
-            .split("/", 0);
-          if (parts.length > 1) {
-            String address = String.format(java.util.Locale.ROOT, "%s/%d ", parts[1], ia.getNetworkPrefixLength());
-            addresses.put(address);
-          }
-        }
-        jobj.put("addresses", addresses);
-        jsonInterfaces.put(jobj);
-      } catch (Exception e) {
-        continue;
-      }
-    }
-
-    return jsonInterfaces.toString();
   }
 
   private ParcelFileDescriptor startVPN() throws IllegalArgumentException {

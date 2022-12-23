@@ -13,4 +13,4 @@ import { EnabledAppsComponent } from './enabled-apps.component';
   declarations: [EnabledAppsComponent],
   exports: [EnabledAppsComponent]
 })
-export class EnabledAppsComponentModule {}
+export class EnabledAppsModule {}
