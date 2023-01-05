@@ -5,6 +5,8 @@ import (
 	"net"
 
 	"gvisor.dev/gvisor/pkg/tcpip"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
+	"gvisor.dev/gvisor/pkg/tcpip/network/ipv6"
 )
 
 type NetworkAddress struct {
@@ -74,6 +76,11 @@ func (i *NetworkInterface) GetProtocolAddresses() []tcpip.ProtocolAddress {
 				Address:   tcpip.Address(a.Addr),
 				PrefixLen: a.PrefixLength,
 			},
+		}
+		if a.IsIPv6 {
+			protocolAddress.Protocol = ipv6.ProtocolNumber
+		} else {
+			protocolAddress.Protocol = ipv4.ProtocolNumber
 		}
 		addresses = append(addresses, protocolAddress)
 	}

@@ -143,28 +143,30 @@ func Start(fd int) error {
 	// Setup TCP forwarding
 	// TODO (vladimir): Max in-flight is it to high?
 	tcpForwarder := tcp.NewForwarder(newStack, 0, 5000, func(fr *tcp.ForwarderRequest) {
-		remote := fmt.Sprintf("%s:%d", fr.ID().LocalAddress.String(), fr.ID().LocalPort)
-		conn, err := tryToConnectTCP(remote, fr)
+		conn, err := tryToConnectTCP(fr)
 		if err != nil {
 			log.Printf("spn: failed to connect: %s", err)
 			return
 		}
-		conn.forward(onConnectionEnd)
-		connections = append(connections, conn)
+		if conn != nil {
+			conn.forward(onConnectionEnd)
+			connections = append(connections, conn)
+		}
 
 	})
 	newStack.SetTransportProtocolHandler(tcp.ProtocolNumber, tcpForwarder.HandlePacket)
 
 	// Setup UDP forwarding
 	udpForwarder := udp.NewForwarder(newStack, func(fr *udp.ForwarderRequest) {
-		remote := fmt.Sprintf("%s:%d", fr.ID().LocalAddress.String(), fr.ID().LocalPort)
-		conn, err := tryToConnectUDP(newStack, remote, fr)
+		conn, err := tryToConnectUDP(newStack, fr)
 		if err != nil {
 			log.Printf("spn: failed to connect: %s", err)
 			return
 		}
-		conn.forward(onConnectionEnd)
-		connections = append(connections, conn)
+		if conn != nil {
+			conn.forward(onConnectionEnd)
+			connections = append(connections, conn)
+		}
 	})
 	newStack.SetTransportProtocolHandler(udp.ProtocolNumber, udpForwarder.HandlePacket)
 
