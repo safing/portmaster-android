@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/safing/portmaster-android/go/app_interface"
+	"github.com/safing/portmaster-android/go/tunnel/connection"
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 	"gvisor.dev/gvisor/pkg/tcpip/link/fdbased"
@@ -25,22 +26,9 @@ type NetInterface struct {
 }
 
 var (
-	netStack    *stack.Stack
-	connections []*Connection
-
+	netStack     *stack.Stack
 	stateChannel = make(chan bool, 10)
 )
-
-// onConnectionEnd end connection callback
-func onConnectionEnd(conn *Connection) {
-	conn.close()
-	for i, c := range connections {
-		if c == conn {
-			connections = append(connections[:i], connections[i+1:]...)
-			return
-		}
-	}
-}
 
 // Starts the tunneling
 func Start(fd int) error {
@@ -143,29 +131,18 @@ func Start(fd int) error {
 	// Setup TCP forwarding
 	// TODO (vladimir): Max in-flight is it to high?
 	tcpForwarder := tcp.NewForwarder(newStack, 0, 5000, func(fr *tcp.ForwarderRequest) {
-		conn, err := tryToConnectTCP(fr)
+		err := connection.DefaultTCPRouting(fr)
 		if err != nil {
-			log.Printf("spn: failed to connect: %s", err)
-			return
+			log.Printf("spn: failed to route connection: %s", err)
 		}
-		if conn != nil {
-			conn.forward(onConnectionEnd)
-			connections = append(connections, conn)
-		}
-
 	})
 	newStack.SetTransportProtocolHandler(tcp.ProtocolNumber, tcpForwarder.HandlePacket)
 
 	// Setup UDP forwarding
 	udpForwarder := udp.NewForwarder(newStack, func(fr *udp.ForwarderRequest) {
-		conn, err := tryToConnectUDP(newStack, fr)
+		err := connection.DefaultUDPRouting(newStack, fr)
 		if err != nil {
-			log.Printf("spn: failed to connect: %s", err)
-			return
-		}
-		if conn != nil {
-			conn.forward(onConnectionEnd)
-			connections = append(connections, conn)
+			log.Printf("spn: failed to route connection: %s", err)
 		}
 	})
 	newStack.SetTransportProtocolHandler(udp.ProtocolNumber, udpForwarder.HandlePacket)
@@ -183,12 +160,7 @@ func Start(fd int) error {
 
 // Stops the tunneling
 func Stop() {
-	if connections != nil {
-		for _, c := range connections {
-			c.close()
-		}
-		connections = nil
-	}
+	connection.EndAll()
 
 	if netStack != nil {
 		netStack.Close()
