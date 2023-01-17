@@ -1,9 +1,12 @@
 package io.safing.portmaster.android.go_interface;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public abstract class Function {
@@ -33,6 +36,15 @@ public abstract class Function {
 
   protected Result toResultFromString(String str) {
     return new Result(str.getBytes(StandardCharsets.UTF_8), null);
+  }
+
+  public <T> T parseArguments(byte[] args, Class<T> valueType) {
+    try {
+      return mapper.readValue(args, valueType);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   public abstract Result call(byte[] args);

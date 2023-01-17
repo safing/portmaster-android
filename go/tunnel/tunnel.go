@@ -2,11 +2,11 @@ package tunnel
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"syscall"
 
+	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster-android/go/tunnel/connection"
 	"gvisor.dev/gvisor/pkg/tcpip"
@@ -32,17 +32,19 @@ var (
 
 // Starts the tunneling
 func Start(fd int) error {
-	log.Printf("Starting spn")
+	log.Info("portmaster/android: initializing tunnel interface")
 	mtu := uint32(1400)
 
 	maddr, err := net.ParseMAC("aa:00:17:17:17:17")
 	if err != nil {
-		log.Fatalf("spn: invalid mac address")
+		log.Errorf("portmaster/android: invalid mac address")
 	}
 
 	// try to make the socket non-blocking
 	if err := syscall.SetNonblock(fd, true); err != nil {
-		return fmt.Errorf("failed to set socket non-blocking: %w", err)
+		err := fmt.Errorf("failed to set socket to non-blocking: %w", err)
+		log.Errorf("portmaster/android: %s", err)
+		return err
 	}
 
 	linkID, err := fdbased.New(&fdbased.Options{
@@ -52,16 +54,18 @@ func Start(fd int) error {
 		Address:        tcpip.LinkAddress(maddr),
 		ClosedFunc: func(err tcpip.Error) {
 			if err != nil {
-				log.Printf("spn: file descriptor closed: %s", err)
+				log.Errorf("portmaster/android: file descriptor closed: %s", err)
 			}
-			log.Printf("spn: file descriptor for linkID closed")
+			log.Criticalf("portmaster/android: file descriptor for linkID closed")
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create linkID: %w", err)
+		err := fmt.Errorf("failed to create linkID: %w", err)
+		log.Errorf("portmaster/android: %s", err)
+		return err
 	}
 
-	log.Printf("spn: created LinkID: %+v", linkID)
+	log.Infof("portmaster/android: created LinkID: %+v", linkID)
 
 	nicID := tcpip.NICID(1)
 
@@ -76,14 +80,18 @@ func Start(fd int) error {
 	sackEnabledOpt := tcpip.TCPSACKEnabled(true)
 	tcpipErr := newStack.SetTransportProtocolOption(tcp.ProtocolNumber, &sackEnabledOpt)
 	if tcpipErr != nil {
-		return fmt.Errorf("could not enable TCP SACK: %v", tcpipErr)
+		err := fmt.Errorf("could not enable TCP SACK: %v", tcpipErr)
+		log.Errorf("portmaster/android: %s", err)
+		return err
 	}
 
 	//
 	// NIC Setup
 	//
 	if err := newStack.CreateNIC(nicID, linkID); err != nil {
-		return fmt.Errorf("failed to create nic: %s", err.String())
+		err := fmt.Errorf("failed to create nic: %s", err.String())
+		log.Errorf("portmaster/android: %s", err)
+		return err
 	}
 
 	newStack.SetSpoofing(nicID, true)
@@ -102,7 +110,9 @@ func Start(fd int) error {
 	var tunnelInterface *app_interface.NetworkInterface
 	interfaces, err := app_interface.GetNetworkInterfaces()
 	if err != nil {
-		return fmt.Errorf("failed to get network interfaces: %s", err)
+		err := fmt.Errorf("failed to get network interfaces: %s", err)
+		log.Errorf("portmaster/android: %s", err)
+		return err
 	}
 	for _, i := range interfaces {
 		if strings.HasPrefix(i.Name, "tun") {
@@ -121,7 +131,9 @@ func Start(fd int) error {
 	}
 
 	if err := newStack.SetPromiscuousMode(nicID, true); err != nil {
-		return fmt.Errorf("failed to enable promiscuous mode: %s", err)
+		err := fmt.Errorf("failed to enable promiscuous mode: %s", err)
+		log.Errorf("portmaster/android: %s", err)
+		return err
 	}
 
 	// newStack.AddTCPProbe(func(state *stack.TCPEndpointState) {
@@ -133,7 +145,7 @@ func Start(fd int) error {
 	tcpForwarder := tcp.NewForwarder(newStack, 0, 5000, func(fr *tcp.ForwarderRequest) {
 		err := connection.DefaultTCPRouting(fr)
 		if err != nil {
-			log.Printf("spn: failed to route connection: %s", err)
+			log.Errorf("spn: failed to route connection: %s", err)
 		}
 	})
 	newStack.SetTransportProtocolHandler(tcp.ProtocolNumber, tcpForwarder.HandlePacket)
@@ -142,7 +154,7 @@ func Start(fd int) error {
 	udpForwarder := udp.NewForwarder(newStack, func(fr *udp.ForwarderRequest) {
 		err := connection.DefaultUDPRouting(newStack, fr)
 		if err != nil {
-			log.Printf("spn: failed to route connection: %s", err)
+			log.Errorf("spn: failed to route connection: %s", err)
 		}
 	})
 	newStack.SetTransportProtocolHandler(udp.ProtocolNumber, udpForwarder.HandlePacket)
@@ -160,6 +172,7 @@ func Start(fd int) error {
 
 // Stops the tunneling
 func Stop() {
+	log.Info("portmaster/android: shuting down tunnel interface")
 	connection.EndAll()
 
 	if netStack != nil {

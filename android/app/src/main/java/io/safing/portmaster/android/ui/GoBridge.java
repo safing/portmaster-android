@@ -37,4 +37,14 @@ public class GoBridge extends Plugin {
         tunnel.Tunnel.logout(new GoPluginCall(call));
     }
 
+    @PluginMethod()
+    public void GetLogs(PluginCall call) {
+        tunnel.Tunnel.getLogs(new GoPluginCall(call));
+    }
+
+    @PluginMethod()
+    public void GetDebugInfoFile(PluginCall call) {
+        tunnel.Tunnel.getDebugInfoFile(new GoPluginCall(call));
+    }
+
 }

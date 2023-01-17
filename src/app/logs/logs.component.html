@@ -1,0 +1,13 @@
+<ion-header>
+  <ion-list-header>
+    <ion-label>Logs</ion-label>
+    <ion-button (click)="exportDebugInfo()" fill="clear" style="float:right;"><ion-icon name="code-download-outline"></ion-icon></ion-button>
+  </ion-list-header>
+</ion-header>
+<ion-content #content>
+  <div *ngFor="let line of Logs">
+    <hr>
+    <div class="logline {{line.Severity}}">{{line.Meta}}</div>
+    <div class="logline {{line.Severity}}">{{line.Severity}}:{{line.Content}}</div>
+  </div>
+</ion-content>

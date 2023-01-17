@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { EnabledAppsComponent } from './enabled-apps/enabled-apps.component';
+import { LogsComponent } from './logs/logs.component';
 import { ModalController, IonRouterOutlet } from '@ionic/angular';
 
 import { Plugins } from '@capacitor/core';
@@ -28,6 +29,20 @@ export class AppComponent implements OnInit {
       presentingElement: await this.modalController.getTop(),
       canDismiss: true,
       component: EnabledAppsComponent,
+      componentProps: {
+        rootPage: AppComponent,
+      },
+     
+    });
+
+    await modal.present();
+  }
+
+  async openLogs() {
+    const modal = await this.modalController.create({
+      presentingElement: await this.modalController.getTop(),
+      canDismiss: true,
+      component: LogsComponent,
       componentProps: {
         rootPage: AppComponent,
       },

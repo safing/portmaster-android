@@ -15,17 +15,6 @@ type NetworkAddress struct {
 	IsIPv6       bool
 }
 
-type NetworkInterface struct {
-	Name      string
-	Index     int
-	MTU       int
-	Up        bool
-	Multicast bool
-	Loopback  bool
-	P2P       bool
-	Addresses []NetworkAddress
-}
-
 func (a *NetworkAddress) ToIPNet() *net.IPNet {
 	ip := net.ParseIP(a.Addr)
 	if ip == nil {
@@ -45,6 +34,17 @@ func (a *NetworkAddress) ToIPNet() *net.IPNet {
 
 func (a *NetworkAddress) String() string {
 	return a.Addr
+}
+
+type NetworkInterface struct {
+	Name      string
+	Index     int
+	MTU       int
+	Up        bool
+	Multicast bool
+	Loopback  bool
+	P2P       bool
+	Addresses []NetworkAddress
 }
 
 func (i *NetworkInterface) Flags() net.Flags {
@@ -85,4 +85,15 @@ func (i *NetworkInterface) GetProtocolAddresses() []tcpip.ProtocolAddress {
 		addresses = append(addresses, protocolAddress)
 	}
 	return addresses
+}
+
+type PlatformInfo struct {
+	Model        string
+	Manufacturer string
+	Brand        string
+	Board        string
+	Base         int
+	Incremental  string
+	SDK          int
+	VersionCode  string
 }

@@ -6,11 +6,13 @@ import (
 	"github.com/fxamacker/cbor/v2"
 )
 
-type Functions interface {
-	GetNetworkInterfaces() ([]NetworkInterface, error)
-	GetNetworkAddresses() ([]NetworkAddress, error)
-	GetAppDataDir() (string, error)
-}
+// type Functions interface {
+// 	GetNetworkInterfaces() ([]NetworkInterface, error)
+// 	GetNetworkAddresses() ([]NetworkAddress, error)
+// 	GetAppDataDir() (string, error)
+// 	OpenSaveAsDialog()
+// 	GetPlatformInfo()
+// }
 
 type AppInterface interface {
 	CallFunction(string, []byte) []byte
@@ -80,4 +82,37 @@ func GetAppDataDir() (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+func ExportDebugInfo(filename string, content []byte) error {
+	var args = struct {
+		Filename string
+		Content  []byte
+	}{Filename: filename, Content: content}
+
+	argsBytes, err := cbor.Marshal(args)
+	if err != nil {
+		return err
+	}
+
+	_, err = appFunctions.call("ExportDebugInfo", argsBytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetPlatformInfo() (*PlatformInfo, error) {
+	info := &PlatformInfo{}
+
+	bytes, err := appFunctions.call("GetPlatformInfo", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get platform info: %s", err)
+	}
+	err = cbor.Unmarshal(bytes, info)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse cbor: %s", err)
+	}
+
+	return info, nil
 }

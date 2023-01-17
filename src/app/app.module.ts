@@ -11,10 +11,11 @@ import { AppComponent } from './app.component';
 import { SPNViewComponentModule } from './spn-view/spn-view.module';
 import { LoginComponentModule } from './login/login.module';
 import { EnabledAppsModule } from './enabled-apps/enabled-apps.module';
+import { LogsModule } from './logs/logs.module';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), SPNViewComponentModule, LoginComponentModule, EnabledAppsModule],
+  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), SPNViewComponentModule, LoginComponentModule, EnabledAppsModule, LogsModule],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })

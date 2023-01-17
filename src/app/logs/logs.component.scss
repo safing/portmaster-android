@@ -1,0 +1,50 @@
+div {
+    font-size: small;
+}
+
+.logline {
+    margin: 1%;
+}
+
+@media (prefers-color-scheme: light) {
+    .info {
+        color: black;
+    }
+
+    .warning {
+        color:goldenrod;
+    }
+
+    .error {
+        color: red;
+    }
+    .critical {
+        color: purple
+    }
+    hr {
+        border: 0;
+        border-top: 1pt solid gray;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .info {
+        color: white;
+    }
+
+    .warning {
+        color:goldenrod;
+    }
+
+    .error {
+        color: red;
+    }
+    .critical {
+        color: plum
+    }
+    hr {
+        border: 0;
+        border-top: 1pt solid lightgray;
+    }
+}
+

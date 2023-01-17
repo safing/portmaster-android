@@ -1,8 +1,12 @@
 package tunnel
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/safing/portbase/log"
+	"github.com/safing/portmaster-android/go/app_interface"
+	"github.com/safing/portmaster-android/go/tunnel/logs"
 	"github.com/safing/spn/access"
 )
 
@@ -11,6 +15,7 @@ type PluginCall interface {
 	ResolveJson(obj string)
 	GetArgs() string
 	GetInt(name string) int32
+	GetLong(name string) int64
 	GetFloat(name string) float32
 	GetString(name string) string
 	GetBool(name string) bool
@@ -69,4 +74,21 @@ func Logout(call PluginCall) {
 	} else {
 		call.Resolve()
 	}
+}
+
+func GetLogs(call PluginCall) {
+	go func() {
+		ID := call.GetLong("ID")
+		logs, _ := json.Marshal(logs.GetAllLogsAfterID(uint64(ID)))
+		call.ResolveJson(fmt.Sprintf(`{"logs": %s}`, string(logs)))
+	}()
+}
+
+func GetDebugInfoFile(call PluginCall) {
+	log.Infof("portmaster/android: exporting debug info")
+	debugInfo, err := logs.GetDebugInfo("github")
+	if err != nil {
+		return
+	}
+	_ = app_interface.ExportDebugInfo("PortmasterDebugInfo.txt", debugInfo)
 }
