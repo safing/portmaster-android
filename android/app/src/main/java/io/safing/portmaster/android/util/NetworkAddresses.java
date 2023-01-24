@@ -1,5 +1,6 @@
 package io.safing.portmaster.android.util;
 
+import java.io.IOException;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class NetworkAddresses extends Function {
   }
 
   @Override
-  public Result call(byte[] args) {
+  public byte[] call(byte[] args) throws Exception {
     List<NetworkInterface> interfaces = null;
     try {
       interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());

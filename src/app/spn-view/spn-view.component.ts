@@ -3,8 +3,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import { Plugins } from '@capacitor/core';
 const { GoBridge } = Plugins;
-const { JavaBridge } = Plugins;
-import {User} from "../models/classes"
+import {User, SPNStatus} from "../models/classes"
 
 @Component({
   selector: 'spn-view-container',
@@ -14,48 +13,63 @@ import {User} from "../models/classes"
 export class SPNViewComponent implements OnInit {
   @Input() user: User
   @Output() onLogout = new EventEmitter();
+  @Output() onUpdateUserInfo = new EventEmitter();
 
-  Status: String = "SPN is disabled"
-  IsSPNEnabled: boolean;
+  SPNStatus: SPNStatus
+  ToggleState: boolean;
+  UpdateStatus: boolean;
 
   constructor() {
-    this.IsSPNEnabled = false
+    this.SPNStatus = new SPNStatus()
   }
   
   async ngOnInit() {
-    this.stateUpdater()
+    // this.stateUpdater()
+    
+    // var state = await GoBridge.GetState()
+    // this.TunnelEnabled = state.active
+    this.ToggleState = false;
+    this.UpdateStatus = true;
+    // this.spnStatusUpdater()
+  }
 
-    var state = await GoBridge.GetState()
-    this.updateState(state.active)
+  async ngOnDestroy() {
+    this.UpdateStatus = false;
   }
   
   async toggleSPN(state) {
     if(state) {
-      await JavaBridge.enableTunnel()
+      await GoBridge.EnableSPN()
     } else {
-      await JavaBridge.disableTunnel()
+      await GoBridge.DisableSPN()
     }
   }
 
-  async stateUpdater() {
-    while(true) {
-      var state = await GoBridge.WaitForStateChange()
-      console.log("State changed: ", state.active)
-      this.updateState(state.active)
-    }
-  }
-
-  updateState(newState) {
-    this.IsSPNEnabled = newState
-    if(newState) {
-      this.Status = "SPN is enabled"
-    } else {
-      this.Status = "SPN is disabled"
+  async spnStatusUpdater() {
+    while(this.UpdateStatus) {
+      this.SPNStatus = await GoBridge.GetSPNStatus()
+      await this.sleep(1000)
     }
   }
 
   async logout() {
     this.onLogout.emit()
+  }
+
+  async updateUserInfo() {
+    this.onUpdateUserInfo.emit()
+  }
+
+  async sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  isSPNConnected() : boolean {
+    return this.SPNStatus.Status == "connected"
+  }
+
+  isSPNDisabled() : boolean {
+    return this.SPNStatus.Status == "disabled"
   }
 
 }

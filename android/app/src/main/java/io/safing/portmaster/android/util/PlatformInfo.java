@@ -23,7 +23,7 @@ public class PlatformInfo extends Function {
   }
 
   @Override
-  public Result call(byte[] args) {
+  public byte[] call(byte[] args) throws Exception {
     Info info = new Info();
     info.Model = Build.MODEL;
     info.Manufacturer = Build.MANUFACTURER;

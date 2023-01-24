@@ -1,7 +1,6 @@
-package tunnel
+package engine
 
 import (
-	"github.com/safing/portbase/config"
 	"github.com/safing/portbase/database"
 	_ "github.com/safing/portbase/database/storage/bbolt"
 	"github.com/safing/portbase/dataroot"
@@ -12,15 +11,17 @@ import (
 	"github.com/safing/portbase/utils"
 
 	"github.com/safing/portmaster-android/go/app_interface"
-	"github.com/safing/portmaster-android/go/tunnel/logs"
+	"github.com/safing/portmaster-android/go/engine/logs"
 	_ "github.com/safing/portmaster/network"
 	_ "github.com/safing/spn/captain"
 	"github.com/safing/spn/conf"
+	"github.com/safing/spn/sluice"
 )
 
 var (
-	dataDir  string
-	dataRoot *utils.DirStructure
+	dataDir     string
+	dataRoot    *utils.DirStructure
+	dbInterface *database.Interface
 )
 
 func OnCreate(inter app_interface.AppInterface) {
@@ -41,11 +42,8 @@ func OnCreate(inter app_interface.AppInterface) {
 
 	// Enable SPN client.
 	conf.EnableClient(true)
-	err = config.SetConfigOption("spn/enable", true)
-	if err != nil {
-		log.Errorf("portmaster/android: failed to enable SPN: %s", err)
-		return
-	}
+	// Disable SPN listeners.
+	sluice.EnableListener = false
 
 	// Initialize database.
 	err = dataroot.Initialize(dataDir, 0o0755)
@@ -58,6 +56,9 @@ func OnCreate(inter app_interface.AppInterface) {
 	if err != nil {
 		log.Errorf("portmaster/android: %s", err)
 	}
+
+	// Get database interface.
+	dbInterface = database.NewInterface(nil)
 
 	logs.InitLogs()
 

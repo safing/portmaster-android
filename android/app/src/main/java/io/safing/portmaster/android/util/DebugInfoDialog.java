@@ -30,12 +30,8 @@ public class DebugInfoDialog extends Function {
   }
 
   @Override
-  public Result call(byte[] args) {
+  public byte[] call(byte[] args) throws Exception {
     Args parsedArgs = this.parseArguments(args, Args.class);
-    if(parsedArgs == null) {
-      return null;
-    }
-
     String filename = parsedArgs.Filename;
     this.content = parsedArgs.Content;
 

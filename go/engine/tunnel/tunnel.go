@@ -8,7 +8,6 @@ import (
 
 	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
-	"github.com/safing/portmaster-android/go/tunnel/connection"
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 	"gvisor.dev/gvisor/pkg/tcpip/link/fdbased"
@@ -25,13 +24,10 @@ type NetInterface struct {
 	Addresses []tcpip.ProtocolAddress
 }
 
-var (
-	netStack     *stack.Stack
-	stateChannel = make(chan bool, 10)
-)
+var netStack *stack.Stack
 
-// Starts the tunneling
-func Start(fd int) error {
+// EnableTunnel starts the tunneling.
+func EnableTunnel(fd int) error {
 	log.Info("portmaster/android: initializing tunnel interface")
 	mtu := uint32(1400)
 
@@ -143,7 +139,7 @@ func Start(fd int) error {
 	// Setup TCP forwarding
 	// TODO (vladimir): Max in-flight is it to high?
 	tcpForwarder := tcp.NewForwarder(newStack, 0, 5000, func(fr *tcp.ForwarderRequest) {
-		err := connection.DefaultTCPRouting(fr)
+		err := DefaultTCPRouting(fr)
 		if err != nil {
 			log.Errorf("spn: failed to route connection: %s", err)
 		}
@@ -152,7 +148,7 @@ func Start(fd int) error {
 
 	// Setup UDP forwarding
 	udpForwarder := udp.NewForwarder(newStack, func(fr *udp.ForwarderRequest) {
-		err := connection.DefaultUDPRouting(newStack, fr)
+		err := DefaultUDPRouting(newStack, fr)
 		if err != nil {
 			log.Errorf("spn: failed to route connection: %s", err)
 		}
@@ -163,26 +159,22 @@ func Start(fd int) error {
 	// newStack.SetNICForwarding(nicID, ipv4.ProtocolNumber, true)
 
 	netStack = newStack
-	if len(stateChannel) < cap(stateChannel) {
-		stateChannel <- true
-	}
 
+	_ = app_interface.SendUIWindowEvent("SPN", `{"TunnelEnabled": true}`)
 	return nil
 }
 
-// Stops the tunneling
-func Stop() {
+// DisableTunnel stops the tunneling.
+func DisableTunnel() {
 	log.Info("portmaster/android: shuting down tunnel interface")
-	connection.EndAll()
+	EndAllConnections()
 
 	if netStack != nil {
 		netStack.Close()
 		netStack.Wait()
 		netStack = nil
-		if len(stateChannel) < cap(stateChannel) {
-			stateChannel <- false
-		}
 	}
+	_ = app_interface.SendUIWindowEvent("SPN", `{"TunnelEnabled": false}`)
 }
 
 func IsActive() bool {

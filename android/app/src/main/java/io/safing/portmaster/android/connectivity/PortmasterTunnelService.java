@@ -55,7 +55,6 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   @Override
   public boolean protect(DatagramSocket socket) {
     ParcelFileDescriptor pfd = ParcelFileDescriptor.fromDatagramSocket(socket);
-    FileDescriptor fd = pfd.getFileDescriptor();
 
     System.out.println("[VPN] protecting socket ... " + pfd.getFd());
     return super.protect(pfd.getFd());
@@ -73,6 +72,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     mConfigureIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),
       PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
   }
+
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     System.out.println("start received");
@@ -84,6 +84,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       return START_STICKY;
     }
   }
+
   @Override
   public void onDestroy() {
     disconnect();
@@ -106,7 +107,6 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   }
 
   private void connect() {
-
     // Become a foreground service. Background services can be VPN services too, but they can
     // be killed by background check before getting a chance to receive onRevoke().
     updateForegroundNotification(R.string.connecting);
@@ -118,7 +118,6 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     final SharedPreferences prefs = getSharedPreferences(Prefs.NAME, MODE_PRIVATE);
     final String server = prefs.getString(Prefs.SERVER_ADDRESS, "");
     final boolean allow = prefs.getBoolean(Prefs.ALLOW, true);
-//    final Set<String> packages = prefs.getStringSet(Prefs.PACKAGES, Collections.emptySet());
 
     startConnection(new PortmasterTunnel(
       this, mNextConnectionId.getAndIncrement(), server,
@@ -160,7 +159,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   }
 
   private void disconnect() {
-    Tunnel.stop();
+    tunnel.Tunnel.disableTunnel();
     mHandler.sendEmptyMessage(R.string.disconnected);
     setConnectingThread(null);
     setConnection(null);

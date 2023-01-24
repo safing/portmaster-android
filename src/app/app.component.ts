@@ -16,12 +16,18 @@ import {Credentials, User} from "./models/classes"
 })
 export class AppComponent implements OnInit {
 
-  user: User = {loggedIn: false}
+  user: User = null
 
   constructor(private modalController: ModalController) {}
 
   async ngOnInit(): Promise<void> {
     this.user = await GoBridge.GetUser()
+    this.updateUserCanUseSPNValue(this.user)
+    console.log("User: ", JSON.stringify(this.user))
+
+    window.addEventListener('SPN', function (msg: any) {
+      console.log('SPN event: ' + JSON.stringify(msg));
+    });
   }
 
   async openAppList() {
@@ -52,8 +58,8 @@ export class AppComponent implements OnInit {
   }
 
   async login(credentials: Credentials) {
-    console.log("CCC", JSON.stringify(credentials, null, 4))
     this.user = await GoBridge.Login(credentials)
+    this.updateUserCanUseSPNValue(this.user)
     console.log("User: ", JSON.stringify(this.user))
   }
 
@@ -62,6 +68,16 @@ export class AppComponent implements OnInit {
     if(result?.error) {
       console.log("failed to logout: ", result.error)
     }
-    this.user = {loggedIn: false}
+    this.user = null
+  }
+
+  async updateUserInfo() {
+    this.user = await GoBridge.UpdateUserInfo()
+    this.updateUserCanUseSPNValue(this.user)
+    console.log("User: ", JSON.stringify(this.user))
+  }
+
+  updateUserCanUseSPNValue(user: User) {
+    user.canUseSPN = user.current_plan?.feature_ids.includes('spn') 
   }
 }

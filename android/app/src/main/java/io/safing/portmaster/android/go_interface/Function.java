@@ -21,31 +21,20 @@ public abstract class Function {
     return name;
   }
 
-  protected Result toResultFromObject(Object obj) {
-    String error = null;
+  protected byte[] toResultFromObject(Object obj) throws RuntimeException {
     byte[] data = null;
     try {
       data = this.mapper.writeValueAsBytes(obj);
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
-      error = "failed to convert to CDOR: " + e.getMessage();
+      throw new RuntimeException("failed to convert to CDOR: " + e.getMessage());
     }
 
-    return new Result(data, error);
+    return data;
   }
 
-  protected Result toResultFromString(String str) {
-    return new Result(str.getBytes(StandardCharsets.UTF_8), null);
+  public <T> T parseArguments(byte[] args, Class<T> valueType) throws Exception {
+    return mapper.readValue(args, valueType);
   }
 
-  public <T> T parseArguments(byte[] args, Class<T> valueType) {
-    try {
-      return mapper.readValue(args, valueType);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
-  public abstract Result call(byte[] args);
+  public abstract byte[] call(byte[] args) throws Exception;
 }

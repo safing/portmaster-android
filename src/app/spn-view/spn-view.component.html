@@ -1,13 +1,23 @@
 <ion-card>
   <ion-card-header>
-    <ion-card-title>{{Status}}</ion-card-title>
+    <ion-card-title *ngIf="user?.canUseSPN">SPN {{SPNStatus.Status}}</ion-card-title>
+    <ion-card-title *ngIf="!user?.canUseSPN" color="danger">Your account does not have access to the SPN</ion-card-title>
   </ion-card-header>
 
   <ion-card-content>
-    <ion-toggle (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="IsSPNEnabled" [enableOnOffLabels]="true" size="large"></ion-toggle>
+    <ion-toggle [disabled]="!user.canUseSPN" (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="ToggleState" [enableOnOffLabels]="true" size="large"></ion-toggle>
+    <div *ngIf="isSPNConnected()">
+      {{SPNStatus.HomeHubName}} 
+      <br>
+      {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
+      <br>
+      {{SPNStatus.ConnectedSince}}
+    </div>
   </ion-card-content>
 </ion-card>
+
 <ion-item>
   <ion-label>User: {{user.username}}</ion-label>
+  <ion-button color="secondary" (click)="updateUserInfo();">Refresh</ion-button>
   <ion-button color="danger" (click)="logout();">Logout</ion-button>
 </ion-item>

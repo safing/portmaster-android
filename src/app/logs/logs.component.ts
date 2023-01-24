@@ -31,7 +31,6 @@ export class LogsComponent implements OnInit {
     this.Logs = result.logs;
     this.Update = true;
     this.content.scrollToBottom()
-    await this.sleep(500)
     this.logUpdater()
   }
 

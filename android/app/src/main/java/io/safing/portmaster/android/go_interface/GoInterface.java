@@ -22,23 +22,14 @@ public class GoInterface implements app_interface.AppInterface {
   }
 
   @Override
-  public byte[] callFunction(String functionName, byte[] bytes) {
+  public byte[] callFunction(String functionName, byte[] bytes) throws Exception {
     // Get requested function
     Function func = functions.get(functionName);
-    Result result = null;
     // Call the requested function if found and extract the result
     if(func == null) {
-      result = new Result(null, "function " + functionName + " not implemented");
-    } else {
-      result = func.call(bytes);
+      throw new RuntimeException("function " + functionName + " not implemented");
     }
 
-    // return the result in cdor format
-    try {
-      return this.mapper.writeValueAsBytes(result);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-    return null;
+    return func.call(bytes);
   }
 }

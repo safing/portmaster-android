@@ -6,13 +6,6 @@ import android.net.VpnService;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -87,7 +80,7 @@ public class PortmasterTunnel implements Runnable {
       Log.i(getTag(), "Connecting...");
       // We can enable tunneling even if there is no internet access
       ParcelFileDescriptor vpnInterface = startVPN();
-      Tunnel.start(vpnInterface.getFd());
+      Tunnel.enableTunnel(vpnInterface.getFd());
     } catch (Exception e) {
       Log.e(getTag(), "Connection failed, exiting", e);
     }

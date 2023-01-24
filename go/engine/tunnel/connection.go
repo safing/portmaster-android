@@ -1,4 +1,4 @@
-package connection
+package tunnel
 
 import (
 	"fmt"
@@ -134,6 +134,6 @@ func DefaultUDPRouting(stack *stack.Stack, fr *udp.ForwarderRequest) error {
 	}
 }
 
-func EndAll() {
+func EndAllConnections() {
 	endAllDefaultConnections()
 }
