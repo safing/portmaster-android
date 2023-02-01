@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/safing/portbase/config"
-	"github.com/safing/portbase/database/query"
 	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster-android/go/engine/logs"
@@ -27,42 +26,45 @@ type PluginCall interface {
 
 // Functions that have PluginCall as an argument are automatically exposed to the ionic UI
 
-func UIInit() {
-	sub, err := dbInterface.Subscribe(query.New("runtime:spn/status"))
-	if err != nil {
-		fmt.Printf("failed to subscribe to spn status: %s", err)
-		return
-	}
-	go func() {
-		for {
-			<-sub.Feed
-			_ = app_interface.SendUIWindowEvent("SPN", `{"StatusChange": true}`)
-		}
-	}()
-}
-
 func EnableSPN(call PluginCall) {
-	_ = app_interface.ToggleTunnel(true)
 	err := config.SetConfigOption("spn/enable", true)
 	if err != nil {
 		log.Errorf("portmaster/android: failed to enable SPN: %s", err)
 	}
+	call.Resolve()
 }
 
 func DisableSPN(call PluginCall) {
-	_ = app_interface.ToggleTunnel(false)
 	err := config.SetConfigOption("spn/enable", false)
 	if err != nil {
 		log.Errorf("portmaster/android: failed to disable SPN: %s", err)
 	}
+	call.Resolve()
 }
 
-func GetTunnelState(call PluginCall) {
-	call.ResolveJson(fmt.Sprintf(`{"active": %t}`, tunnel.IsActive()))
+func EnableTunnel(call PluginCall) {
+	if !tunnel.IsActive() {
+		tunnel.StartConnecting()
+		_ = app_interface.ToggleTunnel(true)
+	}
+	call.Resolve()
+}
+
+func DisableTunnel(call PluginCall) {
+	if tunnel.IsActive() {
+		tunnel.StartDisconnecting()
+		_ = app_interface.ToggleTunnel(false)
+	}
+	call.Resolve()
+}
+
+func GetTunnelStatus(call PluginCall) {
+	state := tunnel.GetState()
+	bytes, _ := json.Marshal(state)
+	call.ResolveJson(string(bytes))
 }
 
 func GetUser(call PluginCall) {
-	UIInit()
 	user, err := access.GetUser()
 	if err != nil {
 		// Just log and return empty response. No info needed for the user.
@@ -99,6 +101,7 @@ func Login(call PluginCall) {
 			userJson, _ := json.Marshal(user)
 			log.Info(string(userJson))
 			call.ResolveJson(string(userJson))
+
 		}
 	}()
 }
@@ -144,10 +147,30 @@ func GetLogs(call PluginCall) {
 }
 
 func GetDebugInfoFile(call PluginCall) {
+	defer call.Resolve()
 	log.Infof("portmaster/android: exporting debug info")
 	debugInfo, err := logs.GetDebugInfo("github")
 	if err != nil {
 		return
 	}
 	_ = app_interface.ExportDebugInfo("PortmasterDebugInfo.txt", debugInfo)
+}
+
+func DatabaseSubscribe(call PluginCall) {
+	eventName, err := call.GetString("Name")
+	if err != nil {
+		call.ResolveJson(`{"error": "Missing Name argument"}`)
+		return
+	}
+
+	query, err := call.GetString("Query")
+	if err != nil {
+		call.ResolveJson(`{"error": "Missing Query argument"}`)
+		return
+	}
+
+	req := &SubscribeRequest{eventName: eventName, query: query, call: call}
+	go func() {
+		UISubscribeRequest(req) // this call will resolve the PluginCall
+	}()
 }

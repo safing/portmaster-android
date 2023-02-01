@@ -1,95 +1,87 @@
 package io.safing.portmaster.android.ui;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.net.Uri;
-import android.net.VpnService;
 
 import com.getcapacitor.BridgeActivity;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import engine.Engine;
+import io.safing.android.R;
 import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
 import io.safing.portmaster.android.go_interface.GoInterface;
+import io.safing.portmaster.android.os.OSFunctions;
 import io.safing.portmaster.android.util.AppDir;
-import io.safing.portmaster.android.util.NetworkAddresses;
-import io.safing.portmaster.android.util.NetworkInterfaces;
+import io.safing.portmaster.android.util.CancelNotification;
+import io.safing.portmaster.android.os.NetworkAddresses;
+import io.safing.portmaster.android.os.NetworkInterfaces;
 import io.safing.portmaster.android.util.DebugInfoDialog;
-import io.safing.portmaster.android.util.PlatformInfo;
+import io.safing.portmaster.android.util.ShowNotification;
+import io.safing.portmaster.android.os.PlatformInfo;
 import io.safing.portmaster.android.util.ToggleTunnel;
 import io.safing.portmaster.android.util.UIEvent;
-import tunnel.Tunnel;
+
 public class MainActivity extends BridgeActivity {
 
-  public static final int SERVICE_ACTION_CONNECT = 1;
-  public static final int SERVICE_ACTION_DISCONNECT = 2;
+  public static final int REQUEST_VPN_PERMISSION = 1;
   public static final int EXPORT_DEBUG_INFO = 3;
+
+  public static final String CHANNEL_ID = "Portmaster";
 
   // Function objects that are called from go
   private ToggleTunnel toggleTunnel;
-  private AppDir getAppDirFunction;
-  private NetworkInterfaces getNetworkInterfacesFunction;
-  private NetworkAddresses getNetworkAddressesFunction;
-  private DebugInfoDialog getDebugInfoDialogFunction;
-  private PlatformInfo getPlatformInfoFunction;
   private UIEvent sendUIEvent;
+  private DebugInfoDialog getDebugInfoDialogFunction;
+
+  private ShowNotification showNotification;
+  private CancelNotification cancelNotification;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    // Register plugins for UI.
     registerPlugin(GoBridge.class);
     registerPlugin(JavaBridge.class);
+
+    // Send OS functions to go.
+    Engine.setOSFunctions(OSFunctions.get());
+
     super.onCreate(savedInstanceState);
-    Log.v("Class ID", PortmasterTunnelService.class.getName());
 
+    // Prepare UI functions
+    GoInterface uiInterface = new GoInterface();
+
+    // UI
     this.toggleTunnel = new ToggleTunnel("ToggleTunnel", this);
-    this.getAppDirFunction = new AppDir("GetAppDataDir", this);
-    this.getNetworkInterfacesFunction = new NetworkInterfaces("GetNetworkInterfaces");
-    this.getNetworkAddressesFunction = new NetworkAddresses("GetNetworkAddresses");
-    this.getDebugInfoDialogFunction = new DebugInfoDialog("ExportDebugInfo", this, EXPORT_DEBUG_INFO);
-    this.getPlatformInfoFunction = new PlatformInfo("GetPlatformInfo");
+    uiInterface.registerFunction(this.toggleTunnel);
+
     this.sendUIEvent = new UIEvent("SendUIEvent", this.getBridge());
+    uiInterface.registerFunction(this.sendUIEvent);
 
-    GoInterface goInterface = new GoInterface();
-    goInterface.registerFunction(this.toggleTunnel);
-    goInterface.registerFunction(this.getAppDirFunction);
-    goInterface.registerFunction(this.getNetworkInterfacesFunction);
-    goInterface.registerFunction(this.getNetworkAddressesFunction);
-    goInterface.registerFunction(this.getDebugInfoDialogFunction);
-    goInterface.registerFunction(this.getPlatformInfoFunction);
-    goInterface.registerFunction(this.sendUIEvent);
+    // Debug info
+    this.getDebugInfoDialogFunction = new DebugInfoDialog("ExportDebugInfo", this, EXPORT_DEBUG_INFO);
+    uiInterface.registerFunction(this.getDebugInfoDialogFunction);
 
-    Engine.onCreate(goInterface);
+    // Notifications
+    createNotificationChannel();
+    this.showNotification = new ShowNotification("ShowNotification", this);
+    uiInterface.registerFunction(this.showNotification);
+
+    this.cancelNotification = new CancelNotification("CancelNotification", this);
+    uiInterface.registerFunction(this.cancelNotification);
+
+    Engine.setActivityFunctions(uiInterface);
+    Engine.onCreate(this.getFilesDir().getAbsolutePath());
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-    Engine.onDestroy();
-  }
-
-  public void connectVPN() {
-    Intent intent = VpnService.prepare(getApplicationContext());
-
-    if (intent != null) {
-      // if we have an intent we need to ask the user for permission
-      // first
-      bridge.getActivity().startActivityForResult(intent, SERVICE_ACTION_CONNECT);
-    } else {
-      onActivityResult(SERVICE_ACTION_CONNECT, RESULT_OK, null);
-    }
-  }
-
-  public void disconnectVPN() {
-    Intent intent = VpnService.prepare(getApplicationContext());
-
-    if (intent != null) {
-      // if we have an intent we need to ask the user for permission
-      // first
-      bridge.getActivity().startActivityForResult(intent, SERVICE_ACTION_DISCONNECT);
-    } else {
-      onActivityResult(SERVICE_ACTION_DISCONNECT, RESULT_OK, null);
-    }
+    Engine.onActivityDestroy();
   }
 
   @Override
@@ -100,20 +92,30 @@ public class MainActivity extends BridgeActivity {
       return;
     }
 
-    Intent startIntent = new Intent(this, PortmasterTunnelService.class);
-    if(requestCode == SERVICE_ACTION_CONNECT) {
-      startIntent.setAction(PortmasterTunnelService.ACTION_CONNECT);
-      startService(startIntent);
-    } else if (requestCode == SERVICE_ACTION_DISCONNECT) {
-      startIntent.setAction(PortmasterTunnelService.ACTION_DISCONNECT);
-      startService(startIntent);
+    if(requestCode == REQUEST_VPN_PERMISSION) {
+      this.toggleTunnel.toggle(true);
     }
-
 
     if(requestCode == EXPORT_DEBUG_INFO) {
       Uri uri = data.getData();
       getDebugInfoDialogFunction.writeToFile(uri);
     }
-
   }
+
+  private void createNotificationChannel() {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is new and not in the support library
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      String name = getString(R.string.notification_channel_name);
+      String description = getString(R.string.notification_channel_description);
+      int importance = NotificationManager.IMPORTANCE_DEFAULT;
+      NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+      channel.setDescription(description);
+      // Register the channel with the system; you can't change the importance
+      // or other notification behaviors after this
+      NotificationManager notificationManager = getSystemService(NotificationManager.class);
+      notificationManager.createNotificationChannel(channel);
+    }
+  }
+
 }

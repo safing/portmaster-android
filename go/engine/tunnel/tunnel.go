@@ -3,6 +3,7 @@ package tunnel
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"syscall"
 
@@ -24,10 +25,19 @@ type NetInterface struct {
 	Addresses []tcpip.ProtocolAddress
 }
 
-var netStack *stack.Stack
+var (
+	netStack *stack.Stack
+	tunnelFD *os.File
+)
 
-// EnableTunnel starts the tunneling.
-func EnableTunnel(fd int) error {
+// enableTunnel starts the tunneling.
+func enableTunnel(fd int) error {
+	if fd == 0 {
+		return fmt.Errorf("tunnel: invalid file descriptor")
+	}
+
+	tunnelFD = os.NewFile(uintptr(fd), "tunnel")
+
 	log.Info("portmaster/android: initializing tunnel interface")
 	mtu := uint32(1400)
 
@@ -159,13 +169,11 @@ func EnableTunnel(fd int) error {
 	// newStack.SetNICForwarding(nicID, ipv4.ProtocolNumber, true)
 
 	netStack = newStack
-
-	_ = app_interface.SendUIWindowEvent("SPN", `{"TunnelEnabled": true}`)
 	return nil
 }
 
 // DisableTunnel stops the tunneling.
-func DisableTunnel() {
+func disableTunnel() {
 	log.Info("portmaster/android: shuting down tunnel interface")
 	EndAllConnections()
 
@@ -174,7 +182,12 @@ func DisableTunnel() {
 		netStack.Wait()
 		netStack = nil
 	}
-	_ = app_interface.SendUIWindowEvent("SPN", `{"TunnelEnabled": false}`)
+
+	if tunnelFD != nil {
+		tunnelFD.Close()
+	}
+
+	_ = app_interface.SendUIWindowEvent("Tunnel", `{"TunnelEnabled": false}`)
 }
 
 func IsActive() bool {

@@ -1,17 +1,47 @@
 <ion-app>
-  <ion-header>
-    <ion-item>
-        <ion-title>
-          SPN
-        </ion-title>
-      <ion-button (click)="openLogs()" fill="clear" style="float:right;"><ion-icon name="settings-outline"></ion-icon></ion-button>
-    </ion-item>
-  </ion-header>
+  <ion-menu contentId="main-content">
+    <ion-header>
+
+      <ion-toolbar>
+        <ion-item>
+          <ion-title>Settings</ion-title>
+          <ion-menu-toggle>
+            <ion-button fill="clear" style="float:right;"><ion-icon name="chevron-back-outline"></ion-icon></ion-button>
+          </ion-menu-toggle>
+        </ion-item>
+      </ion-toolbar>
+
+    </ion-header>
+    <ion-content>
+      <ion-item (click)="openLogs()" >
+        <ion-label expand="full" >Logs</ion-label>
+      </ion-item>
+
+      <ion-item (click)="exportDebugInfo()" >
+        <ion-label expand="full" >Debug Info</ion-label>
+      </ion-item>
+      <ion-item *ngIf="User != null" (click)="logout()">
+        <ion-label expand="full" color="danger"  >Logout</ion-label>
+      </ion-item>
+    </ion-content>
+  </ion-menu>
+
   <ion-nav root="nav-home"></ion-nav>
-  
-  <ion-content padding>
-    <app-login-container [user]="user" (onLogin)="login($event);" *ngIf="user == null || user?.username == null"></app-login-container>
-    <spn-view-container [user]="user" (onUpdateUserInfo)="updateUserInfo();" (onLogout)="logout($event);" *ngIf="user?.username != null"></spn-view-container>
-  </ion-content>
-  
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-item>
+        <ion-menu-toggle>
+          <ion-button fill="clear" style="float:left;"><ion-icon name="menu-outline"></ion-icon></ion-button>
+        </ion-menu-toggle>
+        <ion-title>Portmaster</ion-title>
+      </ion-item>
+    </ion-header>
+    <ion-content padding>
+      <app-login-container [User]="User" (onLogin)="login($event);"
+        *ngIf="User == null || User?.username == null"></app-login-container>
+      <spn-view-container [User]="User" (onUpdateUserInfo)="updateUserInfo();" (onLogout)="logout($event);"
+        *ngIf="User?.username != null"></spn-view-container>
+    </ion-content>
+  </div>
+
 </ion-app>

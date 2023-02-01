@@ -61,9 +61,4 @@ export class LogsComponent implements OnInit {
   async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-
-  async exportDebugInfo() {
-    console.log("Opening dialog")
-    await GoBridge.GetDebugInfoFile()
-  }
 }

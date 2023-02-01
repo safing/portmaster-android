@@ -22,8 +22,18 @@ public class GoBridge extends Plugin {
     }
 
     @PluginMethod()
-    public void GetTunnelState(PluginCall call) {
-        engine.Engine.getTunnelState(new GoPluginCall(call));
+    public void EnableTunnel(PluginCall call) {
+        engine.Engine.enableTunnel(new GoPluginCall(call));
+    }
+
+    @PluginMethod()
+    public void DisableTunnel(PluginCall call) {
+        engine.Engine.disableTunnel(new GoPluginCall(call));
+    }
+
+    @PluginMethod()
+    public void GetTunnelStatus(PluginCall call) {
+        engine.Engine.getTunnelStatus(new GoPluginCall(call));
     }
 
     @PluginMethod()
@@ -59,6 +69,11 @@ public class GoBridge extends Plugin {
     @PluginMethod()
     public void GetDebugInfoFile(PluginCall call) {
         engine.Engine.getDebugInfoFile(new GoPluginCall(call));
+    }
+
+    @PluginMethod()
+    public void DatabaseSubscribe(PluginCall call) {
+        engine.Engine.databaseSubscribe(new GoPluginCall(call));
     }
 
 }

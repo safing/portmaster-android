@@ -1,4 +1,4 @@
-package io.safing.portmaster.android.util;
+package io.safing.portmaster.android.os;
 
 import java.io.IOException;
 import java.net.InterfaceAddress;
@@ -11,17 +11,6 @@ import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.Result;
 
 public class NetworkAddresses extends Function {
-
-  static class Address {
-    public Address(String address, int prefixLength, boolean isIPv6) {
-      this.addr = address;
-      this.prefixLength = prefixLength;
-      this.isIPv6 = isIPv6;
-    }
-    public String addr;
-    public int prefixLength;
-    public boolean isIPv6;
-  }
 
   public NetworkAddresses(String name) {
     super(name);

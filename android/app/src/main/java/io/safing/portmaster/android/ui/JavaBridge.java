@@ -40,20 +40,6 @@ public class JavaBridge extends Plugin {
   }
 
   @PluginMethod()
-  public void enableTunnel(PluginCall call) {
-    MainActivity activity = (MainActivity) getActivity();
-    activity.connectVPN();
-    call.resolve();
-  }
-
-  @PluginMethod()
-  public void disableTunnel(PluginCall call) {
-    MainActivity activity = (MainActivity) getActivity();
-    activity.disconnectVPN();
-    call.resolve();
-  }
-
-  @PluginMethod()
   public void getAppSettings(PluginCall call) {
     final PackageManager pm = getActivity().getPackageManager();
     Set<String> disabledApps = Settings.getDisabledApps(getActivity());

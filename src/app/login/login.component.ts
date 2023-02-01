@@ -1,8 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
-import { Plugins } from '@capacitor/core';
-
-import {Credentials, User} from "../models/classes"
+import {Credentials, User} from "../types/spn.types"
 
 @Component({
   selector: 'app-login-container',
@@ -10,14 +8,14 @@ import {Credentials, User} from "../models/classes"
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  @Input() user: User
+  @Input() User: User
   @Output() onLogin = new EventEmitter<Credentials>();
 
   Username: string
   Password: string
 
   ShowPassword: boolean
-  PasswordFieldType = "password"
+  PasswordFieldType: "text" | "password"
 
   constructor() { }
 
@@ -26,7 +24,6 @@ export class LoginComponent {
       username: this.Username,
       password: this.Password
     }
-    
     this.onLogin.emit(credentials)
   }
 

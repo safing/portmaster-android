@@ -1,23 +1,47 @@
 <ion-card>
   <ion-card-header>
-    <ion-card-title *ngIf="user?.canUseSPN">SPN {{SPNStatus.Status}}</ion-card-title>
-    <ion-card-title *ngIf="!user?.canUseSPN" color="danger">Your account does not have access to the SPN</ion-card-title>
+    <ion-card-title *ngIf="User?.canUseSPN">SPN {{SPNStatus?.Status}}</ion-card-title>
+    <ion-card-title *ngIf="!User?.canUseSPN" color="danger">Your account does not have access to the
+      SPN</ion-card-title>
   </ion-card-header>
 
   <ion-card-content>
-    <ion-toggle [disabled]="!user.canUseSPN" (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="ToggleState" [enableOnOffLabels]="true" size="large"></ion-toggle>
+    <ion-toggle [disabled]="!User.canUseSPN" (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="ToggleState"
+      [enableOnOffLabels]="true" size="large"></ion-toggle>
     <div *ngIf="isSPNConnected()">
-      {{SPNStatus.HomeHubName}} 
+      Home: {{SPNStatus.HomeHubName}}
       <br>
-      {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
+      Connection: {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
       <br>
-      {{SPNStatus.ConnectedSince}}
+      Connected Since: {{SPNStatus.ConnectedSince | date:'medium'}}
+    </div>
+    <div *ngIf="SPNErrorMsg.length > 0">
+      {{SPNErrorMsg}}
     </div>
   </ion-card-content>
 </ion-card>
 
-<ion-item>
-  <ion-label>User: {{user.username}}</ion-label>
-  <ion-button color="secondary" (click)="updateUserInfo();">Refresh</ion-button>
-  <ion-button color="danger" (click)="logout();">Logout</ion-button>
-</ion-item>
+
+<ion-accordion-group [multiple]="true">
+  <ion-accordion value="user">
+    <ion-item slot="header">
+      <ion-label>User: {{User.username}}</ion-label>
+    </ion-item>
+    <ion-label slot="content">
+      <p class="ion-padding">
+        {{User.current_plan.name}}
+        <br>
+        Subscription ends at {{User.subscription.ends_at | date:'medium'}}
+        <ion-button size="small" color="secondary" (click)="updateUserInfo();">Refresh</ion-button>
+      </p>
+    </ion-label>
+  </ion-accordion>
+  <ion-accordion value="device">
+    <ion-item slot="header">
+      <ion-label>Device: {{User.device.name}}</ion-label>
+    </ion-item>
+    <ion-label slot="content">
+      <p class="ion-padding">{{User.device.id}}</p>
+    </ion-label>
+  </ion-accordion>
+</ion-accordion-group>

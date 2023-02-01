@@ -7,7 +7,7 @@ import { ModalController, IonRouterOutlet } from '@ionic/angular';
 import { Plugins } from '@capacitor/core';
 const { GoBridge } = Plugins;
 
-import {Credentials, User} from "./models/classes"
+import {Credentials, User} from "./types/spn.types"
 
 @Component({
   selector: 'app-root',
@@ -16,18 +16,14 @@ import {Credentials, User} from "./models/classes"
 })
 export class AppComponent implements OnInit {
 
-  user: User = null
+  private User: User = null
 
   constructor(private modalController: ModalController) {}
 
   async ngOnInit(): Promise<void> {
-    this.user = await GoBridge.GetUser()
-    this.updateUserCanUseSPNValue(this.user)
-    console.log("User: ", JSON.stringify(this.user))
-
-    window.addEventListener('SPN', function (msg: any) {
-      console.log('SPN event: ' + JSON.stringify(msg));
-    });
+    this.User = await GoBridge.GetUser()
+    this.updateUserCanUseSPNValue(this.User)
+    console.log("User: ", JSON.stringify(this.User))
   }
 
   async openAppList() {
@@ -58,23 +54,29 @@ export class AppComponent implements OnInit {
   }
 
   async login(credentials: Credentials) {
-    this.user = await GoBridge.Login(credentials)
-    this.updateUserCanUseSPNValue(this.user)
-    console.log("User: ", JSON.stringify(this.user))
+    this.User = await GoBridge.Login(credentials)
+    this.updateUserCanUseSPNValue(this.User)
+    console.log("User: ", JSON.stringify(this.User))
   }
 
   async logout() {
+    await GoBridge.DisableTunnel();
+    await GoBridge.DisableSPN();
     var result = await GoBridge.Logout()
     if(result?.error) {
       console.log("failed to logout: ", result.error)
     }
-    this.user = null
+    this.User = null
   }
 
   async updateUserInfo() {
-    this.user = await GoBridge.UpdateUserInfo()
-    this.updateUserCanUseSPNValue(this.user)
-    console.log("User: ", JSON.stringify(this.user))
+    this.User = await GoBridge.UpdateUserInfo()
+    this.updateUserCanUseSPNValue(this.User)
+    console.log("User: ", JSON.stringify(this.User))
+  }
+
+  async exportDebugInfo() {
+    await GoBridge.GetDebugInfoFile()
   }
 
   updateUserCanUseSPNValue(user: User) {

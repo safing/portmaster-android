@@ -1,4 +1,4 @@
-package io.safing.portmaster.android.util;
+package io.safing.portmaster.android.os;
 
 import android.os.Build;
 

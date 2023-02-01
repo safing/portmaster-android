@@ -3,7 +3,9 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import { Plugins } from '@capacitor/core';
 const { GoBridge } = Plugins;
-import {User, SPNStatus} from "../models/classes"
+
+import {Database} from "../db-interface/module"
+import {User, SPNStatus, TunnelStatus} from "../types/spn.types"
 
 @Component({
   selector: 'spn-view-container',
@@ -11,49 +13,57 @@ import {User, SPNStatus} from "../models/classes"
   styleUrls: ['./spn-view.component.scss'],
 })
 export class SPNViewComponent implements OnInit {
-  @Input() user: User
+  @Input() User: User;
   @Output() onLogout = new EventEmitter();
   @Output() onUpdateUserInfo = new EventEmitter();
 
-  SPNStatus: SPNStatus
-  ToggleState: boolean;
-  UpdateStatus: boolean;
+  SPNStatus: SPNStatus | null;
+  SPNErrorMsg: String = "";
+  TunnelStatus: TunnelStatus | null;
+  ToggleState: boolean = false;
 
   constructor() {
-    this.SPNStatus = new SPNStatus()
+    this.SPNStatus = null;
   }
   
   async ngOnInit() {
-    // this.stateUpdater()
-    
-    // var state = await GoBridge.GetState()
-    // this.TunnelEnabled = state.active
-    this.ToggleState = false;
-    this.UpdateStatus = true;
-    // this.spnStatusUpdater()
+    this.TunnelStatus = await GoBridge.GetTunnelStatus();
+    this.ToggleState = this.TunnelStatus?.Status == "connected";    
+
+    window.addEventListener("tunnel", (msg: any) => {
+      console.log("Tunnel event", JSON.stringify(msg));
+      this.TunnelStatus = msg as TunnelStatus;
+      this.ToggleState = this.TunnelStatus.Status == "connected";
+    });
+
+    Database.Subscribe("runtime:spn/status", (msg: SPNStatus) => {
+      this.SPNStatus = msg
+      console.log("SPN event", JSON.stringify(msg))
+      if(this.SPNStatus.Status == "connected" && this.TunnelStatus.Status == "disabled") {
+        GoBridge.EnableTunnel()
+      }
+    });
+
+    Database.Subscribe("runtime:subsystems/spn", (msg: any) => {
+      this.SPNErrorMsg = msg.Modules[0].FailureMsg;
+    });
+
+    // TODO(vladimir): add notification handling.
+    Database.Subscribe("notifications:all/", (msg: SPNStatus) => {});
   }
 
   async ngOnDestroy() {
-    this.UpdateStatus = false;
+    
   }
   
   async toggleSPN(state) {
     if(state) {
-      await GoBridge.EnableSPN()
+      await GoBridge.EnableSPN();
+      await GoBridge.EnableTunnel();
     } else {
-      await GoBridge.DisableSPN()
+      await GoBridge.DisableTunnel();
+      await GoBridge.DisableSPN();
     }
-  }
-
-  async spnStatusUpdater() {
-    while(this.UpdateStatus) {
-      this.SPNStatus = await GoBridge.GetSPNStatus()
-      await this.sleep(1000)
-    }
-  }
-
-  async logout() {
-    this.onLogout.emit()
   }
 
   async updateUserInfo() {
@@ -65,11 +75,17 @@ export class SPNViewComponent implements OnInit {
   }
 
   isSPNConnected() : boolean {
-    return this.SPNStatus.Status == "connected"
+    if(this.SPNStatus == null) {
+      return false;
+    }
+    return this.SPNStatus?.Status == "connected"
   }
 
   isSPNDisabled() : boolean {
-    return this.SPNStatus.Status == "disabled"
+    if(this.SPNStatus == null) {
+      return true;
+    }
+    return this.SPNStatus?.Status == "disabled"
   }
 
 }

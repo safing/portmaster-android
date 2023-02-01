@@ -9,7 +9,7 @@ public class UIEvent extends Function {
 
   private Bridge bridge;
 
-  public static   class Event {
+  public static class Event {
     public Event() {}
     public String Name;
     public String Target;
@@ -27,5 +27,4 @@ public class UIEvent extends Function {
     this.bridge.triggerJSEvent(args.Name, args.Target, args.Data);
     return null;
   }
-
 }

@@ -4,7 +4,6 @@
     <string name="title_activity_main">Portmaster</string>
     <string name="package_name">io.safing.portmaster.android</string>
     <string name="custom_url_scheme">io.safing.portmaster.android</string>
-
     <string name="address">Server Address:</string>
     <string name="port">Server Port:</string>
     <string name="secret">Shared Secret:</string>
@@ -24,4 +23,7 @@
     <string name="unknown_package_names">
           Some of the specified package names do not correspond to any installed packages.
     </string>
+  <string name="notification_channel_name">portmaster</string>
+  <string name="notification_channel_description">Portmaster firewall</string>
+
 </resources>

@@ -1,56 +1,42 @@
 package io.safing.portmaster.android.connectivity;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.VpnService;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.util.Pair;
 import android.widget.Toast;
 
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.net.DatagramSocket;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import java.net.DatagramSocket;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import engine.Engine;
+import io.safing.android.BuildConfig;
 import io.safing.android.R;
-import io.safing.portmaster.android.settings.Settings;
+import io.safing.portmaster.android.go_interface.GoInterface;
+import io.safing.portmaster.android.os.OSFunctions;
 import io.safing.portmaster.android.ui.MainActivity;
-import tunnel.Tunnel;
-//import io.safing.portmaster.android.R;
+import io.safing.portmaster.android.util.CancelNotification;
+import io.safing.portmaster.android.util.ShowNotification;
 
 public class PortmasterTunnelService extends VpnService implements Handler.Callback {
 
-  public interface Prefs {
-    String NAME = "connection";
-    String SERVER_ADDRESS = "server.address";
-    String SERVER_PORT = "server.port";
-    String ALLOW = "allow";
-    String PACKAGES = "packages";
-  }
 
-  private static final String TAG = PortmasterTunnelService.class.getSimpleName();
-  public static final String ACTION_CONNECT = "io.safing.portmaster.vpn.START";
-  public static final String ACTION_DISCONNECT = "io.safing.portmaster.vpn.STOP";
-  private Handler mHandler;
+  public static final String ACTION_CONNECT = "io.safing.portmaster.tunnel.CONNECT";
+  public static final String ACTION_DISCONNECT = "io.safing.portmaster.tunnel.DISCONNECTED";
 
-  private static class Connection extends Pair<Thread, ParcelFileDescriptor> {
-    public Connection(Thread thread, ParcelFileDescriptor pfd) {
-      super(thread, pfd);
-    }
-  }
-
-  private final AtomicReference<Thread> mConnectingThread = new AtomicReference<>();
-  private final AtomicReference<Connection> mConnection = new AtomicReference<>();
-  private AtomicInteger mNextConnectionId = new AtomicInteger(1);
   private PendingIntent mConfigureIntent;
+
+  private ShowNotification showNotification;
+  private CancelNotification cancelNotification;
 
   @Override
   public boolean protect(DatagramSocket socket) {
@@ -62,27 +48,40 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
 
   @Override
   public void onCreate() {
+    // Send OS functions to go.
+    Engine.setOSFunctions(OSFunctions.get());
+
     super.onCreate();
 
-    // The handler is only used to show messages.
-    if (mHandler == null) {
-      mHandler = new Handler(this);
-    }
     // Create the intent to "configure" the connection (just start PortmasterVPNService).
     mConfigureIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),
       PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+
+    GoInterface uiInterface = new GoInterface();
+    // Notifications
+    createNotificationChannel();
+    this.showNotification = new ShowNotification("ShowNotification", this);
+    uiInterface.registerFunction(this.showNotification);
+
+    this.cancelNotification = new CancelNotification("CancelNotification", this);
+    uiInterface.registerFunction(this.cancelNotification);
+
+    Engine.setServiceFunctions(uiInterface);
+    Engine.onCreate(this.getFilesDir().getAbsolutePath());
   }
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    System.out.println("start received");
-    if (intent != null && ACTION_DISCONNECT.equals(intent.getAction())) {
-      disconnect();
+    if (ACTION_DISCONNECT.equals(intent.getAction())) {
+      tunnel.Tunnel.onTunnelDisconnected();
       return START_NOT_STICKY;
-    } else {
-      connect();
+    } else if(ACTION_CONNECT.equals(intent.getAction())) {
+      int fd = setup();
+      tunnel.Tunnel.onTunnelConnected(fd);
       return START_STICKY;
     }
+
+    return START_NOT_STICKY;
   }
 
   @Override
@@ -93,10 +92,6 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   @Override
   public boolean handleMessage(Message message) {
     Toast.makeText(this, message.what, Toast.LENGTH_SHORT).show();
-
-    if (message.what != R.string.disconnected) {
-      updateForegroundNotification(message.what);
-    }
     return true;
   }
 
@@ -106,77 +101,57 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     stopSelf();
   }
 
-  private void connect() {
-    // Become a foreground service. Background services can be VPN services too, but they can
-    // be killed by background check before getting a chance to receive onRevoke().
-    updateForegroundNotification(R.string.connecting);
-    mHandler.sendEmptyMessage(R.string.connecting);
-    // Extract information from the shared preferences.
+  private int setup() {
+    VpnService.Builder builder = this.new Builder()
+      .setMtu(1500)
+      .addAddress("10.0.2.15", 24)
+      .addRoute("0.0.0.0", 0)
+      .addDnsServer("9.9.9.9");
 
-    final Set<String> disabledPackages = Settings.getDisabledApps(this);
-
-    final SharedPreferences prefs = getSharedPreferences(Prefs.NAME, MODE_PRIVATE);
-    final String server = prefs.getString(Prefs.SERVER_ADDRESS, "");
-    final boolean allow = prefs.getBoolean(Prefs.ALLOW, true);
-
-    startConnection(new PortmasterTunnel(
-      this, mNextConnectionId.getAndIncrement(), server,
-      allow, disabledPackages));
-  }
-
-  private void startConnection(final PortmasterTunnel connection) {
-    System.out.println("starting portmaster tunnel thread");
-    // Replace any existing connecting thread with the  new one.
-    final Thread thread = new Thread(connection, "PortmasterTunnelThread");
-    setConnectingThread(thread);
-    // Handler to mark as connected once onEstablish is called.
-    connection.setConfigureIntent(mConfigureIntent);
-    connection.setOnEstablishListener(tunInterface -> {
-      mHandler.sendEmptyMessage(R.string.connected);
-      mConnectingThread.compareAndSet(thread, null);
-      setConnection(new Connection(thread, tunInterface));
-    });
-    thread.start();
-  }
-
-  private void setConnectingThread(final Thread thread) {
-    final Thread oldThread = mConnectingThread.getAndSet(thread);
-    if (oldThread != null) {
-      oldThread.interrupt();
+    // Disable routing this app traffic through the tunnel interface
+    try {
+      builder.addDisallowedApplication(BuildConfig.APPLICATION_ID);
+    } catch (PackageManager.NameNotFoundException e) {
+      e.printStackTrace();
     }
-  }
 
-  private void setConnection(final Connection connection) {
-    final Connection oldConnection = mConnection.getAndSet(connection);
-    if (oldConnection != null) {
-      try {
-        oldConnection.first.interrupt();
-        oldConnection.second.close();
-      } catch (IOException e) {
-        Log.e(TAG, "Closing VPN interface", e);
+//  TODO(vladimir): Disable routing for user selected applications
+//  for (String packageName : this.disabledPackages) {
+//    builder.addDisallowedApplication(packageName);
+//  }
+
+    builder.setSession("spn-server");
+    builder.setConfigureIntent(mConfigureIntent);
+
+    // Create a new interface using the builder and save the parameters.
+    final ParcelFileDescriptor tunnelInterface;
+    synchronized (this) {
+      ParcelFileDescriptor fd = builder.establish();
+      if(fd != null) {
+        return fd.detachFd();
       }
     }
+
+    return 0;
   }
 
   private void disconnect() {
-    tunnel.Tunnel.disableTunnel();
-    mHandler.sendEmptyMessage(R.string.disconnected);
-    setConnectingThread(null);
-    setConnection(null);
     stopForeground(true);
   }
 
-  private void updateForegroundNotification(final int message) {
-//    final String NOTIFICATION_CHANNEL_ID = "PortmasterVpn";
-//    NotificationManager mNotificationManager = (NotificationManager) getSystemService(
-//      NOTIFICATION_SERVICE);
-//    mNotificationManager.createNotificationChannel(new NotificationChannel(
-//      NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID,
-//      NotificationManager.IMPORTANCE_DEFAULT));
-//    startForeground(1, new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-//      .setSmallIcon(R.drawable.ic_vpn)
-//      .setContentText(getString(message))
-//      .setContentIntent(mConfigureIntent)
-//      .build());
+  private void createNotificationChannel() {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is new and not in the support library
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      String name = getString(R.string.notification_channel_name);
+      String description = getString(R.string.notification_channel_description);
+      int importance = NotificationManager.IMPORTANCE_DEFAULT;
+      NotificationChannel channel = new NotificationChannel(MainActivity.CHANNEL_ID, name, importance);
+      channel.setDescription(description);
+      // Register the channel with the system; you can't change the importance
+      // or other notification behaviors after this
+      NotificationManager notificationManager = getSystemService(NotificationManager.class);
+      notificationManager.createNotificationChannel(channel);
+    }
   }
 }
