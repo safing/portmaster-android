@@ -87,6 +87,9 @@ func SetActivityFunctions(functions app_interface.AppInterface) {
 
 func OnActivityDestroy() {
 	app_interface.RemoveActivityFunctionReference()
+	if !app_interface.HasServiceFunctions() {
+		OnDestroy()
+	}
 }
 
 func SetServiceFunctions(functions app_interface.AppInterface) {
@@ -95,4 +98,7 @@ func SetServiceFunctions(functions app_interface.AppInterface) {
 
 func OnServiceDestroy() {
 	app_interface.RemoveServiceFunctionReference()
+	if !app_interface.HasActivityFunctions() {
+		OnDestroy()
+	}
 }
