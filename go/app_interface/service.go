@@ -1,5 +1,11 @@
 package app_interface
 
+import (
+	"fmt"
+
+	"github.com/fxamacker/cbor/v2"
+)
+
 var serviceFunctions *AppFunctions = nil
 
 func SetServiceFunctions(appInterface AppInterface) {
@@ -12,4 +18,38 @@ func HasServiceFunctions() bool {
 
 func RemoveServiceFunctionReference() {
 	serviceFunctions = nil
+}
+
+func SetDefaultInterfaceForSocket(socketID uintptr) error {
+	if serviceFunctions == nil {
+		return fmt.Errorf("service not initialized")
+	}
+
+	args, _ := cbor.Marshal(int(socketID))
+
+	_, err := serviceFunctions.call("IgnoreSocket", args)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetConnectionOwner(connection Connection) (int, error) {
+	if serviceFunctions == nil {
+		return 0, fmt.Errorf("service not initialized")
+	}
+
+	args, _ := cbor.Marshal(connection)
+
+	data, err := serviceFunctions.call("GetConnectionOwner", args)
+	if err != nil {
+		return 0, err
+	}
+	var uid int
+	err = cbor.Unmarshal(data, &uid)
+	if err != nil {
+		return 0, err
+	}
+
+	return uid, nil
 }

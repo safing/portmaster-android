@@ -3,8 +3,10 @@ package io.safing.portmaster.android.connectivity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
@@ -21,11 +23,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import engine.Engine;
 import io.safing.android.BuildConfig;
 import io.safing.android.R;
+import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.GoInterface;
 import io.safing.portmaster.android.os.OSFunctions;
 import io.safing.portmaster.android.ui.MainActivity;
 import io.safing.portmaster.android.util.CancelNotification;
+import io.safing.portmaster.android.util.ConnectionOwner;
 import io.safing.portmaster.android.util.ShowNotification;
+import io.safing.portmaster.android.util.VPNProtect;
 
 public class PortmasterTunnelService extends VpnService implements Handler.Callback {
 
@@ -35,8 +40,10 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
 
   private PendingIntent mConfigureIntent;
 
-  private ShowNotification showNotification;
-  private CancelNotification cancelNotification;
+  private Function showNotification;
+  private Function cancelNotification;
+  private Function ignoreSocket;
+  private Function connectionOwner;
 
   @Override
   public boolean protect(DatagramSocket socket) {
@@ -66,12 +73,25 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     this.cancelNotification = new CancelNotification("CancelNotification", this);
     uiInterface.registerFunction(this.cancelNotification);
 
+    // Set socket to not be routed trough the tunnel.
+    this.ignoreSocket = new VPNProtect("IgnoreSocket", this);
+    uiInterface.registerFunction(this.ignoreSocket);
+
+    // Get uid get for a connection.
+    ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+    this.connectionOwner = new ConnectionOwner("GetConnectionOwner", connectivityManager);
+    uiInterface.registerFunction(this.connectionOwner);
+
+    // Send reference to java the functions.
     Engine.setServiceFunctions(uiInterface);
+
+    // Start go module with path to the data dir
     Engine.onCreate(this.getFilesDir().getAbsolutePath());
   }
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    // Handle connect disconnect events.
     if (ACTION_DISCONNECT.equals(intent.getAction())) {
       tunnel.Tunnel.onTunnelDisconnected();
       return START_NOT_STICKY;
@@ -86,6 +106,8 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
 
   @Override
   public void onDestroy() {
+    // Send destroy signal to go library, App may still be running
+    Engine.onServiceDestroy();
     disconnect();
   }
 
@@ -102,6 +124,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   }
 
   private int setup() {
+    // Create tunnel interface.
     VpnService.Builder builder = this.new Builder()
       .setMtu(1500)
       .addAddress("10.0.2.15", 24)
@@ -109,11 +132,11 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       .addDnsServer("9.9.9.9");
 
     // Disable routing this app traffic through the tunnel interface
-    try {
-      builder.addDisallowedApplication(BuildConfig.APPLICATION_ID);
-    } catch (PackageManager.NameNotFoundException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      builder.addDisallowedApplication(BuildConfig.APPLICATION_ID);
+//    } catch (PackageManager.NameNotFoundException e) {
+//      e.printStackTrace();
+//    }
 
 //  TODO(vladimir): Disable routing for user selected applications
 //  for (String packageName : this.disabledPackages) {

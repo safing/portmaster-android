@@ -169,6 +169,9 @@ func enableTunnel(fd int) error {
 	// newStack.SetNICForwarding(nicID, ipv4.ProtocolNumber, true)
 
 	netStack = newStack
+
+	initializeDialer()
+	//InitializeResolver()
 	return nil
 }
 
