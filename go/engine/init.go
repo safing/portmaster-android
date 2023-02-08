@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"os/user"
+
 	_ "github.com/safing/portbase/database/storage/bbolt"
 	"github.com/safing/portbase/dataroot"
 	"github.com/safing/portbase/info"

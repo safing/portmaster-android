@@ -72,13 +72,17 @@ func onConnectionEnd(conn *ConnDefaultForward) {
 	defer connMutex.Unlock()
 	for i, c := range connections {
 		if c == conn {
-			connections = append(connections[:i], connections[i+1:]...)
+			// replace the connection with the last in the list. A faster way of removing.
+			connections[i] = connections[len(connections)-1]
+			connections = connections[:len(connections)-1]
 			return
 		}
 	}
 }
 
 func endAllDefaultConnections() {
+	connMutex.Lock()
+	defer connMutex.Unlock()
 	if connections != nil {
 		for _, c := range connections {
 			c.close()
