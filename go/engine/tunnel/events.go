@@ -25,7 +25,6 @@ func OnTunnelDisconnected() {
 	disableTunnel()
 	state.Status = "disabled"
 	sendState(state)
-
 }
 
 func StartConnecting() {

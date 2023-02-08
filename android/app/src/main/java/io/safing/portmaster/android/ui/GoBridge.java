@@ -32,6 +32,11 @@ public class GoBridge extends Plugin {
     }
 
     @PluginMethod()
+    public void RestartTunnel(PluginCall call) {
+        engine.Engine.restartTunnel(new GoPluginCall(call));
+    }
+
+    @PluginMethod()
     public void GetTunnelStatus(PluginCall call) {
         engine.Engine.getTunnelStatus(new GoPluginCall(call));
     }

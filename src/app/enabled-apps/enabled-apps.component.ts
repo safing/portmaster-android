@@ -1,14 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Plugins } from '@capacitor/core';
-const { JavaBridge } = Plugins;
-import { BrowserModule } from '@angular/platform-browser'
+const { JavaBridge, GoBridge } = Plugins;
+import { ModalController } from '@ionic/angular';
 
-interface Application {
-  packageName: string
-  name: string
-  enabled: boolean
-}
+import { Application } from './application';
 
 @Component({
   selector: 'app-enabled-apps',
@@ -16,24 +12,31 @@ interface Application {
   styleUrls: ['./enabled-apps.component.scss'],
 })
 export class EnabledAppsComponent implements OnInit {
-  appList: Application[];
+  AppList: Application[];
+  ShowSystemApps: boolean = false;
 
-  constructor() { }
+  constructor(private modalCtrl: ModalController) { }
 
   async ngOnInit() {
     var result = await JavaBridge.getAppSettings()
-    this.appList = result.apps
-    this.appList.sort((a, b) => a.name.localeCompare(b.name))
+    this.AppList = result.apps
+    this.AppList.sort((a, b) => a.name.localeCompare(b.name))
   }
 
-  async onSave() {
+  async Cancel() {
+    this.modalCtrl.dismiss(null)
+  }
+
+  async Save() {
     var packageNameList: string[] = []
-    this.appList.forEach(element => {
+    this.AppList.forEach(element => {
       if(!element.enabled) {
         packageNameList.push(element.packageName)
       }
     });
     JavaBridge.setAppSettings({apps: packageNameList});
+    GoBridge.RestartTunnel();
+    this.modalCtrl.dismiss(null)
   }
 
 }

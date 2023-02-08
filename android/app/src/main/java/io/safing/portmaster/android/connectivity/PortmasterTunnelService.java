@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import java.net.DatagramSocket;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import engine.Engine;
@@ -26,6 +27,7 @@ import io.safing.android.R;
 import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.GoInterface;
 import io.safing.portmaster.android.os.OSFunctions;
+import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.ui.MainActivity;
 import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.util.ConnectionOwner;
@@ -34,9 +36,10 @@ import io.safing.portmaster.android.util.VPNProtect;
 
 public class PortmasterTunnelService extends VpnService implements Handler.Callback {
 
-
-  public static final String ACTION_CONNECT = "io.safing.portmaster.tunnel.CONNECT";
-  public static final String ACTION_DISCONNECT = "io.safing.portmaster.tunnel.DISCONNECTED";
+  public static final String COMMAND_PREFIX = "io.safing.portmaster.tunnel.";
+  public static final String ACTION_CONNECT = COMMAND_PREFIX + "connect";
+  public static final String ACTION_DISCONNECT = COMMAND_PREFIX + "disconnect";
+  public static final String ACTION_RECONNECT = COMMAND_PREFIX + "reconnect";
 
   private PendingIntent mConfigureIntent;
 
@@ -99,6 +102,11 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       int fd = setup();
       tunnel.Tunnel.onTunnelConnected(fd);
       return START_STICKY;
+    } else if (ACTION_RECONNECT.equals(intent.getAction())) {
+      tunnel.Tunnel.onTunnelDisconnected();
+      int fd = setup();
+      tunnel.Tunnel.onTunnelConnected(fd);
+      return START_STICKY;
     }
 
     return START_NOT_STICKY;
@@ -131,17 +139,14 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       .addRoute("0.0.0.0", 0)
       .addDnsServer("9.9.9.9");
 
-    // Disable routing this app traffic through the tunnel interface
-//    try {
-//      builder.addDisallowedApplication(BuildConfig.APPLICATION_ID);
-//    } catch (PackageManager.NameNotFoundException e) {
-//      e.printStackTrace();
-//    }
-
-//  TODO(vladimir): Disable routing for user selected applications
-//  for (String packageName : this.disabledPackages) {
-//    builder.addDisallowedApplication(packageName);
-//  }
+    Set<String> disabledPackages = Settings.getDisabledApps(this);
+    for (String packageName : disabledPackages) {
+      try {
+        builder.addDisallowedApplication(packageName);
+      } catch (PackageManager.NameNotFoundException e) {
+        e.printStackTrace();
+      }
+    }
 
     builder.setSession("spn-server");
     builder.setConfigureIntent(mConfigureIntent);

@@ -20,7 +20,6 @@ public class ToggleTunnel extends Function {
 
   private MainActivity activity;
 
-
   public ToggleTunnel(String name, MainActivity activity) {
     super(name);
     this.activity = activity;
@@ -28,30 +27,25 @@ public class ToggleTunnel extends Function {
 
   @Override
   public byte[] call(byte[] args) throws Exception {
-    boolean enabled = parseArguments(args, boolean.class);
-    this.toggle(enabled);
-
+    String command = parseArguments(args, String.class);
+    this.toggle(command);
     return null;
   }
 
-  public void toggle(boolean enabled) {
+  public void toggle(String command) {
+    // Check if VPN Service has permissions
     Intent intent = VpnService.prepare(activity.getApplicationContext());
-    if(intent == null) {
-      // Already prepared, send the command
-      intent = new Intent(activity, PortmasterTunnelService.class);
-      if (enabled) {
-        intent.setAction(PortmasterTunnelService.ACTION_CONNECT);
-      } else {
-        intent.setAction(PortmasterTunnelService.ACTION_DISCONNECT);
-      }
-      activity.startService(intent);
-    } else {
-      // It doesn't make sens to request permission for disconnecting the vpn.
-      if(!enabled) {
-        return;
-      }
-      // request user permissions
+    if(intent != null) {
+      // Put the requested command
+      intent.putExtra("command", command);
+      // Request user permissions
       activity.startActivityForResult(intent, MainActivity.REQUEST_VPN_PERMISSION);
+      return;
     }
+
+    // User already approved the permissions, send the command.
+    intent = new Intent(activity, PortmasterTunnelService.class);
+    intent.setAction(PortmasterTunnelService.COMMAND_PREFIX + command);
+    activity.startService(intent);
   }
 }

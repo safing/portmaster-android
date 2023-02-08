@@ -45,7 +45,7 @@ func DisableSPN(call PluginCall) {
 func EnableTunnel(call PluginCall) {
 	if !tunnel.IsActive() {
 		tunnel.StartConnecting()
-		_ = app_interface.ToggleTunnel(true)
+		_ = app_interface.ToggleTunnel("connect")
 	}
 	call.Resolve()
 }
@@ -53,8 +53,13 @@ func EnableTunnel(call PluginCall) {
 func DisableTunnel(call PluginCall) {
 	if tunnel.IsActive() {
 		tunnel.StartDisconnecting()
-		_ = app_interface.ToggleTunnel(false)
+		_ = app_interface.ToggleTunnel("disconnect")
 	}
+	call.Resolve()
+}
+
+func RestartTunnel(call PluginCall) {
+	_ = app_interface.ToggleTunnel("reconnect")
 	call.Resolve()
 }
 

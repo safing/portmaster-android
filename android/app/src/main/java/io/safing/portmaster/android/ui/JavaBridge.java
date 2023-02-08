@@ -44,7 +44,7 @@ public class JavaBridge extends Plugin {
     final PackageManager pm = getActivity().getPackageManager();
     Set<String> disabledApps = Settings.getDisabledApps(getActivity());
 
-    List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA | PackageManager.GET_UNINSTALLED_PACKAGES);
+    List<ApplicationInfo> packages = pm.getInstalledApplications(0);
     JSONArray list = new JSONArray();
     for (ApplicationInfo packageInfo : packages) {
       JSONObject obj = new JSONObject();
@@ -52,6 +52,7 @@ public class JavaBridge extends Plugin {
         obj.put("name", pm.getApplicationLabel(packageInfo).toString());
         obj.put("packageName", packageInfo.packageName);
         obj.put("enabled", !disabledApps.contains(packageInfo.packageName));
+        obj.put("system", isSystemPackage(packageInfo));
       } catch (JSONException e) {
         e.printStackTrace();
       }
@@ -62,10 +63,13 @@ public class JavaBridge extends Plugin {
     call.resolve(obj);
   }
 
+  private boolean isSystemPackage(ApplicationInfo info) {
+    return ((info.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+  }
+
   @PluginMethod()
   public void setAppSettings(PluginCall call) {
     JSArray array = call.getArray("apps");
-    String data = call.getData().toString();
 
     try {
       List<String> apps = array.toList();

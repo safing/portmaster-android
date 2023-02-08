@@ -38,12 +38,12 @@ func ExportDebugInfo(filename string, content []byte) error {
 	return nil
 }
 
-func ToggleTunnel(enable bool) error {
-	args, _ := cbor.Marshal(enable)
+func ToggleTunnel(command string) error {
+	args, _ := cbor.Marshal(command)
 
 	_, err := activityFunctions.call("ToggleTunnel", args)
 	if err != nil {
-		return fmt.Errorf("failed to enable tunnel: %s", err)
+		return fmt.Errorf("failed to toggle tunnel: %s", err)
 	}
 
 	return nil

@@ -53,6 +53,19 @@ export class AppComponent implements OnInit {
     await modal.present();
   }
 
+  async openEnabledApps() {
+    const modal = await this.modalController.create({
+      presentingElement: await this.modalController.getTop(),
+      canDismiss: true,
+      component: EnabledAppsComponent,
+      componentProps: {
+        rootPage: AppComponent,
+      },
+    });
+
+    await modal.present();
+  }
+
   async login(credentials: Credentials) {
     this.User = await GoBridge.Login(credentials)
     this.updateUserCanUseSPNValue(this.User)

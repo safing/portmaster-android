@@ -9,9 +9,5 @@ type AppFunctions struct {
 }
 
 func (s *AppFunctions) call(functionName string, args []byte) ([]byte, error) {
-	resultBytes, err := s.javaInterface.CallFunction(functionName, args)
-	if err != nil {
-		return nil, err
-	}
-	return resultBytes, nil
+	return s.javaInterface.CallFunction(functionName, args)
 }

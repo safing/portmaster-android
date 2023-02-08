@@ -13,10 +13,12 @@
 
     </ion-header>
     <ion-content>
+      <ion-item (click)="openEnabledApps()" >
+        <ion-label expand="full">Apps Settings</ion-label>
+      </ion-item>
       <ion-item (click)="openLogs()" >
         <ion-label expand="full" >Logs</ion-label>
       </ion-item>
-
       <ion-item (click)="exportDebugInfo()" >
         <ion-label expand="full" >Debug Info</ion-label>
       </ion-item>
@@ -26,7 +28,7 @@
     </ion-content>
   </ion-menu>
 
-  <ion-nav root="nav-home"></ion-nav>
+  <!-- <ion-nav root="nav-home"></ion-nav> -->
   <div class="ion-page" id="main-content">
     <ion-header>
       <ion-item>
