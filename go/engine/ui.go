@@ -29,7 +29,7 @@ type PluginCall interface {
 func EnableSPN(call PluginCall) {
 	err := config.SetConfigOption("spn/enable", true)
 	if err != nil {
-		log.Errorf("portmaster/android: failed to enable SPN: %s", err)
+		log.Errorf("engine: failed to enable SPN: %s", err)
 	}
 	call.Resolve()
 }
@@ -37,7 +37,7 @@ func EnableSPN(call PluginCall) {
 func DisableSPN(call PluginCall) {
 	err := config.SetConfigOption("spn/enable", false)
 	if err != nil {
-		log.Errorf("portmaster/android: failed to disable SPN: %s", err)
+		log.Errorf("engine: failed to disable SPN: %s", err)
 	}
 	call.Resolve()
 }
@@ -73,7 +73,7 @@ func GetUser(call PluginCall) {
 	user, err := access.GetUser()
 	if err != nil {
 		// Just log and return empty response. No info needed for the user.
-		log.Warningf("portmaster/android: failed to get user from database: %s", err)
+		log.Warningf("engine: failed to get user from database: %s", err)
 		call.ResolveJson("")
 	} else {
 		userJson, _ := json.Marshal(user)
@@ -139,7 +139,7 @@ func GetSPNStatus(call PluginCall) {
 	status := captain.GetSPNStatus()
 	statusJson, err := json.Marshal(status)
 	if err != nil {
-		log.Errorf("portmaster/android: failed to get SPN status: %s", err)
+		log.Errorf("engine: failed to get SPN status: %s", err)
 		return
 	}
 	call.ResolveJson(string(statusJson))
@@ -153,7 +153,7 @@ func GetLogs(call PluginCall) {
 
 func GetDebugInfoFile(call PluginCall) {
 	defer call.Resolve()
-	log.Infof("portmaster/android: exporting debug info")
+	log.Infof("engine: exporting debug info")
 	debugInfo, err := logs.GetDebugInfo("github")
 	if err != nil {
 		return

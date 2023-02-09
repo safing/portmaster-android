@@ -93,7 +93,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     if(requestCode == REQUEST_VPN_PERMISSION) {
-      this.toggleTunnel.toggle(true);
+      this.toggleTunnel.toggle("connect");
     }
 
     if(requestCode == EXPORT_DEBUG_INFO) {

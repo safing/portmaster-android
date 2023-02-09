@@ -3,6 +3,8 @@ package tunnel
 import (
 	"encoding/json"
 
+	"github.com/safing/portbase/config"
+	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
 )
 
@@ -18,6 +20,12 @@ func OnTunnelConnected(fd int) {
 		state.Error = err.Error()
 	}
 	sendState(state)
+
+	// Make sure spn is enabled.
+	err = config.SetConfigOption("spn/enable", true)
+	if err != nil {
+		log.Errorf("tunnel: failed to enable SPN: %s", err)
+	}
 }
 
 func OnTunnelDisconnected() {

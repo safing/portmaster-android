@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
@@ -33,6 +34,7 @@ import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.util.ConnectionOwner;
 import io.safing.portmaster.android.util.ShowNotification;
 import io.safing.portmaster.android.util.VPNProtect;
+import tunnel.Tunnel;
 
 public class PortmasterTunnelService extends VpnService implements Handler.Callback {
 
@@ -96,19 +98,28 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   public int onStartCommand(Intent intent, int flags, int startId) {
     // Handle connect disconnect events.
     if (ACTION_DISCONNECT.equals(intent.getAction())) {
-      tunnel.Tunnel.onTunnelDisconnected();
+      Tunnel.onTunnelDisconnected();
       return START_NOT_STICKY;
     } else if(ACTION_CONNECT.equals(intent.getAction())) {
       int fd = setup();
-      tunnel.Tunnel.onTunnelConnected(fd);
+      Tunnel.onTunnelConnected(fd);
       return START_STICKY;
     } else if (ACTION_RECONNECT.equals(intent.getAction())) {
-      tunnel.Tunnel.onTunnelDisconnected();
+      Tunnel.onTunnelDisconnected();
       int fd = setup();
-      tunnel.Tunnel.onTunnelConnected(fd);
+      Tunnel.onTunnelConnected(fd);
       return START_STICKY;
     }
 
+    // Probably an always-on vpn start request.
+    if(!Tunnel.isActive()) {
+      Log.v("TunnelService", "Always-on VPN start");
+      int fd = setup();
+      Tunnel.onTunnelConnected(fd);
+      return START_STICKY;
+    }
+
+    // Unknown command. This should not happen.
     return START_NOT_STICKY;
   }
 

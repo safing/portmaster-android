@@ -70,10 +70,6 @@ export class SPNViewComponent implements OnInit {
     this.onUpdateUserInfo.emit()
   }
 
-  async sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   isSPNConnected() : boolean {
     if(this.SPNStatus == null) {
       return false;
