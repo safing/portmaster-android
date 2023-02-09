@@ -5,11 +5,16 @@ const config: CapacitorConfig = {
   appName: 'portmaster-android',
   webDir: 'www',
   bundledWebRuntime: false,
-  hideLogs: true,
+  loggingBehavior: 'none',
   // server: {
   //   url: "http://192.168.88.11:8100",
   //   cleartext: true
   // },
+  cordova: {
+    preferences: {
+      "KeepAlive": "false"
+    }
+  }
 };
 
 export default config;

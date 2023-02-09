@@ -3,6 +3,8 @@ package io.safing.portmaster.android.ui;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 
 import com.getcapacitor.BridgeActivity;
@@ -10,6 +12,8 @@ import com.getcapacitor.BridgeActivity;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+
+import java.util.List;
 
 import engine.Engine;
 import io.safing.android.R;
@@ -76,6 +80,16 @@ public class MainActivity extends BridgeActivity {
 
     Engine.setActivityFunctions(uiInterface);
     Engine.onCreate(this.getFilesDir().getAbsolutePath());
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
   }
 
   @Override
