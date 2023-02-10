@@ -1,0 +1,81 @@
+<ion-content>
+  <ion-slides pager="true" [options]="slideOpts">
+    <ion-slide>
+      <div class="slide">
+        <img src="../../assets/bye-bye-vpns.png" />
+        <h2>Welcome to Portmaster</h2>
+      </div>
+    </ion-slide>
+    <ion-slide>
+      <div class="slide">
+        <ion-icon name="key-outline" size="large"></ion-icon>
+        <p>In order for Portmaster to work properly a few permissions are required</p>
+        <ion-accordion-group>
+          <ion-accordion value="vpn">
+            <ion-item slot="header" color="light">
+              <ion-label>Run a VPN service</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Necessary for Portmaster to be able to monitor and route connections.</p>
+                <ion-button>Grant</ion-button>
+              </ion-label>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="notifications">
+            <ion-item slot="header" color="light">
+              <ion-label>Show notifications</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Portmaster will show helpful notification messages while running in the background.</p>
+                <ion-button>Grant</ion-button>
+              </ion-label>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="apps">
+            <ion-item slot="header" color="light">
+              <ion-label>Query all installed apps</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Without this permission Portmaster will not be able to know from which app a connection is coming from.</p>
+              </ion-label>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="netstate">
+            <ion-item slot="header" color="light">
+              <ion-label>Query network state</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Required for everything to work internally.</p>
+              </ion-label>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+      </div>
+    </ion-slide>
+    <ion-slide>
+      <div class="slide">
+        <img src="../../assets/multiple-identities-for-each-app.png" />
+        <p>Turn on your WiFi.</p>
+        <ion-icon name="wifi-outline" size="large"></ion-icon>
+
+        <p>Around 200MB of assets are going to be downloaded.</p>
+        <ion-button>I'm ready</ion-button>
+        <ion-label>
+          <p>The assets are geo-ip data, that is required for the SPN to calculate the connections route.</p>
+        </ion-label>
+      </div>
+    </ion-slide>
+    <ion-slide>
+      
+      <div class="slide">
+        <img src="../../assets/easily-control-your-privacy.png" />
+        <p>You will get notification when the assets are downloaded. In the mean time you can login and look around the settings.</p>
+        <ion-button>Continue</ion-button>
+      </div>
+    </ion-slide>
+  </ion-slides>
+</ion-content>
