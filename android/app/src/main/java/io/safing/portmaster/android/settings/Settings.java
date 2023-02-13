@@ -13,6 +13,7 @@ import io.safing.portmaster.android.ui.MainActivity;
 
 public class Settings {
   private static final String DISABLED_APPS_SETTINGS_KEY = "DisabledAppsSettingsKey";
+  private static final String WELCOME_SCREEN_SHOWED = "WelcomeScreenShowedKey";
 
   public static Set<String> getDisabledApps(Context context) {
     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
@@ -24,6 +25,18 @@ public class Settings {
     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
     SharedPreferences.Editor editor = settings.edit();
     editor.putStringSet(DISABLED_APPS_SETTINGS_KEY, disabledApps);
+    editor.commit();
+  }
+
+  public static boolean ShouldShowWelcomeScreen(Context context) {
+    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+    return !settings.getBoolean(WELCOME_SCREEN_SHOWED, false);
+  }
+
+  public static void setWelcomeScreenShowed(Context context, boolean showed) {
+    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+    SharedPreferences.Editor editor = settings.edit();
+    editor.putBoolean(WELCOME_SCREEN_SHOWED, showed);
     editor.commit();
   }
 }

@@ -1,9 +1,11 @@
 package io.safing.portmaster.android.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.VpnService;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -26,18 +28,6 @@ import io.safing.portmaster.android.ui.MainActivity;
 
 @CapacitorPlugin(name = "JavaBridge")
 public class JavaBridge extends Plugin {
-
-  class ApplicationSetting {
-    String name;
-    String packageName;
-    boolean enabled;
-
-    ApplicationSetting(String name, String packageName, boolean enabled) {
-      this.name = name;
-      this.packageName = packageName;
-      this.enabled = enabled;
-    }
-  }
 
   @PluginMethod()
   public void getAppSettings(PluginCall call) {
@@ -82,5 +72,56 @@ public class JavaBridge extends Plugin {
       e.printStackTrace();
     }
     call.resolve();
+  }
+
+  @PluginMethod()
+  public void requestVPNPermission(PluginCall call) {
+    MainActivity activity = (MainActivity) getActivity();
+    Intent intent = VpnService.prepare(activity.getApplicationContext());
+    if(intent != null) {
+      // Request user permissions
+      activity.startActivityForResult(intent, MainActivity.REQUEST_VPN_PERMISSION);
+    }
+    call.resolve();
+  }
+
+  @PluginMethod
+  public void isVPNPermissionGranted(PluginCall call) throws JSONException {
+    Intent intent = VpnService.prepare(getActivity().getApplicationContext());
+    if(intent != null) {
+      call.resolve(new JSObject("{\"granted\": false}"));
+    } else {
+      call.resolve(new JSObject("{\"granted\": true}"));
+    }
+  }
+
+  @PluginMethod
+  public void requestNotificationsPermission(PluginCall call) throws JSONException {
+    MainActivity activity = (MainActivity) getActivity();
+    activity.createNotificationChannel();
+    call.resolve(new JSObject(String.format("{\"granted\": %s}", activity.isNotificationChannelCreated())));
+  }
+
+  @PluginMethod
+  public void isNotificationPermissionGranted(PluginCall call) throws JSONException {
+    MainActivity activity = (MainActivity) getActivity();
+    call.resolve(new JSObject(String.format("{\"granted\": %s}", activity.isNotificationChannelCreated())));
+  }
+
+  @PluginMethod
+  public void initEngine(PluginCall call) {
+    // This should be called only from the welcome screen
+    MainActivity activity = (MainActivity) getActivity();
+    activity.initEngine();
+    call.resolve();
+
+    // Don't show the welcome screen next time
+    Settings.setWelcomeScreenShowed(activity, true);
+  }
+
+  @PluginMethod
+  public void shouldShowWelcomeScreen(PluginCall call) throws JSONException {
+    boolean should = Settings.ShouldShowWelcomeScreen(getActivity());
+    call.resolve(new JSObject(String.format("{\"show\": %s}", should)));
   }
 }

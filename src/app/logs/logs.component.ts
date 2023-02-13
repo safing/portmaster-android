@@ -24,14 +24,14 @@ export class LogsComponent implements OnInit {
   
   constructor() {}
 
-  
   async ngOnInit() {
     var data = {ID: 0}
-    var result = await GoBridge.GetLogs(data)
+    var result = await GoBridge.GetLogs(data);
     this.Logs = result.logs;
+    
     this.Update = true;
-    this.content.scrollToBottom()
-    this.logUpdater()
+    this.content.scrollToBottom();
+    this.logUpdater();
   }
 
   async ngOnDestroy() {

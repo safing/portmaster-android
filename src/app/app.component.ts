@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 
 import { EnabledAppsComponent } from './enabled-apps/enabled-apps.component';
 import { LogsComponent } from './logs/logs.component';
 import { ModalController, IonRouterOutlet } from '@ionic/angular';
 
 import { Plugins } from '@capacitor/core';
-const { GoBridge } = Plugins;
+const { GoBridge, JavaBridge } = Plugins;
 
 import {Credentials, User} from "./types/spn.types"
 
@@ -17,13 +17,16 @@ import {Credentials, User} from "./types/spn.types"
 export class AppComponent implements OnInit {
 
   private User: User = null
+  public ShowWelcomeScreen: boolean = false;
 
   constructor(private modalController: ModalController) {}
 
   async ngOnInit(): Promise<void> {
+    var result = await JavaBridge.shouldShowWelcomeScreen()
+    this.ShowWelcomeScreen = result.show;
+
     this.User = await GoBridge.GetUser()
     this.updateUserCanUseSPNValue(this.User)
-    console.log("User: ", JSON.stringify(this.User))
   }
 
   async openAppList() {
@@ -80,6 +83,10 @@ export class AppComponent implements OnInit {
       console.log("failed to logout: ", result.error)
     }
     this.User = null
+  }
+
+  async onWelcomeScreenExit() {
+    this.ShowWelcomeScreen = false;
   }
 
   async updateUserInfo() {

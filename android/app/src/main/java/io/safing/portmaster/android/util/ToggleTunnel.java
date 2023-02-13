@@ -39,7 +39,7 @@ public class ToggleTunnel extends Function {
       // Put the requested command
       intent.putExtra("command", command);
       // Request user permissions
-      activity.startActivityForResult(intent, MainActivity.REQUEST_VPN_PERMISSION);
+      activity.startActivityForResult(intent, MainActivity.ENABLE_VPN);
       return;
     }
 

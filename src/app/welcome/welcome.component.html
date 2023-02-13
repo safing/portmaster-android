@@ -1,5 +1,5 @@
 <ion-content>
-  <ion-slides pager="true" [options]="slideOpts">
+  <ion-slides #slides (ionSlideDidChange)="onActiveIndexChange()">
     <ion-slide>
       <div class="slide">
         <img src="../../assets/bye-bye-vpns.png" />
@@ -9,7 +9,7 @@
     <ion-slide>
       <div class="slide">
         <ion-icon name="key-outline" size="large"></ion-icon>
-        <p>In order for Portmaster to work properly a few permissions are required</p>
+        <p>In order to work properly, Portmaster needs the following permissions:</p>
         <ion-accordion-group>
           <ion-accordion value="vpn">
             <ion-item slot="header" color="light">
@@ -17,8 +17,11 @@
             </ion-item>
             <div class="ion-padding" slot="content">
               <ion-label>
-                <p>Necessary for Portmaster to be able to monitor and route connections.</p>
-                <ion-button>Grant</ion-button>
+                <p>Needed so Portmaster can block and re-route connections as you desire.</p>
+                <ion-button [disabled]="VPNPermissionGranted" (click)="RequestVPNPermission();">
+                  <div *ngIf="!VPNPermissionGranted">Grant</div>
+                  <div *ngIf="VPNPermissionGranted">Granted</div>
+                </ion-button>
               </ion-label>
             </div>
           </ion-accordion>
@@ -28,8 +31,11 @@
             </ion-item>
             <div class="ion-padding" slot="content">
               <ion-label>
-                <p>Portmaster will show helpful notification messages while running in the background.</p>
-                <ion-button>Grant</ion-button>
+                <p>Needed to inform you about important things while Portmaster runs in the background.</p>
+                <ion-button [disabled]="NotificationPermissionGranted" (click)="RequestNotificationPermission();">
+                  <div *ngIf="!NotificationPermissionGranted">Grant</div>
+                  <div *ngIf="NotificationPermissionGranted">Granted</div>
+                </ion-button>
               </ion-label>
             </div>
           </ion-accordion>
@@ -39,17 +45,18 @@
             </ion-item>
             <div class="ion-padding" slot="content">
               <ion-label>
-                <p>Without this permission Portmaster will not be able to know from which app a connection is coming from.</p>
+                <p>Needed so Portmaster knows which connection comes from which app.</p>
               </ion-label>
             </div>
           </ion-accordion>
           <ion-accordion value="netstate">
             <ion-item slot="header" color="light">
-              <ion-label>Query network state</ion-label>
+              <ion-label>Access network state</ion-label>
             </ion-item>
             <div class="ion-padding" slot="content">
               <ion-label>
-                <p>Required for everything to work internally.</p>
+                <p>Needed so Portmaster can properly route connections and reconnect when a network interface changes.</p>
+                <p>Portmaster is fully open source so everything can be verified.</p>
               </ion-label>
             </div>
           </ion-accordion>
@@ -63,18 +70,17 @@
         <ion-icon name="wifi-outline" size="large"></ion-icon>
 
         <p>Around 200MB of assets are going to be downloaded.</p>
-        <ion-button>I'm ready</ion-button>
+        <ion-button (click)="Download()">Download now</ion-button>
         <ion-label>
-          <p>The assets are geo-ip data, that is required for the SPN to calculate the connections route.</p>
+          <p>The downloaded GeoIP data is used by Portmaster to see which countries your connections are going to, and to calculate the best routes for SPN.</p>
         </ion-label>
       </div>
     </ion-slide>
     <ion-slide>
-      
       <div class="slide">
         <img src="../../assets/easily-control-your-privacy.png" />
-        <p>You will get notification when the assets are downloaded. In the mean time you can login and look around the settings.</p>
-        <ion-button>Continue</ion-button>
+        <p>You will be notified as soon as the downloaded has completed. In the mean time you can sign in and explore the settings.</p>
+        <ion-button (click)="Continue()">Continue</ion-button>
       </div>
     </ion-slide>
   </ion-slides>
