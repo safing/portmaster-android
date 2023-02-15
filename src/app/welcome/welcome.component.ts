@@ -1,8 +1,7 @@
 import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { IonSlides, ModalController } from '@ionic/angular';
+import JavaBridge from '../plugins/java.bridge';
 
-import { Plugins } from '@capacitor/core';
-const {JavaBridge} = Plugins
 
 enum Slides {
     Welcome = 0,
@@ -26,7 +25,7 @@ export class WelcomeComponent implements OnInit {
 
   constructor() { }
 
-  async ngOnInit() {
+  public async ngOnInit() {
     var result = await JavaBridge.isNotificationPermissionGranted();
     this.NotificationPermissionGranted = result.granted;
 
@@ -38,7 +37,7 @@ export class WelcomeComponent implements OnInit {
     });
   }
 
-  async onActiveIndexChange() {
+  public async onActiveIndexChange() {
     var index = await this.slides.getActiveIndex();
     if(index == Slides.Download) {
       this.slides.lockSwipeToNext(true);
@@ -47,23 +46,22 @@ export class WelcomeComponent implements OnInit {
     }
   }
 
-  async Download() {
+  public async Download() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
     JavaBridge.initEngine();
   }
 
-  async Continue() {
+  public async Continue() {
     this.onExit.emit();
   }
 
-  async RequestVPNPermission() {
+  public async RequestVPNPermission() {
     JavaBridge.requestVPNPermission();
   }
 
-  async RequestNotificationPermission() {
+  public async RequestNotificationPermission() {
     var result = await JavaBridge.requestNotificationsPermission();
-    console.log(JSON.stringify(result))
     this.NotificationPermissionGranted = result.granted;
   }
 

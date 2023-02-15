@@ -9,7 +9,6 @@ import (
 	"github.com/safing/portbase/database"
 	"github.com/safing/portbase/database/query"
 	"github.com/safing/portbase/database/record"
-	"github.com/safing/portbase/log"
 	"github.com/safing/portbase/modules"
 	"github.com/safing/portmaster-android/go/app_interface"
 )
@@ -25,10 +24,14 @@ var (
 	dbInterface *database.Interface
 
 	activeNotifications map[string]*app_interface.Notification
+	activeSubscriptions map[string]chan struct{}
 )
+
+const eventPrefix = "ui-event-"
 
 func init() {
 	activeNotifications = make(map[string]*app_interface.Notification)
+	activeSubscriptions = make(map[string]chan struct{})
 
 	module = modules.Register("android-engine", nil, start, nil, "base", "notifications")
 	module.Enable()
@@ -98,51 +101,71 @@ func sendNotification(rec record.Record) {
 }
 
 func UISubscribeRequest(req *SubscribeRequest) {
-	module.StartServiceWorker(fmt.Sprintf("ui-event-%s", req.eventName), 0, func(ctx context.Context) error {
+	serviceID := fmt.Sprintf("%s%s", eventPrefix, req.eventName)
+
+	module.StartServiceWorker(serviceID, 0, func(ctx context.Context) error {
+		// Wait for module to be initialized.
 		if !module.Online() {
 			<-module.StartCompleted()
 		}
 
+		// Create a cancel channel.
+		cancelChannel := make(chan struct{})
+		activeSubscriptions[serviceID] = cancelChannel
+
+		// Query current state.
 		query := query.New(req.query)
 		iter, err := dbInterface.Query(query)
 		if err != nil {
-			req.call.ResolveJson(fmt.Sprintf(`{"error": "failed to query: %s"}`, err))
+			req.call.Error(fmt.Sprintf("failed to query: %s", err))
 			return err
 		}
 		defer iter.Cancel()
 
+		// Subscribe to the event.
 		sub, err := dbInterface.Subscribe(query)
 		if err != nil {
-			req.call.ResolveJson(fmt.Sprintf(`{"error": "failed to subscribe: %s"}`, err))
+			req.call.Error(fmt.Sprintf("failed to subscribe: %s", err))
 			return err
 		}
 		defer func() { _ = sub.Cancel() }()
 
-		// Resolve the UI function.
+		// Make sure PluginCall is not delete, while the subscription is active.
+		req.call.KeepAlive(true)
+		defer req.call.KeepAlive(false)
+
+		// Resolve the UI function, with no error.
 		req.call.Resolve()
 
+		// Send current state.
 		for rec := range iter.Next {
-			sendRecord(req.eventName, rec)
+			jsonData, _ := api.MarshalRecord(rec, false)
+			req.call.Notify(req.eventName, string(jsonData))
 		}
 
+		// Listen for new events.
 		for {
 			select {
 			case rec, ok := <-sub.Feed:
 				if ok {
-					sendRecord(req.eventName, rec)
+					jsonData, _ := api.MarshalRecord(rec, false)
+					req.call.Notify(req.eventName, string(jsonData))
 				} else {
 					return nil
 				}
 			case <-ctx.Done():
 				return nil
+			case <-cancelChannel:
+				return nil
 			}
-
 		}
 	})
 }
 
-func sendRecord(eventName string, rec record.Record) {
-	jsonData, _ := api.MarshalRecord(rec, false)
-	log.Infof("Event data: %s", string(jsonData))
-	_ = app_interface.SendUIWindowEvent(eventName, string(jsonData))
+func CancelAllUISubscriptions() {
+	for _, cancel := range activeSubscriptions {
+		cancel <- struct{}{}
+	}
+
+	activeSubscriptions = make(map[string]chan struct{})
 }

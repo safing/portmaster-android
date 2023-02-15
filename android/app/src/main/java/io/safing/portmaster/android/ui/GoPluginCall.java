@@ -10,9 +10,11 @@ import org.json.JSONException;
 public class GoPluginCall implements engine.PluginCall {
 
   private PluginCall call;
+  private GoBridge plugin;
 
-  public GoPluginCall(PluginCall call) {
+  public GoPluginCall(GoBridge plugin, PluginCall call) {
     this.call = call;
+    this.plugin = plugin;
   }
 
   @Override
@@ -66,6 +68,25 @@ public class GoPluginCall implements engine.PluginCall {
     } catch (JSONException ex) {
       Log.v("GoPluginCall", ex.toString());
     }
+  }
+
+  @Override
+  public void error(String err) {
+    try {
+      call.resolve(new JSObject(String.format("{\"error\": \"%s\"}", err)));
+    } catch (JSONException ex) {
+      Log.v("GoPluginCall", ex.toString());
+    }
+  }
+
+  @Override
+  public void keepAlive(boolean keepAlive) {
+    this.call.setKeepAlive(keepAlive);
+  }
+
+  @Override
+  public void notify(String eventName, String data) throws JSONException {
+    this.plugin.notifyListener(eventName, data);
   }
 
   private void checkArgument(String arg) {

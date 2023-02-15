@@ -1,15 +1,29 @@
+import { PluginListenerHandle } from "@capacitor/core";
+import GoBridge from "../plugins/go.bridge";
 
-import { Plugins } from '@capacitor/core';
-const { GoBridge } = Plugins;
+export class DatabaseListener {
+    constructor(
+        private eventID: String,
+        private pluginListener: PluginListenerHandle) { }
+
+    public remove() {
+        this.pluginListener.remove();
+        GoBridge.RemoveSubscription({ eventID: this.eventID });
+    }
+}
 
 export class Database {
     private static EventNumber: number = 1;
-    public static Subscribe(query: String, listener: (any) => void): String {
-        var eventId = "db#" + this.EventNumber;
-        var args = {Name: eventId, Query: query}
-        GoBridge.DatabaseSubscribe(args);
-        window.addEventListener(eventId, listener);
+    public static async Subscribe(query: String, func: (any) => void): Promise<DatabaseListener> {
+        var eventID = "db#" + this.EventNumber;
         this.EventNumber += 1;
-        return eventId;
+
+        var listener = await GoBridge.addListener(eventID, func);
+        var result = await GoBridge.DatabaseSubscribe({ name: eventID, query: query });
+        if (result?.error != null) {
+            console.log("failed to subscribe to", query, ":", result.error);
+        }
+
+        return Promise.resolve(new DatabaseListener(eventID, listener));
     }
 }

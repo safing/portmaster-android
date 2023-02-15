@@ -1,8 +1,3 @@
-export class Credentials {
-    username: string
-    password: string
-}
-
 export class TunnelStatus {
     Status: 'failed' | 'disabled' | 'connecting' | 'connected';
     Error?: string;

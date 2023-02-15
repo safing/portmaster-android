@@ -1,6 +1,6 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
-import {Credentials, User} from "../types/spn.types"
+import {User} from "../types/spn.types"
 
 @Component({
   selector: 'app-login-container',
@@ -8,31 +8,29 @@ import {Credentials, User} from "../types/spn.types"
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  @Input() User: User
-  @Output() onLogin = new EventEmitter<Credentials>();
+  @Input() User: User | null;
+  @Output() onLogin = new EventEmitter<[String, String]>();
 
-  Username: string
-  Password: string
+  private Username: string
+  private Password: string
 
-  ShowPassword: boolean
-  PasswordFieldType: "text" | "password"
+  private ShowPassword: boolean
+  private PasswordFieldType: "password" | "text";
 
-  constructor() { }
-
-  async login(): Promise<void> {
-    var credentials : Credentials = {
-      username: this.Username,
-      password: this.Password
-    }
-    this.onLogin.emit(credentials)
+  constructor() { 
+    this.PasswordFieldType = "password";
   }
 
-  async togglePasswordVisibility() {
+  async login(): Promise<void> {
+    this.onLogin.emit([this.Username, this.Password])
+  }
+
+  async togglePasswordVisibility(): Promise<void> {
     this.ShowPassword = !this.ShowPassword;
     if(this.ShowPassword) {
-      this.PasswordFieldType = "text"
+      this.PasswordFieldType = "text";
     } else {
-      this.PasswordFieldType = "password"
+      this.PasswordFieldType = "password";
     }
   }
 }

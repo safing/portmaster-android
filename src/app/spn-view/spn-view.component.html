@@ -6,8 +6,8 @@
   </ion-card-header>
 
   <ion-card-content>
-    <ion-toggle [disabled]="!User.canUseSPN" (ionChange)="toggleSPN($event.target.checked)" [(ngModel)]="ToggleState"
-      [enableOnOffLabels]="true" size="large"></ion-toggle>
+    <spn-button [SPNStatus]="SPNStatus" (onEnable)="enableSPN()" (onDisable)="disableSPN()"></spn-button>
+    
     <div *ngIf="isSPNConnected()">
       Home: {{SPNStatus.HomeHubName}}
       <br>

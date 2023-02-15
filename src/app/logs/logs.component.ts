@@ -1,9 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { formatDate } from "@angular/common";
-
-import { BrowserModule } from '@angular/platform-browser'
-import { Plugins } from '@capacitor/core';
-const { GoBridge } = Plugins;
+import GoBridge from '../plugins/go.bridge';
 
 class LogLine {
   Meta: string
@@ -25,40 +21,38 @@ export class LogsComponent implements OnInit {
   constructor() {}
 
   async ngOnInit() {
-    var data = {ID: 0}
+    var data = {ID: 0};
     var result = await GoBridge.GetLogs(data);
     this.Logs = result.logs;
-    
+
     this.Update = true;
     this.content.scrollToBottom();
     this.logUpdater();
   }
 
-  async ngOnDestroy() {
+  public async ngOnDestroy() {
     this.Update = false;
   }
 
-  async logUpdater() {
+  public async logUpdater() {
     while(this.Update) {
-      await this.sleep(1000)
-      var ID = 0
+      await this.sleep(1000);
+      var ID = 0;
       if(this.Logs != null && this.Logs.length > 0) {
-        ID = this.Logs[this.Logs.length - 1].ID
+        ID = this.Logs[this.Logs.length - 1].ID;
       }
-      var data = {ID: ID}
-      var result = await GoBridge.GetLogs(data)
+      var data = {ID: ID};
+      var result = await GoBridge.GetLogs(data);
       if(result.logs != null) {
-        this.Logs = this.Logs.concat(result.logs)
+        this.Logs = this.Logs.concat(result.logs);
         if(result.logs.length > 0) {
-          console.log("length: ", JSON.stringify(result))
-          this.content.scrollToBottom(200)
+          this.content.scrollToBottom(200);
         }
       }
-    
     }
   }
 
-  async sleep(ms) {
+  private async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

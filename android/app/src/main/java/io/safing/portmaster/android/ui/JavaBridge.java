@@ -110,12 +110,12 @@ public class JavaBridge extends Plugin {
 
   @PluginMethod
   public void initEngine(PluginCall call) {
-    // This should be called only from the welcome screen
+    // This should be called only from the welcome screen.
     MainActivity activity = (MainActivity) getActivity();
     activity.initEngine();
     call.resolve();
 
-    // Don't show the welcome screen next time
+    // Don't show the welcome screen next time.
     Settings.setWelcomeScreenShowed(activity, true);
   }
 
