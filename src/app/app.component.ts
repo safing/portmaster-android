@@ -35,7 +35,6 @@ export class AppComponent implements OnInit {
       componentProps: {
         rootPage: AppComponent,
       },
-     
     });
 
     modal.present();

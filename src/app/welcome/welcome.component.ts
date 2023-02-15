@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
-import { IonSlides, ModalController } from '@ionic/angular';
+import { IonAccordionGroup, IonSlides, ModalController } from '@ionic/angular';
 import JavaBridge from '../plugins/java.bridge';
 
 
@@ -19,6 +19,8 @@ export class WelcomeComponent implements OnInit {
 
   @Output() onExit = new EventEmitter();
   @ViewChild('slides') slides: IonSlides;
+  @ViewChild('permissionsGroup', { static: true }) permissionsGroup: IonAccordionGroup;
+
 
   private NotificationPermissionGranted : boolean = false;
   private VPNPermissionGranted : boolean = false;
@@ -35,6 +37,7 @@ export class WelcomeComponent implements OnInit {
     window.addEventListener("vpn-permission", (msg: any) => {
       this.VPNPermissionGranted = msg.granted;
     });
+    this.permissionsGroup.value = "vpn";
   }
 
   public async onActiveIndexChange() {
@@ -57,12 +60,21 @@ export class WelcomeComponent implements OnInit {
   }
 
   public async RequestVPNPermission() {
-    JavaBridge.requestVPNPermission();
+    await JavaBridge.requestVPNPermission();
+    this.permissionsGroup.value = "notifications";
   }
 
   public async RequestNotificationPermission() {
     var result = await JavaBridge.requestNotificationsPermission();
     this.NotificationPermissionGranted = result.granted;
+    this.permissionsGroup.value = "apps";
   }
 
+  public NetworkState() {
+    this.permissionsGroup.value = "netstate";
+  }
+
+  public NextSlide() {
+    this.slides.slideNext();
+  }
 }
