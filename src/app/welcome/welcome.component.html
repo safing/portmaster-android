@@ -1,0 +1,100 @@
+<ion-content>
+  <ion-slides #slides (ionSlideDidChange)="onActiveIndexChange()">
+    <ion-slide>
+      <div class="slide">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 128 128">
+          <g data-name="Main" fill-rule="evenodd">
+              <path class="logo" d="M176.11 36.73l-5-8.61a41.53 41.53 0 00-14.73 57.22l8.55-5.12a31.58 31.58 0 0111.19-43.49z" transform="translate(-127.99 .01)" style="isolation:isolate" opacity=".8"></path>
+              <path class="logo" d="M222.36 72.63a31.55 31.55 0 01-45 19.35l-4.62 8.84a41.54 41.54 0 0059.17-25.46z" transform="translate(-127.99 .01)" style="isolation:isolate" opacity=".8"></path>
+              <path class="logo" d="M197 83a19.66 19.66 0 01-19.25-32.57l-4.5-4.27A25.87 25.87 0 00198.59 89z" transform="translate(-127.99 .01)" style="isolation:isolate" opacity=".6"></path>
+              <path class="logo" d="M192 112.64A48.64 48.64 0 11240.64 64 48.64 48.64 0 01192 112.64zM256 64a64 64 0 10-64 64 64 64 0 0064-64z" transform="translate(-127.99 .1)"></path>
+          </g>
+      </svg>
+        <h2>Welcome to Portmaster</h2>
+        <br>
+        <br>
+        <br>
+        <ion-label>Swipe &gt;</ion-label>
+      </div>
+    </ion-slide>
+    <ion-slide>
+      <div class="slide">
+        <ion-icon name="key-outline" size="large"></ion-icon>
+        <p>In order to work properly, Portmaster needs the following permissions:</p>
+        <ion-accordion-group #permissionsGroup>
+          <ion-accordion value="vpn">
+            <ion-item slot="header" color="light">
+              <ion-label>Run a VPN service</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Needed so Portmaster can block and re-route connections as you desire.</p>
+                <ion-button [disabled]="VPNPermissionGranted" (click)="RequestVPNPermission();">
+                  <div *ngIf="!VPNPermissionGranted">Grant</div>
+                  <div *ngIf="VPNPermissionGranted">Granted</div>
+                </ion-button>
+              </ion-label>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="notifications">
+            <ion-item slot="header" color="light">
+              <ion-label>Show notifications</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Needed to inform you about important things while Portmaster runs in the background.</p>
+                <ion-button [disabled]="NotificationPermissionGranted" (click)="RequestNotificationPermission();">
+                  <div *ngIf="!NotificationPermissionGranted">Grant</div>
+                  <div *ngIf="NotificationPermissionGranted">Granted</div>              
+                </ion-button>
+              </ion-label>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="apps">
+            <ion-item slot="header" color="light">
+              <ion-label>Query all installed apps</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Needed so Portmaster knows which connection comes from which app.</p>
+              </ion-label>
+              <ion-button (click)="NetworkState()">Next</ion-button>
+            </div>
+          </ion-accordion>
+          <ion-accordion value="netstate">
+            <ion-item slot="header" color="light">
+              <ion-label>Access network state</ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+              <ion-label>
+                <p>Needed so Portmaster can properly route connections and reconnect when a network interface changes.</p>
+                <p>Portmaster is fully open source so everything can be verified.</p>
+              </ion-label>
+              <ion-button (click)="NextSlide()">Continue</ion-button>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+      </div>
+    </ion-slide>
+    <ion-slide>
+      <div class="slide">
+        <img src="../../assets/multiple-identities-for-each-app.png" />
+        <p>Turn on your WiFi.</p>
+        <ion-icon name="wifi-outline" size="large"></ion-icon>
+
+        <p>Around 200MB of assets are going to be downloaded. This can take up to 30 minutes depending on the connections speed.</p>
+        <ion-button (click)="Download()">Background Download</ion-button>
+        <ion-label>
+          <p>The downloaded GeoIP data is used by Portmaster to see which countries your connections are going to, and to calculate the best routes for SPN.</p>
+        </ion-label>
+      </div>
+    </ion-slide>
+    <ion-slide>
+      <div class="slide">
+        <img src="../../assets/bye-bye-vpns.png" />
+        <p>You will be notified as soon as the downloaded has completed. In the mean time you can sign in and explore the settings.</p>
+        <ion-button (click)="Continue()">Continue</ion-button>
+      </div>
+    </ion-slide>
+  </ion-slides>
+</ion-content>

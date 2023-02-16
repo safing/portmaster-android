@@ -62,7 +62,6 @@ func enableTunnel(fd int) error {
 			if err != nil {
 				log.Errorf("portmaster/android: file descriptor closed: %s", err)
 			}
-			log.Criticalf("portmaster/android: file descriptor for linkID closed")
 		},
 	})
 	if err != nil {
@@ -189,8 +188,6 @@ func disableTunnel() {
 	if tunnelFD != nil {
 		tunnelFD.Close()
 	}
-
-	_ = app_interface.SendUIWindowEvent("Tunnel", `{"TunnelEnabled": false}`)
 }
 
 func IsActive() bool {

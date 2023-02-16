@@ -20,6 +20,7 @@ import io.safing.android.R;
 import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
 import io.safing.portmaster.android.go_interface.GoInterface;
 import io.safing.portmaster.android.os.OSFunctions;
+import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.util.AppDir;
 import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.os.NetworkAddresses;
@@ -33,6 +34,7 @@ import io.safing.portmaster.android.util.UIEvent;
 public class MainActivity extends BridgeActivity {
 
   public static final int REQUEST_VPN_PERMISSION = 1;
+  public static final int ENABLE_VPN = 2;
   public static final int EXPORT_DEBUG_INFO = 3;
 
   public static final String CHANNEL_ID = "Portmaster";
@@ -55,6 +57,18 @@ public class MainActivity extends BridgeActivity {
     Engine.setOSFunctions(OSFunctions.get());
 
     super.onCreate(savedInstanceState);
+    boolean showWelcomeScreen = Settings.ShouldShowWelcomeScreen(this);
+
+    if(!showWelcomeScreen) {
+      initEngine();
+    }
+  }
+
+  public void initEngine() {
+    // Create notification channel if it's not created.
+    if(!isNotificationChannelCreated()) {
+      createNotificationChannel();
+    }
 
     // Prepare UI functions
     GoInterface uiInterface = new GoInterface();
@@ -71,7 +85,6 @@ public class MainActivity extends BridgeActivity {
     uiInterface.registerFunction(this.getDebugInfoDialogFunction);
 
     // Notifications
-    createNotificationChannel();
     this.showNotification = new ShowNotification("ShowNotification", this);
     uiInterface.registerFunction(this.showNotification);
 
@@ -102,11 +115,15 @@ public class MainActivity extends BridgeActivity {
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
 
-    if (resultCode != RESULT_OK) {
+    if(resultCode != RESULT_OK) {
       return;
     }
 
     if(requestCode == REQUEST_VPN_PERMISSION) {
+      bridge.triggerJSEvent("vpn-permission", "window", "{\"granted\": true}");
+    }
+
+    if(requestCode == ENABLE_VPN) {
       this.toggleTunnel.toggle("connect");
     }
 
@@ -116,7 +133,7 @@ public class MainActivity extends BridgeActivity {
     }
   }
 
-  private void createNotificationChannel() {
+  public void createNotificationChannel() {
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is new and not in the support library
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -130,6 +147,14 @@ public class MainActivity extends BridgeActivity {
       NotificationManager notificationManager = getSystemService(NotificationManager.class);
       notificationManager.createNotificationChannel(channel);
     }
+  }
+
+  public boolean isNotificationChannelCreated() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationManager notificationManager = getSystemService(NotificationManager.class);
+      return notificationManager.getNotificationChannel(CHANNEL_ID) != null;
+    }
+    return true;
   }
 
 }

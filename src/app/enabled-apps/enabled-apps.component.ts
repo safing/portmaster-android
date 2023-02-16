@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Plugins } from '@capacitor/core';
-const { JavaBridge, GoBridge } = Plugins;
 import { ModalController } from '@ionic/angular';
+import GoBridge from '../plugins/go.bridge';
+import JavaBridge from '../plugins/java.bridge';
 
 import { Application } from './application';
 
@@ -18,25 +18,25 @@ export class EnabledAppsComponent implements OnInit {
   constructor(private modalCtrl: ModalController) { }
 
   async ngOnInit() {
-    var result = await JavaBridge.getAppSettings()
-    this.AppList = result.apps
-    this.AppList.sort((a, b) => a.name.localeCompare(b.name))
+    var result = await JavaBridge.getAppSettings();
+    this.AppList = result.apps;
+    this.AppList.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async Cancel() {
-    this.modalCtrl.dismiss(null)
+    this.modalCtrl.dismiss(null);
   }
 
   async Save() {
-    var packageNameList: string[] = []
+    var packageNameList: string[] = [];
     this.AppList.forEach(element => {
       if(!element.enabled) {
-        packageNameList.push(element.packageName)
+        packageNameList.push(element.packageName);
       }
     });
     JavaBridge.setAppSettings({apps: packageNameList});
     GoBridge.RestartTunnel();
-    this.modalCtrl.dismiss(null)
+    this.modalCtrl.dismiss(null);
   }
 
 }

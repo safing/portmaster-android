@@ -16,12 +16,15 @@ import (
 type PluginCall interface {
 	Resolve()
 	ResolveJson(obj string)
+	Error(err string)
 	GetArgs() string
 	GetInt(name string) (int32, error)
 	GetLong(name string) (int64, error)
 	GetFloat(name string) (float32, error)
 	GetString(name string) (string, error)
 	GetBool(name string) (bool, error)
+	Notify(eventName string, data string) error
+	KeepAlive(keepAlive bool)
 }
 
 // Functions that have PluginCall as an argument are automatically exposed to the ionic UI
@@ -74,7 +77,7 @@ func GetUser(call PluginCall) {
 	if err != nil {
 		// Just log and return empty response. No info needed for the user.
 		log.Warningf("engine: failed to get user from database: %s", err)
-		call.ResolveJson("")
+		call.Resolve()
 	} else {
 		userJson, _ := json.Marshal(user)
 		log.Info(string(userJson))
@@ -86,12 +89,12 @@ func Login(call PluginCall) {
 	// Get credentials from plugin call.
 	username, err := call.GetString("username")
 	if err != nil {
-		call.ResolveJson(`{"error": "username can't be empty"}`)
+		call.Error("username can't be empty")
 		return
 	}
 	password, err := call.GetString("password")
 	if err != nil {
-		call.ResolveJson(`{"error": "password can't be empty"}`)
+		call.Error("password can't be empty")
 		return
 	}
 
@@ -100,7 +103,7 @@ func Login(call PluginCall) {
 		user, code, err := access.Login(username, password)
 		if code != 200 {
 			// Failed to login. Return the error.
-			call.ResolveJson(fmt.Sprintf(`{"error": %q}`, err))
+			call.Error(err.Error())
 		} else {
 			// Login successful
 			userJson, _ := json.Marshal(user)
@@ -114,7 +117,7 @@ func Login(call PluginCall) {
 func Logout(call PluginCall) {
 	err := access.Logout(false, true)
 	if err != nil {
-		call.ResolveJson(fmt.Sprintf(`"error": %s`, err))
+		call.Error(err.Error())
 	} else {
 		call.Resolve()
 	}
@@ -126,7 +129,7 @@ func UpdateUserInfo(call PluginCall) {
 	user, code, err := access.UpdateUser()
 	if code != 200 {
 		// Failed to login. Return the error.
-		call.ResolveJson(fmt.Sprintf(`{"error": %q}`, err))
+		call.Error(err.Error())
 	} else {
 		// Login successful
 		userJson, _ := json.Marshal(user)
@@ -162,15 +165,15 @@ func GetDebugInfoFile(call PluginCall) {
 }
 
 func DatabaseSubscribe(call PluginCall) {
-	eventName, err := call.GetString("Name")
+	eventName, err := call.GetString("name")
 	if err != nil {
-		call.ResolveJson(`{"error": "Missing Name argument"}`)
+		call.Error("Missing Name argument")
 		return
 	}
 
-	query, err := call.GetString("Query")
+	query, err := call.GetString("query")
 	if err != nil {
-		call.ResolveJson(`{"error": "Missing Query argument"}`)
+		call.Error("Missing Query argument")
 		return
 	}
 
@@ -178,4 +181,20 @@ func DatabaseSubscribe(call PluginCall) {
 	go func() {
 		UISubscribeRequest(req) // this call will resolve the PluginCall
 	}()
+}
+
+func CancelAllSubscriptions(call PluginCall) {
+	CancelAllUISubscriptions()
+	call.Resolve()
+}
+
+func RemoveSubscription(call PluginCall) {
+	eventID, err := call.GetString("eventID")
+	if err != nil {
+		call.Error("missing eventID argument")
+	}
+	if channel, ok := activeSubscriptions[eventID]; ok {
+		channel <- struct{}{}
+		delete(activeSubscriptions, eventID)
+	}
 }
