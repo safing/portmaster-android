@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const subPackage = "../engine"
+const functionsFile = "../engine/ui/functions.go"
 
 const fileTemplate = `package io.safing.portmaster.android.ui;
 
@@ -36,8 +36,8 @@ public class GoBridge extends Plugin {
 const MethodTemplate = `
     @PluginMethod()
     public void %s(PluginCall call) {
-        engine.Engine.%s(new GoPluginCall(this, call));
-    }    
+        ui.Ui.%s(new GoPluginCall(this, call));
+    }
 `
 
 func getJavaMethod(f *ast.FuncDecl) string {
@@ -69,20 +69,17 @@ func main() {
 	}
 
 	set := token.NewFileSet()
-	packs, err := parser.ParseDir(set, subPackage, nil, 0)
+	parsedFile, err := parser.ParseFile(set, functionsFile, nil, 0)
 	if err != nil {
 		fmt.Println("Failed to parse package:", err)
 		os.Exit(1)
 	}
 
 	funcs := []*ast.FuncDecl{}
-	for _, pack := range packs {
-		for _, f := range pack.Files {
-			for _, d := range f.Decls {
-				if fn, isFn := d.(*ast.FuncDecl); isFn {
-					funcs = append(funcs, fn)
-				}
-			}
+
+	for _, d := range parsedFile.Decls {
+		if fn, isFn := d.(*ast.FuncDecl); isFn {
+			funcs = append(funcs, fn)
 		}
 	}
 

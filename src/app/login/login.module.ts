@@ -9,8 +9,8 @@ import { BrowserModule } from '@angular/platform-browser'
 import { LoginComponent } from './login.component';
 
 @NgModule({
-  imports: [ CommonModule, FormsModule, IonicModule, BrowserModule],
+  imports: [CommonModule, FormsModule, IonicModule, BrowserModule],
   declarations: [LoginComponent],
   exports: [LoginComponent]
 })
-export class LoginComponentModule {}
+export class LoginModule {}

@@ -1,4 +1,4 @@
-package engine
+package ui
 
 import (
 	"encoding/json"
@@ -7,25 +7,13 @@ import (
 	"github.com/safing/portbase/config"
 	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
+	"github.com/safing/portmaster-android/go/engine"
+	"github.com/safing/portmaster-android/go/engine/bug_report"
 	"github.com/safing/portmaster-android/go/engine/logs"
 	"github.com/safing/portmaster-android/go/engine/tunnel"
 	"github.com/safing/spn/access"
 	"github.com/safing/spn/captain"
 )
-
-type PluginCall interface {
-	Resolve()
-	ResolveJson(obj string)
-	Error(err string)
-	GetArgs() string
-	GetInt(name string) (int32, error)
-	GetLong(name string) (int64, error)
-	GetFloat(name string) (float32, error)
-	GetString(name string) (string, error)
-	GetBool(name string) (bool, error)
-	Notify(eventName string, data string) error
-	KeepAlive(keepAlive bool)
-}
 
 // Functions that have PluginCall as an argument are automatically exposed to the ionic UI
 
@@ -164,6 +152,16 @@ func GetDebugInfoFile(call PluginCall) {
 	_ = app_interface.ExportDebugInfo("PortmasterDebugInfo.txt", debugInfo)
 }
 
+func GetDebugInfo(call PluginCall) {
+	debugInfo, err := logs.GetDebugInfo("github")
+	if err != nil {
+		call.Error(fmt.Sprintf("failed to get debug info: %s", err))
+		return
+	}
+
+	call.ResolveJson(fmt.Sprintf(`{"data": "%s"}`, string(debugInfo)))
+}
+
 func DatabaseSubscribe(call PluginCall) {
 	eventName, err := call.GetString("name")
 	if err != nil {
@@ -177,14 +175,14 @@ func DatabaseSubscribe(call PluginCall) {
 		return
 	}
 
-	req := &SubscribeRequest{eventName: eventName, query: query, call: call}
+	req := &engine.SubscribeRequest{EventName: eventName, Query: query, Call: call}
 	go func() {
-		UISubscribeRequest(req) // this call will resolve the PluginCall
+		engine.UISubscribeRequest(req) // this call will resolve the PluginCall
 	}()
 }
 
 func CancelAllSubscriptions(call PluginCall) {
-	CancelAllUISubscriptions()
+	engine.CancelAllUISubscriptions()
 	call.Resolve()
 }
 
@@ -193,8 +191,79 @@ func RemoveSubscription(call PluginCall) {
 	if err != nil {
 		call.Error("missing eventID argument")
 	}
-	if channel, ok := activeSubscriptions[eventID]; ok {
-		channel <- struct{}{}
-		delete(activeSubscriptions, eventID)
+	engine.RemoveSubscription(eventID)
+}
+
+func CreateIssue(call PluginCall) {
+	debugInfo, err := call.GetString("debugInfo")
+	if err != nil {
+		call.Error("missing debugInfo argument")
+		return
 	}
+
+	genUrl, err := call.GetBool("genUrl")
+	if err != nil {
+		call.Error("missing genUrl argument")
+		return
+	}
+
+	issueRequestStr, err := call.GetString("issueRequest")
+	if err != nil {
+		call.Error("missing issueRequest argument")
+		return
+	}
+
+	var issueRequest bug_report.IssueRequest
+	err = json.Unmarshal([]byte(issueRequestStr), &issueRequest)
+	if err != nil {
+		call.Error(fmt.Sprintf("failed to parse issueRequest object: %s", err))
+		return
+	}
+
+	// Upload debug info to private bin
+	debugInfoUrl, err := bug_report.UploadToPrivateBin("debug-info", debugInfo)
+	if err != nil {
+		call.Error(fmt.Sprintf("failed to upload debug info: %s", err))
+		return
+	}
+	issueRequest.DebugInfoUrl = debugInfoUrl
+
+	url, err := bug_report.CreateIssue(&issueRequest, "portmaster-android", "report-bug.md", genUrl)
+	if err != nil {
+		call.Error(fmt.Sprintf("failed to create issue: %s", err))
+		return
+	}
+
+	call.ResolveJson(fmt.Sprintf(`{"url": %q}`, url))
+}
+
+func CreateTicket(call PluginCall) {
+	debugInfo, err := call.GetString("debugInfo")
+	if err != nil {
+		call.Error("missing debugInfo argument")
+		return
+	}
+
+	ticketRequestStr, err := call.GetString("ticketRequest")
+	if err != nil {
+		call.Error("missing issueRequest argument")
+		return
+	}
+
+	var ticketRequest bug_report.TicketRequest
+	err = json.Unmarshal([]byte(ticketRequestStr), &ticketRequest)
+	if err != nil {
+		call.Error(fmt.Sprintf("failed to parse ticketRequest object: %s", err))
+		return
+	}
+
+	// Upload debug info to private bin
+	debugInfoUrl, err := bug_report.UploadToPrivateBin("debug-info", debugInfo)
+	if err != nil {
+		call.Error(fmt.Sprintf("failed to upload debug info: %s", err))
+		return
+	}
+	ticketRequest.DebugInfoUrl = debugInfoUrl
+	bug_report.CreateTicket(&ticketRequest)
+	call.Resolve()
 }

@@ -9,6 +9,7 @@ export interface JavaBridgeInterface {
     isNotificationPermissionGranted(): Promise<any>;
     initEngine(): Promise<void>;
     shouldShowWelcomeScreen(): Promise<any>;
+    openUrlInBrowser(data: {url: string}): Promise<void>;
 
     // Default plugin functions.
     addListener(eventId, listener): Promise<any>;

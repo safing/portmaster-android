@@ -3,31 +3,21 @@ package io.safing.portmaster.android.ui;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 
 import com.getcapacitor.BridgeActivity;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-
-import java.util.List;
 
 import engine.Engine;
-import io.safing.android.R;
-import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
+import io.safing.portmaster.android.R;
 import io.safing.portmaster.android.go_interface.GoInterface;
 import io.safing.portmaster.android.os.OSFunctions;
 import io.safing.portmaster.android.settings.Settings;
-import io.safing.portmaster.android.util.AppDir;
 import io.safing.portmaster.android.util.CancelNotification;
-import io.safing.portmaster.android.os.NetworkAddresses;
-import io.safing.portmaster.android.os.NetworkInterfaces;
 import io.safing.portmaster.android.util.DebugInfoDialog;
 import io.safing.portmaster.android.util.ShowNotification;
-import io.safing.portmaster.android.os.PlatformInfo;
 import io.safing.portmaster.android.util.ToggleTunnel;
 import io.safing.portmaster.android.util.UIEvent;
 

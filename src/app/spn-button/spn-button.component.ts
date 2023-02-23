@@ -12,51 +12,46 @@ export class SPNButton {
     @Output() onEnable = new EventEmitter();
     @Output() onDisable = new EventEmitter();
 
-    private DisableButton: boolean = false;
 
     async onClick() {
         switch(this.SPNStatus.Status) {
-            case "connected": {
-                this.onDisable.emit();
-                break;
-            }
             case "disabled": {
                 this.onEnable.emit()
+                break;
+            }
+            default: {
+                this.onDisable.emit();
                 break;
             }
         }
     }
 
-    GetButtonText(): String {
+    GetButtonText(): string {
         if(this.SPNStatus == null) {
             return "";
         }
 
         switch(this.SPNStatus.Status) {
             case "connected": {
-                this.DisableButton = false;
                 return "disable";
             }
             case "disabled": {
-                this.DisableButton = false;
                 return "connect";
             }
             case "connecting": {
-                this.DisableButton = true;
                 return "connecting";
             }
             case "failed": {
-                this.DisableButton = false;
                 return "disable";
             }
         }
     }
 
-    GetButtonColor(): String {
-        if(this.SPNStatus.Status == "connected") {
-            return "danger";
+    GetButtonColor(): string {
+        if(this.SPNStatus.Status == "disabled") {
+            return "primary";    
         }
 
-        return "primary";
+        return "danger";
     }
 }

@@ -3,7 +3,7 @@ import GoBridge from "../plugins/go.bridge";
 
 export class DatabaseListener {
     constructor(
-        private eventID: String,
+        private eventID: string,
         private pluginListener: PluginListenerHandle) { }
 
     public remove() {
@@ -14,7 +14,7 @@ export class DatabaseListener {
 
 export class Database {
     private static EventNumber: number = 1;
-    public static async Subscribe(query: String, func: (any) => void): Promise<DatabaseListener> {
+    public static async Subscribe(query: string, func: (any) => void): Promise<DatabaseListener> {
         var eventID = "db#" + this.EventNumber;
         this.EventNumber += 1;
 

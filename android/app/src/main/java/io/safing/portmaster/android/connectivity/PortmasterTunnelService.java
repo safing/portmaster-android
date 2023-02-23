@@ -15,16 +15,11 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
 import java.net.DatagramSocket;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import engine.Engine;
-import io.safing.android.BuildConfig;
-import io.safing.android.R;
+import io.safing.portmaster.android.R;
 import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.GoInterface;
 import io.safing.portmaster.android.os.OSFunctions;

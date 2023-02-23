@@ -17,8 +17,11 @@
       <ion-item (click)="openLogs()">
         <ion-label expand="full">Logs</ion-label>
       </ion-item>
+      <ion-item (click)="openBugReport()">
+        <ion-label expand="full">Report a Bug 🐞</ion-label>
+      </ion-item>
       <ion-item (click)="exportDebugInfo()">
-        <ion-label expand="full">Debug Info</ion-label>
+        <ion-label expand="full">Export Debug Info</ion-label>
       </ion-item>
       <ion-item *ngIf="User != null" (click)="logout()">
         <ion-label expand="full" color="danger">Logout</ion-label>

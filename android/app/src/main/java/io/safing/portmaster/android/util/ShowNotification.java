@@ -8,7 +8,7 @@ import android.content.Intent;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import io.safing.android.R;
+import io.safing.portmaster.android.R;
 import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.ui.MainActivity;
 

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.VpnService;
 
 import com.getcapacitor.JSArray;
@@ -123,5 +124,18 @@ public class JavaBridge extends Plugin {
   public void shouldShowWelcomeScreen(PluginCall call) throws JSONException {
     boolean should = Settings.ShouldShowWelcomeScreen(getActivity());
     call.resolve(new JSObject(String.format("{\"show\": %s}", should)));
+  }
+
+  @PluginMethod
+  public void openUrlInBrowser(PluginCall call) {
+    try {
+      String url = call.getString("url");
+      Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+      this.getActivity().startActivity(browserIntent);
+      call.resolve();
+    }catch(Exception e) {
+      e.printStackTrace();
+      call.reject(e.getMessage());
+    }
   }
 }

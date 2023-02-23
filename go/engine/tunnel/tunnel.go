@@ -147,9 +147,10 @@ func enableTunnel(fd int) error {
 
 	// Setup TCP forwarding
 	// TODO (vladimir): Max in-flight is it to high?
-	tcpForwarder := tcp.NewForwarder(newStack, 0, 5000, func(fr *tcp.ForwarderRequest) {
+	tcpForwarder := tcp.NewForwarder(newStack, 0, 50, func(fr *tcp.ForwarderRequest) {
 		err := DefaultTCPRouting(fr)
 		if err != nil {
+			fr.Complete(false)
 			log.Errorf("spn: failed to route connection: %s", err)
 		}
 	})

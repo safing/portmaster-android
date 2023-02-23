@@ -7,6 +7,7 @@ import { ModalController } from '@ionic/angular';
 import {User} from "./types/spn.types"
 import JavaBridge from './plugins/java.bridge';
 import GoBridge from './plugins/go.bridge';
+import { BugReportComponent } from './bug-report/bug-report.component';
 
 @Component({
   selector: 'app-root',
@@ -66,7 +67,20 @@ export class AppComponent implements OnInit {
     modal.present();
   }
 
-  public async login(credentials: [String, String]) {
+  public async openBugReport() {
+    const modal = await this.modalController.create({
+      presentingElement: await this.modalController.getTop(),
+      canDismiss: true,
+      component: BugReportComponent,
+      componentProps: {
+        rootPage: AppComponent,
+      },
+    });
+
+    modal.present();
+  }
+
+  public async login(credentials: [string, string]) {
     this.User = await GoBridge.Login({username: credentials[0], password: credentials[1]});
     this.updateUserCanUseSPNValue(this.User);
     console.log("User: ", JSON.stringify(this.User));

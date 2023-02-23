@@ -15,7 +15,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   @Output() onUpdateUserInfo = new EventEmitter();
 
   private SPNStatus: SPNStatus | null;
-  private SPNErrorMsg: String = "";
+  private SPNErrorMsg: string = "";
   private TunnelStatus: TunnelStatus | null;
 
   private DatabaseListeners: Array<DatabaseListener> = new Array();

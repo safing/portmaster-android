@@ -1,19 +1,11 @@
 package io.safing.portmaster.android.util;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.VpnService;
-import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
-import java.io.IOException;
 
-import io.safing.android.BuildConfig;
 import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
 import io.safing.portmaster.android.go_interface.Function;
-import io.safing.portmaster.android.go_interface.Result;
 import io.safing.portmaster.android.ui.MainActivity;
 
 public class ToggleTunnel extends Function {
