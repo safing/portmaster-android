@@ -48,56 +48,6 @@ export class BugReportComponent implements OnInit {
       })
   }
 
-  public async privateTicketReport() {
-    const alert = await this.alertController.create({
-      header: "How should we stay in touch?",
-      message: "Please enter your email address so we can write back and forth until the issue is concluded.",
-      inputs: [
-          {
-            type: "email",
-            placeholder: "Optional email",
-          }
-      ],
-      buttons: [
-        {
-          text: "Cancel",
-          role: 'cancel',
-        },
-        {
-          text: "Create Ticket",
-        },
-      ]
-    });
-    await alert.present();
-
-    const result = await alert.onDidDismiss();
-    if(result.role === "cancel") {
-      return
-    }
-
-    var email = result.data.values[0];
-    var ticketRequest: TicketRequest = {
-      title: this.ReportTitle,
-      sections: [
-        { title: "What happened?", body: this.WhatHappened },
-        { title: "What did you expect to happen?", body: this.WhatWasExpected },
-        { title: "How did you reproduce it?", body: this.HowToReproduce },
-        { title: "Additional information", body: this.AdditionalInfo},
-      ],
-      repoName: 'portmaster-android',
-      email: email,
-    };
-
-    var ticketResult = await GoBridge.CreateTicket({debugInfo: this.DebugInfo, ticketRequest: JSON.stringify(ticketRequest)});
-    if(ticketResult.error != undefined) {
-      this.showMessage("Error", ticketResult.error);
-      return;
-    }
-
-    this.showMessage("Ticket Created!", "");
-    this.modalCtrl.dismiss(null)
-  }
-
   async githubSelectAlert() {
     const alert = await this.alertController.create({
       header: "Create Issue on GitHub",
@@ -126,10 +76,16 @@ export class BugReportComponent implements OnInit {
     }
 
     var genUrl = (role === "with-account");    
-    var result = await this.githubReport(genUrl)
+    var result = await this.githubReport(genUrl);
+
+    if(result.error != undefined) {
+      this.showMessage("Error", result.error)
+    }
+
+    console.log("result:", JSON.stringify(result));
 
     if(genUrl) {
-      JavaBridge.openUrlInBrowser({url: result.url});
+      await JavaBridge.openUrlInBrowser({url: result.url});
     } else {
       await this.alertController.create({
         header: "Issue Create",
@@ -141,8 +97,59 @@ export class BugReportComponent implements OnInit {
             } 
           }]
       }); 
-      await alert.present()
+      await alert.present();
+      await alert.onDidDismiss();
     }
+    this.modalCtrl.dismiss(null)
+  }
+
+  public async privateTicketReport() {
+    const alert = await this.alertController.create({
+      header: "How should we stay in touch?",
+      message: "Please enter your email address so we can write back and forth until the issue is concluded.",
+      inputs: [
+          {
+            type: "email",
+            placeholder: "Optional email",
+          }
+      ],
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Create Ticket",
+        },
+      ]
+    });
+    await alert.present();
+
+    const result = await alert.onDidDismiss();
+    if(result.role === "cancel") {
+      return
+    }
+
+    var email = result.data.values[0];
+    var ticketRequest: TicketRequest = {
+      title: this.ReportTitle,
+      sections: [
+        { title: "What happened?", body: this.WhatHappened },
+        { title: "What did you expect to happen?", body: this.WhatWasExpected },
+        { title: "How did you reproduce it?", body: this.HowToReproduce },
+        { title: "Additional information", body: this.AdditionalInfo},
+      ],
+      repoName: 'portmaster-android',
+      email: email,
+    };
+
+    var ticketResult = await GoBridge.CreateTicket({debugInfo: this.DebugInfo, ticketRequest: JSON.stringify(ticketRequest)});
+    if(ticketResult != undefined && ticketResult.error != undefined) {
+      this.showMessage("Error", ticketResult.error);
+      return;
+    }
+
+    this.showMessage("Ticket Created!", "");
     this.modalCtrl.dismiss(null)
   }
 

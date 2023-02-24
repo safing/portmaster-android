@@ -86,7 +86,7 @@ func UploadToPrivateBin(file, content string) (string, error) {
 
 	// Check for error
 	if response.StatusCode > 201 {
-		return "", fmt.Errorf("server returned an error code: %d  %q", response.StatusCode, string(bodyContent))
+		return "", fmt.Errorf("%d %s", response.StatusCode, string(bodyContent))
 	}
 
 	// Parse and return
