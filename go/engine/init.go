@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"fmt"
+
 	_ "github.com/safing/portbase/database/storage/bbolt"
 	"github.com/safing/portbase/dataroot"
 	"github.com/safing/portbase/info"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster-android/go/engine/logs"
+	"github.com/safing/portmaster-android/go/engine/tunnel"
 	_ "github.com/safing/portmaster/network"
 	_ "github.com/safing/spn/captain"
 	"github.com/safing/spn/conf"
@@ -29,6 +32,7 @@ var (
 func OnCreate(appDir string) {
 	// Check if engine is already initialized.
 	if engineInitialized.IsSet() {
+		fmt.Println("engine: was already initialized")
 		return
 	}
 
@@ -37,8 +41,8 @@ func OnCreate(appDir string) {
 	info.Set("PortmasterAndroid", "0.0.1", "AGPLv3", true)
 	log.SetAdapter(logs.GetLogFunc())
 
-	log.Info("engine: initializing...")
-	log.Infof("%s %s %s", info.GetInfo().Name, info.Version(), info.GetInfo().BuildDate)
+	fmt.Println("engine: initializing...")
+	fmt.Printf("%s %s %s\n", info.GetInfo().Name, info.Version(), info.GetInfo().BuildDate)
 
 	// Get application data dir. Were the application has access to write and read.
 	var err error
@@ -52,15 +56,16 @@ func OnCreate(appDir string) {
 	// Initialize database.
 	err = dataroot.Initialize(dataDir, 0o0755)
 	if err != nil {
-		log.Errorf("engine: failed to initialize dataroot: %s", err)
+		_ = fmt.Errorf("engine: failed to initialize dataroot: %s", err)
 		return
 	}
 	dataRoot = dataroot.Root()
 	err = logs.EnsureLoggingDir(dataRoot)
 	if err != nil {
-		log.Errorf("engine: %s", err)
+		_ = fmt.Errorf("engine: %s", err)
 	}
 
+	// log.SetLogLevel(log.ErrorLevel)
 	logs.InitLogs()
 
 	// Run the spn service and all the dependencies.
@@ -70,11 +75,14 @@ func OnCreate(appDir string) {
 }
 
 func OnDestroy() {
+	log.Infof("engine: OnDestroy")
+	engineInitialized.UnSet()
 	err := modules.Shutdown()
 	if err != nil {
 		log.Errorf("failed to shutdown database: %s", err)
 	}
 	logs.FinalizeLog()
+	app_interface.Shutdown()
 }
 
 func SetOSFunctions(functions app_interface.AppInterface) {
@@ -88,7 +96,7 @@ func SetActivityFunctions(functions app_interface.AppInterface) {
 func OnActivityDestroy() {
 	app_interface.RemoveActivityFunctionReference()
 	CancelAllUISubscriptions()
-	if !app_interface.HasServiceFunctions() {
+	if !app_interface.HasServiceFunctions() || !tunnel.IsActive() {
 		OnDestroy()
 	}
 }
@@ -99,6 +107,7 @@ func SetServiceFunctions(functions app_interface.AppInterface) {
 
 func OnServiceDestroy() {
 	app_interface.RemoveServiceFunctionReference()
+	tunnel.SystemShutdown()
 	if !app_interface.HasActivityFunctions() {
 		OnDestroy()
 	}

@@ -1,8 +1,3 @@
-export class TunnelStatus {
-    Status: 'failed' | 'disabled' | 'connecting' | 'connected';
-    Error?: string;
-}
-
 // RecordMeta describes the meta-data object that is part of
 // every API resource.
 export interface RecordMeta {

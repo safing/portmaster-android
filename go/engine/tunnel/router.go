@@ -6,6 +6,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/safing/portbase/config"
+	"github.com/safing/portbase/database"
 	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster/network/netutils"
@@ -18,7 +20,16 @@ import (
 	"gvisor.dev/gvisor/pkg/waiter"
 )
 
-var dialerNotTunneled net.Dialer
+var (
+	spnEnabled        config.BoolOption
+	dialerNotTunneled net.Dialer
+	dbInterface       *database.Interface
+)
+
+func initializeRouter() {
+	initializeDialer()
+	spnEnabled = config.Concurrent.GetAsBool(captain.CfgOptionEnableSPNKey, false)
+}
 
 func initializeDialer() {
 	dialerNotTunneled = net.Dialer{
@@ -140,12 +151,12 @@ func routeUDPThroughDefaultInterface(stack *stack.Stack, fr *udp.ForwarderReques
 func DefaultTCPRouting(fr *tcp.ForwarderRequest) error {
 	ipAddress := net.IP(fr.ID().LocalAddress)
 	scope := netutils.GetIPScope(ipAddress)
-	log.Debugf("tunnel: Default TCP Routing: %+v %t", fr.ID(), captain.IsExcepted(ipAddress))
+	// log.Debugf("tunnel: Default TCP Routing: %+v %t", fr.ID(), captain.IsExcepted(ipAddress))
 
 	if captain.IsExcepted(ipAddress) {
 		return routeTCPThroughDefaultInterface(fr)
 	}
-	if scope == netutils.Global {
+	if scope == netutils.Global && spnEnabled() {
 		return routeTCPThroughSPN(fr)
 	}
 
@@ -154,14 +165,14 @@ func DefaultTCPRouting(fr *tcp.ForwarderRequest) error {
 
 func DefaultUDPRouting(stack *stack.Stack, fr *udp.ForwarderRequest) error {
 	ipAddress := net.IP(fr.ID().LocalAddress)
-	log.Debugf("tunnel: Default UDP Routing: %+v %t", fr.ID(), captain.IsExcepted(ipAddress))
+	// log.Debugf("tunnel: Default UDP Routing: %+v %t", fr.ID(), captain.IsExcepted(ipAddress))
 
 	scope := netutils.GetIPScope(ipAddress)
-	if scope == netutils.Global {
+	if scope == netutils.Global && spnEnabled() {
 		return routeUDPThroughSPN(stack, fr)
-	} else {
-		return routeUDPThroughDefaultInterface(stack, fr)
 	}
+
+	return routeUDPThroughDefaultInterface(stack, fr)
 }
 
 // func handleDNS(stack *stack.Stack, fr *udp.ForwarderRequest) {

@@ -1,47 +1,30 @@
-<ion-card>
-  <ion-card-header>
-    <ion-card-title *ngIf="User?.canUseSPN">SPN {{SPNStatus?.Status}}</ion-card-title>
-    <ion-card-title *ngIf="!User?.canUseSPN" color="danger">Your account does not have access to the
-      SPN</ion-card-title>
-  </ion-card-header>
-
-  <ion-card-content>
-    <spn-button [SPNStatus]="SPNStatus" (onEnable)="enableSPN()" (onDisable)="disableSPN()"></spn-button>
-    
-    <div *ngIf="isSPNConnected()">
+<ion-item>
+  <ion-label>VPN Service </ion-label><ion-button slot="end" (click)="Shutdown()" color="danger"><ion-icon name="power-outline"></ion-icon></ion-button>
+</ion-item>
+<ion-item>
+  <ion-label>Secure DNS</ion-label><ion-label slot="end">Coming soon</ion-label>
+</ion-item>
+<ion-item>
+  <ion-label>Privacy Filter</ion-label><ion-label slot="end">Coming soon</ion-label>
+</ion-item>
+<ion-item>
+  <ion-label>SPN {{SPNStatus?.Status}}</ion-label>
+  <spn-button [SPNStatus]="SPNStatus" (onEnable)="enableSPN()" (onDisable)="disableSPN()"></spn-button>
+</ion-item>
+<ion-item *ngIf="!User?.canUseSPN">
+  <ion-label color="danger">Your account does not have access to the SPN</ion-label>
+</ion-item>
+<ion-item *ngIf="isSPNConnected()">
+  <ion-label class="ion-text-wrap">
+    <p>
       Home: {{SPNStatus.HomeHubName}}
       <br>
       Connection: {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
       <br>
       Connected Since: {{SPNStatus.ConnectedSince | date:'medium'}}
-    </div>
-    <div *ngIf="SPNErrorMsg.length > 0">
-      {{SPNErrorMsg}}
-    </div>
-  </ion-card-content>
-</ion-card>
-
-
-<ion-accordion-group [multiple]="true">
-  <ion-accordion value="user">
-    <ion-item slot="header">
-      <ion-label>User: {{User.username}}</ion-label>
-    </ion-item>
-    <ion-label slot="content">
-      <p class="ion-padding">
-        {{User.current_plan.name}}
-        <br>
-        Subscription ends at {{User.subscription.ends_at | date:'medium'}}
-        <ion-button size="small" color="secondary" (click)="updateUserInfo();">Refresh</ion-button>
-      </p>
-    </ion-label>
-  </ion-accordion>
-  <ion-accordion value="device">
-    <ion-item slot="header">
-      <ion-label>Device: {{User.device.name}}</ion-label>
-    </ion-item>
-    <ion-label slot="content">
-      <p class="ion-padding">{{User.device.id}}</p>
-    </ion-label>
-  </ion-accordion>
-</ion-accordion-group>
+    </p>
+    <p *ngIf="SPNErrorMsg.length > 0">
+    {{SPNErrorMsg}}
+    </p>
+  </ion-label>
+</ion-item>

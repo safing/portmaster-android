@@ -59,3 +59,12 @@ func GetPlatformInfo() (*PlatformInfo, error) {
 
 	return info, nil
 }
+
+func Shutdown() error {
+	_, err := osFunctions.call("Shutdown", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

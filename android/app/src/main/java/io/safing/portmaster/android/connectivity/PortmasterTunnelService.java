@@ -28,15 +28,15 @@ import io.safing.portmaster.android.ui.MainActivity;
 import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.util.ConnectionOwner;
 import io.safing.portmaster.android.util.ShowNotification;
+import io.safing.portmaster.android.util.VPNInit;
 import io.safing.portmaster.android.util.VPNProtect;
 import tunnel.Tunnel;
 
 public class PortmasterTunnelService extends VpnService implements Handler.Callback {
 
   public static final String COMMAND_PREFIX = "io.safing.portmaster.tunnel.";
-  public static final String ACTION_CONNECT = COMMAND_PREFIX + "connect";
-  public static final String ACTION_DISCONNECT = COMMAND_PREFIX + "disconnect";
-  public static final String ACTION_RECONNECT = COMMAND_PREFIX + "reconnect";
+  public static final String ACTION_KEEP_ALIVE = COMMAND_PREFIX + "keep_alive";
+  public static final String ACTION_SHUTDOWN = COMMAND_PREFIX + "shutdown";
 
   private PendingIntent mConfigureIntent;
 
@@ -44,6 +44,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   private Function cancelNotification;
   private Function ignoreSocket;
   private Function connectionOwner;
+  private Function vpnInit;
 
   @Override
   public boolean protect(DatagramSocket socket) {
@@ -65,6 +66,11 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
     GoInterface uiInterface = new GoInterface();
+
+    // VPN service init
+    this.vpnInit = new VPNInit("VPNInit", this);
+    uiInterface.registerFunction(this.vpnInit);
+
     // Notifications
     createNotificationChannel();
     this.showNotification = new ShowNotification("ShowNotification", this);
@@ -86,43 +92,26 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     Engine.setServiceFunctions(uiInterface);
 
     // Start go module with path to the data dir
+    Log.v("PortmasterTunnelService", "Engine on Create from service");
     Engine.onCreate(this.getFilesDir().getAbsolutePath());
   }
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    // Handle connect disconnect events.
-    if (ACTION_DISCONNECT.equals(intent.getAction())) {
-      Tunnel.onTunnelDisconnected();
+    if (intent != null && ACTION_SHUTDOWN.equals(intent.getAction())) {
       return START_NOT_STICKY;
-    } else if(ACTION_CONNECT.equals(intent.getAction())) {
-      int fd = setup();
-      Tunnel.onTunnelConnected(fd);
-      return START_STICKY;
-    } else if (ACTION_RECONNECT.equals(intent.getAction())) {
-      Tunnel.onTunnelDisconnected();
-      int fd = setup();
-      Tunnel.onTunnelConnected(fd);
-      return START_STICKY;
     }
 
-    // Probably an always-on vpn start request.
-    if(!Tunnel.isActive()) {
-      Log.v("TunnelService", "Always-on VPN start");
-      int fd = setup();
-      Tunnel.onTunnelConnected(fd);
-      return START_STICKY;
-    }
-
-    // Unknown command. This should not happen.
-    return START_NOT_STICKY;
+    // Everything that is not a shutdown command just enable the tunnel.
+    Tunnel.enable();
+    return START_STICKY;
   }
 
   @Override
   public void onDestroy() {
     // Send destroy signal to go library, App may still be running
     Engine.onServiceDestroy();
-    disconnect();
+    stopForeground(true);
   }
 
   @Override
@@ -137,7 +126,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     stopSelf();
   }
 
-  private int setup() {
+  public int InitVPN() {
     // Create tunnel interface.
     VpnService.Builder builder = this.new Builder()
       .setMtu(1500)
@@ -167,10 +156,6 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     }
 
     return 0;
-  }
-
-  private void disconnect() {
-    stopForeground(true);
   }
 
   private void createNotificationChannel() {

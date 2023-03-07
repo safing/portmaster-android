@@ -9,6 +9,7 @@ import com.getcapacitor.BridgeActivity;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import engine.Engine;
 import io.safing.portmaster.android.R;
@@ -18,7 +19,7 @@ import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.util.DebugInfoDialog;
 import io.safing.portmaster.android.util.ShowNotification;
-import io.safing.portmaster.android.util.ToggleTunnel;
+import io.safing.portmaster.android.util.ServiceCommand;
 import io.safing.portmaster.android.util.UIEvent;
 
 public class MainActivity extends BridgeActivity {
@@ -30,7 +31,7 @@ public class MainActivity extends BridgeActivity {
   public static final String CHANNEL_ID = "Portmaster";
 
   // Function objects that are called from go
-  private ToggleTunnel toggleTunnel;
+  private ServiceCommand serviceCommand;
   private UIEvent sendUIEvent;
   private DebugInfoDialog getDebugInfoDialogFunction;
 
@@ -39,6 +40,7 @@ public class MainActivity extends BridgeActivity {
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    Log.v("MainActivity", "OnCreate");
     // Register plugins for UI.
     registerPlugin(GoBridge.class);
     registerPlugin(JavaBridge.class);
@@ -46,12 +48,22 @@ public class MainActivity extends BridgeActivity {
     // Send OS functions to go.
     Engine.setOSFunctions(OSFunctions.get());
 
+    // Call parent onCreate
     super.onCreate(savedInstanceState);
     boolean showWelcomeScreen = Settings.ShouldShowWelcomeScreen(this);
-
     if(!showWelcomeScreen) {
       initEngine();
     }
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
   }
 
   public void initEngine() {
@@ -64,8 +76,8 @@ public class MainActivity extends BridgeActivity {
     GoInterface uiInterface = new GoInterface();
 
     // UI
-    this.toggleTunnel = new ToggleTunnel("ToggleTunnel", this);
-    uiInterface.registerFunction(this.toggleTunnel);
+    this.serviceCommand = new ServiceCommand("SendServiceCommand", this);
+    uiInterface.registerFunction(this.serviceCommand);
 
     this.sendUIEvent = new UIEvent("SendUIEvent", this.getBridge());
     uiInterface.registerFunction(this.sendUIEvent);
@@ -82,12 +94,14 @@ public class MainActivity extends BridgeActivity {
     uiInterface.registerFunction(this.cancelNotification);
 
     Engine.setActivityFunctions(uiInterface);
+    Log.v("MainActivity", "Engine.onCreate");
     Engine.onCreate(this.getFilesDir().getAbsolutePath());
   }
 
   @Override
   public void onResume() {
     super.onResume();
+    Log.v("MainActivity", "Enable the VPN Service");
   }
 
   @Override
@@ -114,7 +128,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     if(requestCode == ENABLE_VPN) {
-      this.toggleTunnel.toggle("connect");
+      this.serviceCommand.send("keep_alive");
     }
 
     if(requestCode == EXPORT_DEBUG_INFO) {

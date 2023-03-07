@@ -32,7 +32,7 @@ public class ShowNotification extends Function {
     Args notificationArgs = parseArguments(args, ShowNotification.Args.class);
 
     Intent intent = new Intent(this.context, MainActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     PendingIntent pendingIntent = PendingIntent.getActivity(this.context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
     NotificationCompat.Builder builder = new NotificationCompat.Builder(this.context, MainActivity.CHANNEL_ID)
       .setSmallIcon(R.drawable.notify_icon)

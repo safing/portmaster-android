@@ -38,12 +38,12 @@ func ExportDebugInfo(filename string, content []byte) error {
 	return nil
 }
 
-func ToggleTunnel(command string) error {
+func SendServicesCommand(command string) error {
 	args, _ := cbor.Marshal(command)
 
-	_, err := activityFunctions.call("ToggleTunnel", args)
+	_, err := activityFunctions.call("SendServiceCommand", args)
 	if err != nil {
-		return fmt.Errorf("failed to toggle tunnel: %s", err)
+		return fmt.Errorf("failed to send service command: %s", err)
 	}
 
 	return nil

@@ -13,29 +13,45 @@ import { TicketRequest } from '../types/issue.types';
 export class BugReportComponent implements OnInit {
   
   // Title
-  public ReportTitle:  string | null
+  public ReportTitle:  string | null;
 	
   // Sections
-  public WhatHappened: string | null
-	public WhatWasExpected:  string | null
-	public HowToReproduce: string | null
-	public AdditionalInfo: string | null
+  public WhatHappened: string | null;
+	public WhatWasExpected:  string | null;
+	public HowToReproduce: string | null;
+	public AdditionalInfo: string | null;
 
   // Debug info, will be uploaded to private bin
-	public DebugInfo:  string | null
+  public IncludeDebugInfo: boolean = true;
+	public DebugInfo:  string | null;
+
+  public isOpen: boolean;
 
   constructor(private alertController: AlertController, private modalCtrl: ModalController) { }
 
   ngOnInit() {
-    GoBridge.GetDebugInfo().then((result: any) => {
-      this.DebugInfo = result.data;
+    GoBridge.GetDebugInfo().then((result: string) => {
+      this.DebugInfo = result;
     });
   }
 
+  public show() {
+    this.isOpen = true;
+  }
+
+  private onClose() {
+    this.isOpen = false;
+  }
+ 
   public githubReport(genUrl: boolean) : Promise<any> {
-    return GoBridge.CreateIssue({
-        genUrl: genUrl,
-        issueRequest: JSON.stringify({
+    var debugInfo = null;
+
+    if(this.IncludeDebugInfo) {
+      debugInfo = this.DebugInfo;
+    }
+
+    return GoBridge.CreateIssue(debugInfo, genUrl,
+        JSON.stringify({
           title: this.ReportTitle,
           sections: [
             { title: "What happened?", body: this.WhatHappened },
@@ -44,8 +60,7 @@ export class BugReportComponent implements OnInit {
             { title: "Additional information", body: this.AdditionalInfo},
           ],
         }),
-        debugInfo: this.DebugInfo,
-      })
+      )
   }
 
   async githubSelectAlert() {
@@ -143,13 +158,19 @@ export class BugReportComponent implements OnInit {
       email: email,
     };
 
-    var ticketResult = await GoBridge.CreateTicket({debugInfo: this.DebugInfo, ticketRequest: JSON.stringify(ticketRequest)});
-    if(ticketResult != undefined && ticketResult.error != undefined) {
-      this.showMessage("Error", ticketResult.error);
-      return;
+    var debugInfo = null;
+
+    if(this.IncludeDebugInfo) {
+      debugInfo = this.DebugInfo;
     }
 
-    this.showMessage("Ticket Created!", "");
+    await GoBridge.CreateTicket(debugInfo, JSON.stringify(ticketRequest));
+    // if(ticketResult != undefined && ticketResult.error != undefined) {
+    //   this.showMessage("Error", ticketResult.error);
+    //   return;
+    // }
+
+    await this.showMessage("Ticket Created!", "");
     this.modalCtrl.dismiss(null)
   }
 

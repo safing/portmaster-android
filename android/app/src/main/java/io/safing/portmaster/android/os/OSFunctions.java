@@ -9,7 +9,7 @@ public class OSFunctions {
     osInterface.registerFunction(new NetworkInterfaces("GetNetworkInterfaces"));
     osInterface.registerFunction(new NetworkAddresses("GetNetworkAddresses"));
     osInterface.registerFunction(new PlatformInfo("GetPlatformInfo"));
-
+    osInterface.registerFunction(new Shutdown("Shutdown"));
     return osInterface;
   }
 

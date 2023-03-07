@@ -21,9 +21,7 @@ export class LogsComponent implements OnInit {
   constructor() {}
 
   async ngOnInit() {
-    var data = {ID: 0};
-    var result = await GoBridge.GetLogs(data);
-    this.Logs = result.logs;
+    this.Logs = await GoBridge.GetLogs(0);
 
     this.Update = true;
     this.content.scrollToBottom();
@@ -41,11 +39,10 @@ export class LogsComponent implements OnInit {
       if(this.Logs != null && this.Logs.length > 0) {
         ID = this.Logs[this.Logs.length - 1].ID;
       }
-      var data = {ID: ID};
-      var result = await GoBridge.GetLogs(data);
-      if(result.logs != null) {
-        this.Logs = this.Logs.concat(result.logs);
-        if(result.logs.length > 0) {
+      var logs = await GoBridge.GetLogs(ID);
+      if(logs != null) {
+        this.Logs = this.Logs.concat(logs);
+        if(logs.length > 0) {
           this.content.scrollToBottom(200);
         }
       }

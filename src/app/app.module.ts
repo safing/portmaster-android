@@ -13,11 +13,18 @@ import { LoginModule } from './login/login.module';
 import { SPNViewComponentModule } from './spn-view/spn-view.module';
 import { LogsModule } from './logs/logs.module';
 import { WelcomeModule } from './welcome/welcome.module';
-import { BugReportModule } from './bug-report/bug-report.module';
+import { UserInfoComponent } from './user-info/user-info.component';
+import { BugReportComponent } from './bug-report/bug-report.component';
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, FormsModule, CommonModule, IonicModule.forRoot(), EnabledAppsModule, SPNViewComponentModule, LogsModule, LoginModule, WelcomeModule, BugReportModule],
+  declarations: [AppComponent, UserInfoComponent, BugReportComponent],
+  imports: [BrowserModule, FormsModule, CommonModule, IonicModule.forRoot(), 
+    EnabledAppsModule, 
+    SPNViewComponentModule,
+    LogsModule,
+    LoginModule,
+    WelcomeModule,
+  ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })

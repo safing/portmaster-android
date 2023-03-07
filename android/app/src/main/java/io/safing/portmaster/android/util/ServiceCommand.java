@@ -8,11 +8,11 @@ import io.safing.portmaster.android.connectivity.PortmasterTunnelService;
 import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.ui.MainActivity;
 
-public class ToggleTunnel extends Function {
+public class ServiceCommand extends Function {
 
   private MainActivity activity;
 
-  public ToggleTunnel(String name, MainActivity activity) {
+  public ServiceCommand(String name, MainActivity activity) {
     super(name);
     this.activity = activity;
   }
@@ -20,11 +20,11 @@ public class ToggleTunnel extends Function {
   @Override
   public byte[] call(byte[] args) throws Exception {
     String command = parseArguments(args, String.class);
-    this.toggle(command);
+    this.send(command);
     return null;
   }
 
-  public void toggle(String command) {
+  public void send(String command) {
     // Check if VPN Service has permissions
     Intent intent = VpnService.prepare(activity.getApplicationContext());
     if(intent != null) {

@@ -53,3 +53,21 @@ func GetConnectionOwner(connection Connection) (int, error) {
 
 	return uid, nil
 }
+
+func VPNInit() (int, error) {
+	if serviceFunctions == nil {
+		return 0, fmt.Errorf("service not initialized")
+	}
+
+	data, err := serviceFunctions.call("VPNInit", nil)
+	if err != nil {
+		return 0, err
+	}
+	var fd int
+	err = cbor.Unmarshal(data, &fd)
+	if err != nil {
+		return 0, err
+	}
+
+	return fd, nil
+}

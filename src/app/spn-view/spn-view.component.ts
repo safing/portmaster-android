@@ -1,8 +1,10 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { AlertController, Platform } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 import { Database, DatabaseListener } from "../db-interface/module"
 import GoBridge from '../plugins/go.bridge';
-import { User, SPNStatus, TunnelStatus } from "../types/spn.types"
+import { User, SPNStatus } from "../types/spn.types"
 
 @Component({
   selector: 'spn-view-container',
@@ -16,30 +18,19 @@ export class SPNViewComponent implements OnInit, OnDestroy {
 
   private SPNStatus: SPNStatus | null;
   private SPNErrorMsg: string = "";
-  private TunnelStatus: TunnelStatus | null;
 
   private DatabaseListeners: Array<DatabaseListener> = new Array();
 
-  constructor(private changeDetector: ChangeDetectorRef) {
+  private resumeSubscription: Subscription;
+
+  constructor(private changeDetector: ChangeDetectorRef, private alertController: AlertController, private platform: Platform) {
     this.SPNStatus = null;
   }
 
   async ngOnInit() {
-    this.initTunnelState()
-
-    window.addEventListener("tunnel", (msg: any) => {
-      console.log("Tunnel event", JSON.stringify(msg));
-      this.TunnelStatus = msg as TunnelStatus;
-      this.changeDetector.detectChanges();
-    });
-
     var listener = await Database.Subscribe("runtime:spn/status", (msg: SPNStatus) => {
       this.SPNStatus = msg;
       console.log("SPN event", JSON.stringify(msg))
-      if (this.SPNStatus.Status == "connected" && this.TunnelStatus.Status == "disabled") {
-        GoBridge.EnableTunnel();
-      }
-
       // Update UI.
       this.changeDetector.detectChanges();
     });
@@ -54,22 +45,27 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     });
 
     this.DatabaseListeners.push(listener);
+
+    this.resumeSubscription = this.platform.resume.subscribe(() => {
+      this.EnableTunnelPopup();
+    });
+    this.EnableTunnelPopup();
   }
 
   async ngOnDestroy() {
     this.DatabaseListeners.forEach((listener) => {
       listener.remove();
     });
+
+    this.resumeSubscription.unsubscribe();
   }
 
   async enableSPN() {
-    // Tunnel is going to enable the SPN
-    GoBridge.EnableTunnel();
+    GoBridge.EnableSPN();
   }
 
   async disableSPN() {
     GoBridge.DisableSPN();
-    GoBridge.DisableTunnel();
   }
 
   async updateUserInfo() {
@@ -90,8 +86,48 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     return this.SPNStatus?.Status == "disabled";
   }
 
-  async initTunnelState() {
-    this.TunnelStatus = await GoBridge.GetTunnelStatus();
+  async Shutdown() {
+    const alert = await this.alertController.create({
+      header: "Shutting Down Portmaster",
+      message: "Shutting down the Portmaster will stop all Portmaster components and will leave your system unprotected!",
+      buttons: [
+        { 
+          text: "Shutdown",
+          handler: () => {
+            GoBridge.Shutdown();
+          }
+        },
+        { 
+          text: "Cancel", 
+        }]
+    }); 
+    await alert.present()
   }
 
+  async EnableTunnelPopup() {
+    var active = await GoBridge.IsTunnelActive()
+    if(!active) {
+      const alert = await this.alertController.create({
+              header: "VPN service is disabled!",
+              message: "Portmaster requires a virtual VPN connection to Android to work. Click Ok to enable.",
+              buttons: [ 
+                {
+                  text: "Shutdown",
+                },
+                {
+                  text: "Ok",
+                  role: "ok"
+                  
+                },
+              ]
+            }); 
+      await alert.present()
+      const { role } =  await alert.onDidDismiss();
+      if(role == "ok") {
+        GoBridge.EnableTunnel();
+        return;
+      }
+      GoBridge.Shutdown();
+    }
+  } 
 }

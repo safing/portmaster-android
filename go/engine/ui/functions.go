@@ -17,60 +17,45 @@ import (
 
 // Functions that have PluginCall as an argument are automatically exposed to the ionic UI
 
-func EnableSPN(call PluginCall) {
+func EnableSPN() {
 	err := config.SetConfigOption("spn/enable", true)
 	if err != nil {
 		log.Errorf("engine: failed to enable SPN: %s", err)
 	}
-	call.Resolve()
 }
 
-func DisableSPN(call PluginCall) {
+func DisableSPN() {
 	err := config.SetConfigOption("spn/enable", false)
 	if err != nil {
 		log.Errorf("engine: failed to disable SPN: %s", err)
 	}
-	call.Resolve()
 }
 
-func EnableTunnel(call PluginCall) {
-	if !tunnel.IsActive() {
-		tunnel.StartConnecting()
-		_ = app_interface.ToggleTunnel("connect")
-	}
-	call.Resolve()
+func IsTunnelActive() bool {
+	return tunnel.IsActive()
 }
 
-func DisableTunnel(call PluginCall) {
-	if tunnel.IsActive() {
-		tunnel.StartDisconnecting()
-		_ = app_interface.ToggleTunnel("disconnect")
-	}
-	call.Resolve()
+func EnableTunnel() {
+	// Send request to the VPN Service, with will notify the module.
+	app_interface.SendServicesCommand("keep_alive")
 }
 
-func RestartTunnel(call PluginCall) {
-	_ = app_interface.ToggleTunnel("reconnect")
-	call.Resolve()
+func RestartTunnel() {
+	tunnel.Reconnect()
 }
 
-func GetTunnelStatus(call PluginCall) {
-	state := tunnel.GetState()
-	bytes, _ := json.Marshal(state)
-	call.ResolveJson(string(bytes))
-}
-
-func GetUser(call PluginCall) {
-	user, err := access.GetUser()
-	if err != nil {
-		// Just log and return empty response. No info needed for the user.
-		log.Warningf("engine: failed to get user from database: %s", err)
-		call.Resolve()
-	} else {
-		userJson, _ := json.Marshal(user)
-		log.Info(string(userJson))
-		call.ResolveJson(string(userJson))
-	}
+// GetUser ts:(User)
+func GetUser() (*access.UserRecord, error) {
+	return access.GetUser()
+	// if err != nil {
+	// 	// Just log and return empty response. No info needed for the user.
+	// 	log.Warningf("engine: failed to get user from database: %s", err)
+	// 	call.Resolve()
+	// } else {
+	// 	userJson, _ := json.Marshal(user)
+	// 	log.Info(string(userJson))
+	// 	call.ResolveJson(string(userJson))
+	// }
 }
 
 func Login(call PluginCall) {
@@ -102,48 +87,26 @@ func Login(call PluginCall) {
 	}()
 }
 
-func Logout(call PluginCall) {
-	err := access.Logout(false, true)
-	if err != nil {
-		call.Error(err.Error())
-	} else {
-		call.Resolve()
-	}
-
-	// database.NewInterface()
+func Logout() error {
+	return access.Logout(false, true)
 }
 
-func UpdateUserInfo(call PluginCall) {
-	user, code, err := access.UpdateUser()
-	if code != 200 {
-		// Failed to login. Return the error.
-		call.Error(err.Error())
-	} else {
-		// Login successful
-		userJson, _ := json.Marshal(user)
-		log.Info(string(userJson))
-		call.ResolveJson(string(userJson))
-	}
+// ts:(User)
+func UpdateUserInfo() (*access.UserRecord, error) {
+	user, _, err := access.UpdateUser()
+	return user, err
 }
 
-func GetSPNStatus(call PluginCall) {
-	status := captain.GetSPNStatus()
-	statusJson, err := json.Marshal(status)
-	if err != nil {
-		log.Errorf("engine: failed to get SPN status: %s", err)
-		return
-	}
-	call.ResolveJson(string(statusJson))
+// ts:(SPNStatus)
+func GetSPNStatus() *captain.SPNStatus {
+	return captain.GetSPNStatus()
 }
 
-func GetLogs(call PluginCall) {
-	ID, _ := call.GetLong("ID")
-	logs, _ := json.Marshal(logs.GetAllLogsAfterID(uint64(ID)))
-	call.ResolveJson(fmt.Sprintf(`{"logs": %s}`, string(logs)))
+func GetLogs(ID int64) []logs.LogLine {
+	return logs.GetAllLogsAfterID(uint64(ID))
 }
 
-func GetDebugInfoFile(call PluginCall) {
-	defer call.Resolve()
+func GetDebugInfoFile() {
 	log.Infof("engine: exporting debug info")
 	debugInfo, err := logs.GetDebugInfo("github")
 	if err != nil {
@@ -152,14 +115,9 @@ func GetDebugInfoFile(call PluginCall) {
 	_ = app_interface.ExportDebugInfo("PortmasterDebugInfo.txt", debugInfo)
 }
 
-func GetDebugInfo(call PluginCall) {
+func GetDebugInfo() (string, error) {
 	debugInfo, err := logs.GetDebugInfo("github")
-	if err != nil {
-		call.Error(fmt.Sprintf("failed to get debug info: %s", err))
-		return
-	}
-
-	call.ResolveJson(fmt.Sprintf(`{"data": "%s"}`, string(debugInfo)))
+	return string(debugInfo), err
 }
 
 func DatabaseSubscribe(call PluginCall) {
@@ -181,89 +139,66 @@ func DatabaseSubscribe(call PluginCall) {
 	}()
 }
 
-func CancelAllSubscriptions(call PluginCall) {
+func CancelAllSubscriptions() {
 	engine.CancelAllUISubscriptions()
-	call.Resolve()
 }
 
-func RemoveSubscription(call PluginCall) {
-	eventID, err := call.GetString("eventID")
-	if err != nil {
-		call.Error("missing eventID argument")
-	}
+func RemoveSubscription(eventID string) {
 	engine.RemoveSubscription(eventID)
 }
 
-func CreateIssue(call PluginCall) {
-	debugInfo, err := call.GetString("debugInfo")
+func Shutdown() {
+	tunnel.Disable()
+	err := config.SetConfigOption("spn/enable", false)
 	if err != nil {
-		call.Error("missing debugInfo argument")
-		return
+		log.Errorf("engine: failed to disable SPN: %s", err)
 	}
+	engine.OnDestroy()
+	err = app_interface.Shutdown()
+	if err != nil {
+		log.Errorf("engine: failed to shutdown app: %s", err.Error())
+	}
+}
 
-	genUrl, err := call.GetBool("genUrl")
-	if err != nil {
-		call.Error("missing genUrl argument")
-		return
-	}
-
-	issueRequestStr, err := call.GetString("issueRequest")
-	if err != nil {
-		call.Error("missing issueRequest argument")
-		return
-	}
+func CreateIssue(debugInfo string, genUrl bool, issueRequestStr string) (string, error) {
 
 	var issueRequest bug_report.IssueRequest
-	err = json.Unmarshal([]byte(issueRequestStr), &issueRequest)
+	err := json.Unmarshal([]byte(issueRequestStr), &issueRequest)
 	if err != nil {
-		call.Error(fmt.Sprintf("failed to parse issueRequest object: %s", err))
-		return
+		return "", fmt.Errorf("failed to parse issueRequest object: %s", err)
 	}
 
 	// Upload debug info to private bin
-	debugInfoUrl, err := bug_report.UploadToPrivateBin("debug-info", debugInfo)
-	if err != nil {
-		call.Error(fmt.Sprintf("failed to upload debug info: %s", err))
-		return
+	if debugInfo != "" {
+		debugInfoUrl, err := bug_report.UploadToPrivateBin("debug-info", debugInfo)
+		if err != nil {
+			return "", fmt.Errorf("failed to upload debug info: %s", err)
+		}
+		issueRequest.DebugInfoUrl = debugInfoUrl
 	}
-	issueRequest.DebugInfoUrl = debugInfoUrl
 
 	url, err := bug_report.CreateIssue(&issueRequest, "portmaster-android", "report-bug.md", genUrl)
 	if err != nil {
-		call.Error(fmt.Sprintf("failed to create issue: %s", err))
-		return
+		return "", fmt.Errorf("failed to create issue: %s", err)
 	}
-
-	call.ResolveJson(fmt.Sprintf(`{"url": %q}`, url))
+	return url, nil
 }
 
-func CreateTicket(call PluginCall) {
-	debugInfo, err := call.GetString("debugInfo")
-	if err != nil {
-		call.Error("missing debugInfo argument")
-		return
-	}
-
-	ticketRequestStr, err := call.GetString("ticketRequest")
-	if err != nil {
-		call.Error("missing issueRequest argument")
-		return
-	}
-
+func CreateTicket(debugInfo string, ticketRequestStr string) error {
 	var ticketRequest bug_report.TicketRequest
-	err = json.Unmarshal([]byte(ticketRequestStr), &ticketRequest)
+	err := json.Unmarshal([]byte(ticketRequestStr), &ticketRequest)
 	if err != nil {
-		call.Error(fmt.Sprintf("failed to parse ticketRequest object: %s", err))
-		return
+		return fmt.Errorf("failed to parse ticketRequest object: %s", err)
 	}
 
 	// Upload debug info to private bin
-	debugInfoUrl, err := bug_report.UploadToPrivateBin("debug-info", debugInfo)
-	if err != nil {
-		call.Error(fmt.Sprintf("failed to upload debug info: %s", err))
-		return
+	if debugInfo != "" {
+		debugInfoUrl, err := bug_report.UploadToPrivateBin("debug-info", debugInfo)
+		if err != nil {
+			return fmt.Errorf("failed to upload debug info: %s", err)
+		}
+		ticketRequest.DebugInfoUrl = debugInfoUrl
 	}
-	ticketRequest.DebugInfoUrl = debugInfoUrl
-	bug_report.CreateTicket(&ticketRequest)
-	call.Resolve()
+
+	return bug_report.CreateTicket(&ticketRequest)
 }
