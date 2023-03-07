@@ -6,24 +6,25 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
-// import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { EnabledAppsModule } from './enabled-apps/enabled-apps.module';
 import { LoginModule } from './login/login.module';
 import { SPNViewComponentModule } from './spn-view/spn-view.module';
-import { LogsModule } from './logs/logs.module';
 import { WelcomeModule } from './welcome/welcome.module';
-import { UserInfoComponent } from './user-info/user-info.component';
-import { BugReportComponent } from './bug-report/bug-report.component';
+import { UserInfoComponent } from './menu/user-info/user-info.component';
+import { BugReportComponent } from './menu/bug-report/bug-report.component';
+import { EnabledAppsComponent } from './menu/enabled-apps/enabled-apps.component';
+import { SystemAppList } from './menu/enabled-apps/enabled-apps.filter';
+import { LogsComponent } from './menu/logs/logs.component';
 
 @NgModule({
-  declarations: [AppComponent, UserInfoComponent, BugReportComponent],
-  imports: [BrowserModule, FormsModule, CommonModule, IonicModule.forRoot(), 
-    EnabledAppsModule, 
+  declarations: [AppComponent, UserInfoComponent, BugReportComponent, EnabledAppsComponent, SystemAppList, LogsComponent],
+  imports: [BrowserModule,
+    IonicModule.forRoot(), 
+    FormsModule,
+    CommonModule,
     SPNViewComponentModule,
-    LogsModule,
     LoginModule,
-    WelcomeModule,
+    WelcomeModule, 
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],

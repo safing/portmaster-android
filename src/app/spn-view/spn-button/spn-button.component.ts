@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
-import { SPNStatus } from "../types/spn.types";
+import { SPNStatus } from "../../types/spn.types";
 
 @Component({
     selector: "spn-button",

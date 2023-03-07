@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { SPNViewComponent } from './spn-view.component';
-import { SPNButton } from '../spn-button/spn-button.component';
+import { SPNButton } from './spn-button/spn-button.component';
 
 
 @NgModule({

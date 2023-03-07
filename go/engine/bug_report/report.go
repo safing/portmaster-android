@@ -100,9 +100,6 @@ func UploadToPrivateBin(file, content string) (string, error) {
 }
 
 func CreateIssue(issueRequest *IssueRequest, repo string, preset string, genUrl bool) (string, error) {
-	// repo := "portmaster-android"
-	// preset := "report-bug.md"
-
 	// Create request
 	body, _ := json.Marshal(issueRequest)
 	req, err := http.NewRequest("POST", fmt.Sprintf("https://support.safing.io/api/v1/issues/%s/%s", repo, preset), strings.NewReader(string(body)))

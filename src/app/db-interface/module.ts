@@ -22,10 +22,11 @@ export class Database {
         var listener = await GoInterface.addListener(eventID, func);
 
         // Subscribe to the event.
-        var result = await GoBridge.DatabaseSubscribe({ name: eventID, query: query });
-        // if (result?.error != null) {
-        //     console.log("failed to subscribe to", query, ":", result.error);
-        // }
+        try{
+            await GoBridge.DatabaseSubscribe({ name: eventID, query: query });
+        } catch (err) {
+            console.log("failed to subscribe to", query, ":", err);
+        }
 
         return Promise.resolve(new DatabaseListener(eventID, listener));
     }

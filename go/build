@@ -52,7 +52,7 @@ BUILD_PATH="github.com/safing/portbase/info"
 
 set -e
 echo Generating binding...
-cd codegenv2 
+cd codegen 
 go run gen.go go.go java.go ts.go
 cd ..
 echo Building android library...

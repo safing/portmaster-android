@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { tick } from '@angular/core/testing';
 import { AlertController, ModalController } from '@ionic/angular';
-import GoBridge from '../plugins/go.bridge';
-import JavaBridge from '../plugins/java.bridge';
-import { TicketRequest } from '../types/issue.types';
+import GoBridge from '../../plugins/go.bridge';
+import JavaBridge from '../../plugins/java.bridge';
+import { TicketRequest } from '../../types/issue.types';
+import { MenuItem } from '../menu.item';
 
 @Component({
   selector: 'app-bug-report',
   templateUrl: './bug-report.component.html',
   styleUrls: ['./bug-report.component.scss'],
 })
-export class BugReportComponent implements OnInit {
+export class BugReportComponent extends MenuItem implements OnInit {
   
   // Title
   public ReportTitle:  string | null;
@@ -25,25 +25,19 @@ export class BugReportComponent implements OnInit {
   public IncludeDebugInfo: boolean = true;
 	public DebugInfo:  string | null;
 
-  public isOpen: boolean;
-
-  constructor(private alertController: AlertController, private modalCtrl: ModalController) { }
+  constructor(private alertController: AlertController, private modalCtrl: ModalController) {
+    super()
+  }
 
   ngOnInit() {
     GoBridge.GetDebugInfo().then((result: string) => {
       this.DebugInfo = result;
+    }, (err) => {
+      console.log("failed to get debug info:", err)
     });
   }
 
-  public show() {
-    this.isOpen = true;
-  }
-
-  private onClose() {
-    this.isOpen = false;
-  }
- 
-  public githubReport(genUrl: boolean) : Promise<any> {
+  public githubReport(genUrl: boolean) : Promise<string> {
     var debugInfo = null;
 
     if(this.IncludeDebugInfo) {
@@ -90,32 +84,31 @@ export class BugReportComponent implements OnInit {
       return;
     }
 
-    var genUrl = (role === "with-account");    
-    var result = await this.githubReport(genUrl);
+    var genUrl = (role === "with-account");
+    try {
+      var url = await this.githubReport(genUrl);
+      console.log("url:", url);
 
-    if(result.error != undefined) {
-      this.showMessage("Error", result.error)
+      if(genUrl) {
+        await JavaBridge.openUrlInBrowser({url: url});
+      } else {
+        await this.alertController.create({
+          header: "Issue Create",
+          message: "We successfully created the issue on Github for you. Use the following link to check for updates: ",
+          buttons: [{
+              text: "Open Link",
+              handler: () => {
+                JavaBridge.openUrlInBrowser({url: url});
+              } 
+            }]
+        }); 
+        await alert.present();
+        await alert.onDidDismiss();
+      }
+      this.modalCtrl.dismiss(null)
+    }catch(err) {
+      this.showMessage("Error", err)
     }
-
-    console.log("result:", JSON.stringify(result));
-
-    if(genUrl) {
-      await JavaBridge.openUrlInBrowser({url: result.url});
-    } else {
-      await this.alertController.create({
-        header: "Issue Create",
-        message: "We successfully created the issue on Github for you. Use the following link to check for updates: ",
-        buttons: [{
-            text: "Open Link",
-            handler: () => {
-              JavaBridge.openUrlInBrowser({url: result.url});
-            } 
-          }]
-      }); 
-      await alert.present();
-      await alert.onDidDismiss();
-    }
-    this.modalCtrl.dismiss(null)
   }
 
   public async privateTicketReport() {
@@ -163,15 +156,14 @@ export class BugReportComponent implements OnInit {
     if(this.IncludeDebugInfo) {
       debugInfo = this.DebugInfo;
     }
-
+    try {
     await GoBridge.CreateTicket(debugInfo, JSON.stringify(ticketRequest));
-    // if(ticketResult != undefined && ticketResult.error != undefined) {
-    //   this.showMessage("Error", ticketResult.error);
-    //   return;
-    // }
-
-    await this.showMessage("Ticket Created!", "");
-    this.modalCtrl.dismiss(null)
+      await this.showMessage("Ticket Created!", "");
+      // Close the window.
+      this.modalCtrl.dismiss(null)
+    } catch (err) {
+      this.showMessage("Error", err);
+    }
   }
 
   async showMessage(title: string, message: string) {

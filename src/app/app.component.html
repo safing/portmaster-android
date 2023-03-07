@@ -14,10 +14,10 @@
       <ion-item *ngIf="User != null" (click)="UserInfoModal.show()">
         <ion-label expand="full" id="user-info">User Info</ion-label>
       </ion-item>
-      <ion-item (click)="openEnabledApps()">
+      <ion-item (click)="EnabledAppsModal.show()">
         <ion-label expand="full">Apps Settings</ion-label>
       </ion-item>
-      <ion-item (click)="openLogs()">
+      <ion-item (click)="LogsModal.show()">
         <ion-label expand="full">Logs</ion-label>
       </ion-item>
       <ion-item (click)="BugReportModal.show()">
@@ -52,4 +52,6 @@
 </ion-app>
 
 <app-user-info [User]="User" [isOpen]="isUserInfoOpen" (onRefresh)="updateUserInfo()" (onLogout)="logout()" #userinfo></app-user-info>
-<app-bug-report [isOpen]="isBugReportOpen" #bugreport></app-bug-report>
+<app-bug-report #bugreport></app-bug-report>
+<app-enabled-apps #enabledapps></app-enabled-apps>
+<app-logs #logs></app-logs>

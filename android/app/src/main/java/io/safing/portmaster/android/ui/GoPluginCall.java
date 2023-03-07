@@ -72,11 +72,7 @@ public class GoPluginCall implements engine.PluginCall {
 
   @Override
   public void error(String err) {
-    try {
-      call.resolve(new JSObject(String.format("{\"error\": \"%s\"}", escape(err))));
-    } catch (JSONException ex) {
-      Log.v("GoPluginCall", ex.toString());
-    }
+      call.reject(escape(err));
   }
 
   private static String escape(String s){

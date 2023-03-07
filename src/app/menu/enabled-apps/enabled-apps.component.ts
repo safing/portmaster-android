@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
 import { ModalController } from '@ionic/angular';
-import GoBridge from '../plugins/go.bridge';
-import JavaBridge from '../plugins/java.bridge';
+import GoBridge from '../../plugins/go.bridge';
+import JavaBridge from '../../plugins/java.bridge';
+import { MenuItem } from '../menu.item';
 
 import { Application } from './application';
 
@@ -11,11 +12,13 @@ import { Application } from './application';
   templateUrl: './enabled-apps.component.html',
   styleUrls: ['./enabled-apps.component.scss'],
 })
-export class EnabledAppsComponent implements OnInit {
+export class EnabledAppsComponent extends MenuItem implements OnInit {
   AppList: Application[];
   ShowSystemApps: boolean = false;
 
-  constructor(private modalCtrl: ModalController) { }
+  constructor(private modalCtrl: ModalController) {
+    super();
+  }
 
   async ngOnInit() {
     var result = await JavaBridge.getAppSettings();

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"encoding/json"
 
+	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/engine"
 	"github.com/safing/portmaster-android/go/engine/ui"
 )
@@ -24,6 +25,18 @@ import (
 `
 
 const goFunctionTemplate = `func {{.Name}}(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function {{.Name}} panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
 {{if .CreateProxy}}{{range .Params}}	// Parameter {{.Name}}
 	{{.Name}}, err := call.{{get_type_func .Type}}("{{.Name}}")
 	if err != nil {

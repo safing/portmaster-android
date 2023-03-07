@@ -47,15 +47,6 @@ func RestartTunnel() {
 // GetUser ts:(User)
 func GetUser() (*access.UserRecord, error) {
 	return access.GetUser()
-	// if err != nil {
-	// 	// Just log and return empty response. No info needed for the user.
-	// 	log.Warningf("engine: failed to get user from database: %s", err)
-	// 	call.Resolve()
-	// } else {
-	// 	userJson, _ := json.Marshal(user)
-	// 	log.Info(string(userJson))
-	// 	call.ResolveJson(string(userJson))
-	// }
 }
 
 func Login(call PluginCall) {

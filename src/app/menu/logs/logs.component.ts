@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import GoBridge from '../plugins/go.bridge';
+import GoBridge from '../../plugins/go.bridge';
+import { MenuItem } from '../menu.item';
 
 class LogLine {
   Meta: string
@@ -13,12 +14,14 @@ class LogLine {
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
 })
-export class LogsComponent implements OnInit {
-  Logs: LogLine[];
-  Update: boolean;
+export class LogsComponent extends MenuItem implements OnInit {
+  private Logs: LogLine[];
+  private Update: boolean;
   @ViewChild('content') private content: any;
   
-  constructor() {}
+  constructor() {
+    super()
+  }
 
   async ngOnInit() {
     this.Logs = await GoBridge.GetLogs(0);
