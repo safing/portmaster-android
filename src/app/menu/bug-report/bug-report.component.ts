@@ -29,11 +29,14 @@ export class BugReportComponent extends MenuItem implements OnInit {
     super()
   }
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  public show() {
+    super.show();
     GoBridge.GetDebugInfo().then((result: string) => {
       this.DebugInfo = result;
     }, (err) => {
-      console.log("failed to get debug info:", err)
+      console.log("failed to get debug info:", err);
     });
   }
 

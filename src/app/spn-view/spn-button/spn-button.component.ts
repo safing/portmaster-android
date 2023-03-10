@@ -7,11 +7,11 @@ import { SPNStatus } from "../../types/spn.types";
     templateUrl: './spn-button.component.html',
 })
 export class SPNButton {
-    @Input() SPNStatus: SPNStatus
+    @Input() SPNStatus: SPNStatus;
+    @Input() IsGeoIPDataAvailable: boolean;
 
     @Output() onEnable = new EventEmitter();
     @Output() onDisable = new EventEmitter();
-
 
     async onClick() {
         switch(this.SPNStatus.Status) {
@@ -27,6 +27,10 @@ export class SPNButton {
     }
 
     GetButtonText(): string {
+        if(!this.IsGeoIPDataAvailable) {
+            return "Missing data"
+        }
+
         if(this.SPNStatus == null) {
             return "";
         }

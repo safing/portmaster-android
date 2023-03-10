@@ -9,6 +9,7 @@ import {User} from "../types/spn.types"
 })
 export class LoginComponent {
   @Input() User: User | null;
+  @Input() Error: string;
   @Output() onLogin = new EventEmitter<[string, string]>();
 
   private Username: string

@@ -71,3 +71,21 @@ func VPNInit() (int, error) {
 
 	return fd, nil
 }
+
+func GetAppUID() (int, error) {
+	if serviceFunctions == nil {
+		return 0, fmt.Errorf("service not initialized")
+	}
+
+	data, err := serviceFunctions.call("GetAppUID", nil)
+	if err != nil {
+		return 0, err
+	}
+	var uid int
+	err = cbor.Unmarshal(data, &uid)
+	if err != nil {
+		return 0, err
+	}
+
+	return uid, nil
+}

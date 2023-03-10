@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import GoBridge from '../../plugins/go.bridge';
 import { User } from '../../types/spn.types';
 import { MenuItem } from '../menu.item';
 

@@ -21,14 +21,20 @@ import (
 )
 
 var (
-	spnEnabled        config.BoolOption
+	isSpnEnabled      config.BoolOption
 	dialerNotTunneled net.Dialer
 	dbInterface       *database.Interface
+	ownUID            int
 )
 
 func initializeRouter() {
 	initializeDialer()
-	spnEnabled = config.Concurrent.GetAsBool(captain.CfgOptionEnableSPNKey, false)
+	isSpnEnabled = config.Concurrent.GetAsBool(captain.CfgOptionEnableSPNKey, false)
+	var err error
+	ownUID, err = app_interface.GetAppUID()
+	if err != nil {
+		log.Errorf("tunnel: failed to get app UID: %s", err)
+	}
 }
 
 func initializeDialer() {
@@ -151,24 +157,39 @@ func routeUDPThroughDefaultInterface(stack *stack.Stack, fr *udp.ForwarderReques
 func DefaultTCPRouting(fr *tcp.ForwarderRequest) error {
 	ipAddress := net.IP(fr.ID().LocalAddress)
 	scope := netutils.GetIPScope(ipAddress)
-	// log.Debugf("tunnel: Default TCP Routing: %+v %t", fr.ID(), captain.IsExcepted(ipAddress))
 
+	// Exception for the spn connection
 	if captain.IsExcepted(ipAddress) {
 		return routeTCPThroughDefaultInterface(fr)
 	}
-	if scope == netutils.Global && spnEnabled() {
-		return routeTCPThroughSPN(fr)
+
+	if scope == netutils.Global {
+		if isSpnEnabled() && captain.ClientReady() {
+			return routeTCPThroughSPN(fr)
+		}
 	}
 
 	return routeTCPThroughDefaultInterface(fr)
 }
 
+func getUidOfTCPRequest(fr *tcp.ForwarderRequest) (int, error) {
+	conn := app_interface.Connection{
+		Protocol: 6, // TCP
+
+		LocalIP:   net.IP(fr.ID().RemoteAddress),
+		LocalPort: int(fr.ID().RemotePort),
+
+		RemoteIP:   net.IP(fr.ID().LocalAddress),
+		RemotePort: int(fr.ID().LocalPort),
+	}
+	return app_interface.GetConnectionOwner(conn)
+}
+
 func DefaultUDPRouting(stack *stack.Stack, fr *udp.ForwarderRequest) error {
 	ipAddress := net.IP(fr.ID().LocalAddress)
-	// log.Debugf("tunnel: Default UDP Routing: %+v %t", fr.ID(), captain.IsExcepted(ipAddress))
 
 	scope := netutils.GetIPScope(ipAddress)
-	if scope == netutils.Global && spnEnabled() {
+	if scope == netutils.Global && isSpnEnabled() {
 		return routeUDPThroughSPN(stack, fr)
 	}
 

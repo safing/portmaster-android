@@ -23,12 +23,18 @@ export class LogsComponent extends MenuItem implements OnInit {
     super()
   }
 
-  async ngOnInit() {
-    this.Logs = await GoBridge.GetLogs(0);
+  ngOnInit() {}
 
-    this.Update = true;
-    this.content.scrollToBottom();
-    this.logUpdater();
+  public show() {
+    super.show();
+
+    // Request the full log buffer.
+    GoBridge.GetLogs(0).then((logs: any) => {
+      this.Logs = logs;
+      this.Update = true;
+      this.content.scrollToBottom();
+      this.logUpdater();
+    });
   }
 
   public async ngOnDestroy() {
@@ -42,6 +48,8 @@ export class LogsComponent extends MenuItem implements OnInit {
       if(this.Logs != null && this.Logs.length > 0) {
         ID = this.Logs[this.Logs.length - 1].ID;
       }
+
+      // Request updates of the log buffer
       var logs = await GoBridge.GetLogs(ID);
       if(logs != null) {
         this.Logs = this.Logs.concat(logs);

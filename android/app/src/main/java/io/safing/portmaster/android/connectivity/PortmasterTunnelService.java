@@ -27,6 +27,7 @@ import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.ui.MainActivity;
 import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.util.ConnectionOwner;
+import io.safing.portmaster.android.util.GetAppUID;
 import io.safing.portmaster.android.util.ShowNotification;
 import io.safing.portmaster.android.util.VPNInit;
 import io.safing.portmaster.android.util.VPNProtect;
@@ -45,6 +46,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   private Function ignoreSocket;
   private Function connectionOwner;
   private Function vpnInit;
+  private Function appUid;
 
   @Override
   public boolean protect(DatagramSocket socket) {
@@ -88,6 +90,10 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     this.connectionOwner = new ConnectionOwner("GetConnectionOwner", connectivityManager);
     uiInterface.registerFunction(this.connectionOwner);
 
+    // Get current app uid
+    this.appUid = new GetAppUID("GetAppUID", this);
+    uiInterface.registerFunction(this.appUid);
+
     // Send reference to java the functions.
     Engine.setServiceFunctions(uiInterface);
 
@@ -128,7 +134,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
 
   public int InitVPN() {
     // Create tunnel interface.
-    VpnService.Builder builder = this.new Builder()
+    Builder builder = this.new Builder()
       .setMtu(1500)
       .addAddress("10.0.2.15", 24)
       .addRoute("0.0.0.0", 0)
@@ -145,6 +151,11 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
 
     builder.setSession("spn-server");
     builder.setConfigureIntent(mConfigureIntent);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      // Setting metered to false will mimic metering of the active interface.
+      builder.setMetered(false);
+    }
 
     // Create a new interface using the builder and save the parameters.
     final ParcelFileDescriptor tunnelInterface;

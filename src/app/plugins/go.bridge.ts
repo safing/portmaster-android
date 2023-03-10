@@ -22,6 +22,11 @@ export interface GoBridgeInterface extends Plugin {
 	Shutdown(): Promise<void>
 	CreateIssue(data: any): Promise<any>
 	CreateTicket(data: any): Promise<void>
+	DownloadPendingUpdates(): Promise<void>
+	DownloadUpdatesOnWifiConnected(): Promise<void>
+	SubscribeToUpdater(any): Promise<any>
+	UnsubscribeFromUpdater(): Promise<void>
+	IsGeoIPDataAvailable(): Promise<any>
 
 }
 export const GoInterface = registerPlugin<GoBridgeInterface>("GoBridge")
@@ -144,6 +149,32 @@ export class GoBridgeClass {
 	
 	public CreateTicket(debugInfo: string, ticketRequestStr: string): Promise<void> {
 		return GoInterface.CreateTicket({debugInfo: debugInfo, ticketRequestStr: ticketRequestStr});
+	}
+	
+	public DownloadPendingUpdates(): Promise<void> {
+		return GoInterface.DownloadPendingUpdates();
+	}
+	
+	public DownloadUpdatesOnWifiConnected(): Promise<void> {
+		return GoInterface.DownloadUpdatesOnWifiConnected();
+	}
+	
+	public SubscribeToUpdater(param: any): Promise<any> {
+		return GoInterface.SubscribeToUpdater(param);
+	}
+
+	public UnsubscribeFromUpdater(): Promise<void> {
+		return GoInterface.UnsubscribeFromUpdater();
+	}
+	
+	public IsGeoIPDataAvailable(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+            GoInterface.IsGeoIPDataAvailable().then((result) => {
+               resolve(result.ret0);
+            }, (result) => {
+               reject(result);
+            });
+        });
 	}
 	
 }

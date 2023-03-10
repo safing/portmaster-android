@@ -20,7 +20,10 @@ export class EnabledAppsComponent extends MenuItem implements OnInit {
     super();
   }
 
-  async ngOnInit() {
+  ngOnInit() {}
+
+  public async show() {
+    super.show();
     var result = await JavaBridge.getAppSettings();
     this.AppList = result.apps;
     this.AppList.sort((a, b) => a.name.localeCompare(b.name));

@@ -109,6 +109,31 @@ public class GoBridge extends Plugin {
 		exported.Exported.createTicket(new GoPluginCall(this, call));
 	}
 
+	@PluginMethod()
+	public void DownloadPendingUpdates(PluginCall call) {
+		exported.Exported.downloadPendingUpdates(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void DownloadUpdatesOnWifiConnected(PluginCall call) {
+		exported.Exported.downloadUpdatesOnWifiConnected(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void SubscribeToUpdater(PluginCall call) {
+		exported.Exported.subscribeToUpdater(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void UnsubscribeFromUpdater(PluginCall call) {
+		exported.Exported.unsubscribeFromUpdater(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void IsGeoIPDataAvailable(PluginCall call) {
+		exported.Exported.isGeoIPDataAvailable(new GoPluginCall(this, call));
+	}
+
 	public void notifyListener(String name, String data) throws JSONException {
 		notifyListeners(name, new JSObject(data));
 	}

@@ -3,6 +3,9 @@ package io.safing.portmaster.android.ui;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 
 import com.getcapacitor.BridgeActivity;
@@ -11,9 +14,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import engine.Engine;
 import io.safing.portmaster.android.R;
 import io.safing.portmaster.android.go_interface.GoInterface;
+import io.safing.portmaster.android.os.NetworkProxy;
 import io.safing.portmaster.android.os.OSFunctions;
 import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.util.CancelNotification;
@@ -44,6 +50,12 @@ public class MainActivity extends BridgeActivity {
     // Register plugins for UI.
     registerPlugin(GoBridge.class);
     registerPlugin(JavaBridge.class);
+
+    if(!Engine.isEngineInitialized()) {
+      // Setup event only once before engine is initialized.
+      // Unregister needs to be called if System.exit is not called on exit.
+      setupEvents();
+    }
 
     // Send OS functions to go.
     Engine.setOSFunctions(OSFunctions.get());
@@ -161,4 +173,31 @@ public class MainActivity extends BridgeActivity {
     return true;
   }
 
+  public void setupEvents() {
+    ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+        @Override
+        public void onAvailable(@NonNull Network network) {
+            super.onAvailable(network);
+            Engine.onNetworkConnected();
+        }
+
+        @Override
+        public void onLost(@NonNull Network network) {
+            super.onLost(network);
+            Engine.onNetworkDisconnected();
+        }
+
+        @Override
+        public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
+            super.onCapabilitiesChanged(network, networkCapabilities);
+            Engine.onNetworkCapabilitiesChanged(new NetworkProxy(networkCapabilities));
+        }
+    };
+
+    ConnectivityManager connectivityManager = null;
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+      connectivityManager = getApplicationContext().getSystemService(ConnectivityManager.class);
+      connectivityManager.registerDefaultNetworkCallback(networkCallback);
+    }
+  }
 }

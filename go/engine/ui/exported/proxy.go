@@ -477,4 +477,109 @@ func CreateTicket(call engine.PluginCall) {
 	call.Resolve()
 }
 
+func DownloadPendingUpdates(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function DownloadPendingUpdates panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ui.DownloadPendingUpdates()
+	
+	
+	// Resolve the call
+	call.Resolve()
+}
+
+func DownloadUpdatesOnWifiConnected(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function DownloadUpdatesOnWifiConnected panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ui.DownloadUpdatesOnWifiConnected()
+	
+	
+	// Resolve the call
+	call.Resolve()
+}
+
+func SubscribeToUpdater(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function SubscribeToUpdater panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	ui.SubscribeToUpdater(call)
+}
+
+func UnsubscribeFromUpdater(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function UnsubscribeFromUpdater panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ui.UnsubscribeFromUpdater()
+	
+	
+	// Resolve the call
+	call.Resolve()
+}
+
+func IsGeoIPDataAvailable(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function IsGeoIPDataAvailable panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ret0, err1 := ui.IsGeoIPDataAvailable()
+	
+	if err1 != nil {
+		call.Error(err1.Error())
+		return
+	}
+	
+	
+	// Resolve the call
+	call.ResolveJson(fmt.Sprintf(`{"ret0": %t}`, ret0))
+}
+
 

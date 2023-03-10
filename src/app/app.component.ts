@@ -18,6 +18,7 @@ import { UserInfoComponent } from './menu/user-info/user-info.component';
 export class AppComponent implements OnInit, OnDestroy {
   private User: User = null;
   private ShowWelcomeScreen: boolean = false;
+  private LoginError: string = "";
 
   @ViewChild("userinfo") UserInfoModal: UserInfoComponent;
   @ViewChild("bugreport") BugReportModal: BugReportComponent;
@@ -37,13 +38,19 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {}
 
   public async login(credentials: [string, string]) {
-    this.User = await GoBridge.Login({username: credentials[0], password: credentials[1]});
-    this.updateUserCanUseSPNValue(this.User);
-    console.log("User: ", JSON.stringify(this.User));
+    try {
+      this.User = await GoBridge.Login({username: credentials[0], password: credentials[1]});
+      this.updateUserCanUseSPNValue(this.User);
+      console.log("User: ", JSON.stringify(this.User));
+      this.LoginError = "";
+    } catch(err) {
+      this.LoginError = err;
+    }
   }
 
   public async logout() {
     this.User = null;
+    this.LoginError = "";
     await GoBridge.DisableSPN();
     await GoBridge.Logout();
   }

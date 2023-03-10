@@ -12,7 +12,7 @@
     </ion-button>
   </ion-item>
   <ion-button expand="full" (click)="login($event);">Login</ion-button>
-  <ion-item class="error" *ngIf="User != null && User.error != null">
-    <ion-label class="ion-text-center">{{User.error}}</ion-label>
+  <ion-item class="error">
+    <ion-label class="ion-text-center">{{Error}}</ion-label>
   </ion-item>
 </ion-content>

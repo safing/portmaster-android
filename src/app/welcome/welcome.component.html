@@ -58,19 +58,19 @@
               <ion-label>
                 <p>Needed so Portmaster knows which connection comes from which app.</p>
               </ion-label>
-              <ion-button (click)="NetworkState()">Next</ion-button>
+              <ion-button (click)="NetworkState()">Acknowledge</ion-button>
             </div>
           </ion-accordion>
           <ion-accordion value="netstate">
             <ion-item slot="header" color="light">
-              <ion-label>Access network state</ion-label>
+              <ion-label>Access network and Wifi state</ion-label>
             </ion-item>
             <div class="ion-padding" slot="content">
               <ion-label>
                 <p>Needed so Portmaster can properly route connections and reconnect when a network interface changes.</p>
                 <p>Portmaster is fully open source so everything can be verified.</p>
               </ion-label>
-              <ion-button (click)="NextSlide()">Continue</ion-button>
+              <ion-button (click)="NextSlide()">Acknowledge</ion-button>
             </div>
           </ion-accordion>
         </ion-accordion-group>
@@ -79,7 +79,6 @@
     <ion-slide>
       <div class="slide">
         <img src="../../assets/multiple-identities-for-each-app.png" />
-        <p>Turn on your WiFi.</p>
         <ion-icon name="wifi-outline" size="large"></ion-icon>
 
         <p>Around 200MB of assets are going to be downloaded. This can take up to 30 minutes depending on the connections speed.</p>

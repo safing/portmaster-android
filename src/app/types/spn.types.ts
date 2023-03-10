@@ -66,7 +66,14 @@ export class User {
     view: View | null;
     LastNotifiedOfEnd?: string;
     LoggedInAt?: string;
-    error: string | null;
 
     canUseSPN?: boolean;
+}
+
+export class UpdateState {
+    State: "up-to-date" | "new-update" | "downloading";
+    Resources: string[] | null; 
+    FinishedUpTo: number | null;
+    DeviceIsOnWifi: boolean;
+    OnNotMeteredConnection: boolean;
 }

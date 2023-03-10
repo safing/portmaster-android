@@ -85,6 +85,10 @@ func OnDestroy() {
 	app_interface.Shutdown()
 }
 
+func IsEngineInitialized() bool {
+	return engineInitialized.IsSet()
+}
+
 func SetOSFunctions(functions app_interface.AppInterface) {
 	app_interface.SetOSFunctions(functions)
 }

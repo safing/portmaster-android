@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.VpnService;
+import android.net.wifi.WifiManager;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -136,6 +137,18 @@ public class JavaBridge extends Plugin {
     }catch(Exception e) {
       e.printStackTrace();
       call.reject(e.getMessage());
+    }
+  }
+
+  @PluginMethod
+  public void isWifiEnabled(PluginCall call) {
+    WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+    try {
+      String jsonString = String.format("{\"enabled\": %s}", wifiManager.isWifiEnabled() ? "true" : "false");
+      call.resolve(new JSObject(jsonString));
+    } catch (JSONException e) {
+      call.reject("failed to get wifi status");
     }
   }
 }

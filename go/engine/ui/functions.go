@@ -152,7 +152,6 @@ func Shutdown() {
 }
 
 func CreateIssue(debugInfo string, genUrl bool, issueRequestStr string) (string, error) {
-
 	var issueRequest bug_report.IssueRequest
 	err := json.Unmarshal([]byte(issueRequestStr), &issueRequest)
 	if err != nil {
@@ -192,4 +191,31 @@ func CreateTicket(debugInfo string, ticketRequestStr string) error {
 	}
 
 	return bug_report.CreateTicket(&ticketRequest)
+}
+
+func DownloadPendingUpdates() {
+	engine.DownloadUpdates()
+}
+
+func DownloadUpdatesOnWifiConnected() {
+	engine.DownloadUpdatesOnWifiConnected()
+}
+
+func SubscribeToUpdater(call PluginCall) {
+	eventID, err := call.GetString("eventID")
+	if err != nil {
+		call.Error("ui: missing eventID argument")
+		return
+	}
+
+	call.Resolve()
+	engine.SubscribeToUpdateListener(eventID, call)
+}
+
+func UnsubscribeFromUpdater() {
+	engine.SubscribeToUpdateListener("", nil)
+}
+
+func IsGeoIPDataAvailable() (bool, error) {
+	return engine.IsGeoIPDataAvailable()
 }

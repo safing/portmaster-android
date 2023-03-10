@@ -1,0 +1,46 @@
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
+import { PluginListenerHandle } from '@capacitor/core';
+import GoBridge, { GoInterface } from 'src/app/plugins/go.bridge';
+import { UpdateState } from 'src/app/types/spn.types';
+
+@Component({
+  selector: 'app-download-progress',
+  templateUrl: './download-progress.component.html',
+  styleUrls: ['./download-progress.component.scss'],
+})
+export class DownloadProgressComponent implements OnInit, OnDestroy {
+
+  private readonly EventID = "downloader-progress";
+  private Update: UpdateState = new UpdateState();
+  private Listener: PluginListenerHandle;
+
+  @Output() OnDownloadComplete = new EventEmitter();
+
+  constructor(private changeDetector: ChangeDetectorRef) { }
+ 
+  async ngOnInit() {
+    this.Listener = await GoInterface.addListener(this.EventID, async (update: any) => {
+      console.log("update:", JSON.stringify(update))
+      if(this.Update.State == "downloading" && update.State == "up-to-date") {
+        this.OnDownloadComplete.emit(null);
+      }
+      this.Update = update;
+      this.changeDetector.detectChanges();
+    });
+
+    GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
+  }
+  
+  ngOnDestroy(): void {
+    this.Listener.remove()
+    GoBridge.UnsubscribeFromUpdater();
+  }
+
+  private downloadNow() {
+    GoBridge.DownloadPendingUpdates();
+  }
+
+  private downloadOnWifi() {
+    GoBridge.DownloadUpdatesOnWifiConnected();
+  }
+}

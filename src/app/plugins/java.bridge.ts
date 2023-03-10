@@ -10,6 +10,7 @@ export interface JavaBridgeInterface {
     initEngine(): Promise<void>;
     shouldShowWelcomeScreen(): Promise<any>;
     openUrlInBrowser(data: {url: string}): Promise<void>;
+    isWifiEnabled(): Promise<{enabled: boolean}>;
 
     // Default plugin functions.
     addListener(eventId, listener): Promise<any>;

@@ -18,6 +18,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
 
   private SPNStatus: SPNStatus | null;
   private SPNErrorMsg: string = "";
+  private IsGeoIPDataAvailable: boolean = false;
 
   private DatabaseListeners: Array<DatabaseListener> = new Array();
 
@@ -48,8 +49,11 @@ export class SPNViewComponent implements OnInit, OnDestroy {
 
     this.resumeSubscription = this.platform.resume.subscribe(() => {
       this.EnableTunnelPopup();
+      this.CheckGeoIPData();
     });
+
     this.EnableTunnelPopup();
+    this.CheckGeoIPData();
   }
 
   async ngOnDestroy() {
@@ -130,4 +134,9 @@ export class SPNViewComponent implements OnInit, OnDestroy {
       GoBridge.Shutdown();
     }
   } 
+
+  async CheckGeoIPData() {
+    this.IsGeoIPDataAvailable = await GoBridge.IsGeoIPDataAvailable();
+    this.changeDetector.detectChanges();
+  }
 }
