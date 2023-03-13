@@ -20,7 +20,6 @@ export class Database {
 
         // Create a listener, on which GoBridge will send events to.
         var listener = await GoInterface.addListener(eventID, func);
-
         // Subscribe to the event.
         try{
             await GoBridge.DatabaseSubscribe({ name: eventID, query: query });

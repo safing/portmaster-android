@@ -44,7 +44,7 @@
     <ion-content padding>
       <app-login-container [User]="User" [Error]="LoginError" (onLogin)="login($event);"
         *ngIf="(User == null || User?.username == null) && !ShowWelcomeScreen"></app-login-container>
-      <spn-view-container [User]="User" (onUpdateUserInfo)="updateUserInfo();" (onLogout)="logout($event);"
+      <spn-view-container [User]="User" (onUpdateUserInfo)="updateUserInfo();" (onLogout)="logout($event);" (onShutdown)="showShutdownOverlay();"
         *ngIf="User?.username != null && !ShowWelcomeScreen"></spn-view-container>
       <welcome-screen *ngIf="ShowWelcomeScreen" (onExit)="onWelcomeScreenExit();"></welcome-screen>
     </ion-content>

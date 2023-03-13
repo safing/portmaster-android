@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 
 import { EnabledAppsComponent } from './menu/enabled-apps/enabled-apps.component';
 import { LogsComponent } from './menu/logs/logs.component';
-import { ModalController} from '@ionic/angular';
+import { LoadingController, ModalController} from '@ionic/angular';
 
 import {User} from "./types/spn.types"
 import JavaBridge from './plugins/java.bridge';
@@ -25,7 +25,7 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild("enabledapps") EnabledAppsModal: EnabledAppsComponent;
   @ViewChild("logs") LogsModal: LogsComponent;
 
-  constructor(private modalController: ModalController) {}
+  constructor(private modalController: ModalController, private loadingCtrl: LoadingController) {}
   async ngOnInit(): Promise<void> {
     var result = await JavaBridge.shouldShowWelcomeScreen();
     this.ShowWelcomeScreen = result.show;
@@ -75,5 +75,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private updateUserCanUseSPNValue(user: User) {
     user.canUseSPN = user.current_plan?.feature_ids.includes('spn');
+  }
+
+  private showShutdownOverlay() {
+    this.loadingCtrl.create({
+      message: 'Shuting down...',
+      duration: 0,
+      spinner: 'circles',
+    }).then((loading) => {
+      loading.present();
+    });
   }
 }

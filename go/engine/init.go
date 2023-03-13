@@ -74,15 +74,27 @@ func OnCreate(appDir string) {
 	}()
 }
 
+// OnDestroy shutdown module system and calls System.exit(0)
 func OnDestroy() {
-	log.Infof("engine: OnDestroy")
-	engineInitialized.UnSet()
-	err := modules.Shutdown()
+	log.Info("engine: OnDestroy")
+
+	err := app_interface.MinimizeApp()
+	if err != nil {
+		log.Errorf("engine: %s", err.Error())
+	}
+
+	err = modules.Shutdown()
 	if err != nil {
 		log.Errorf("failed to shutdown database: %s", err)
 	}
 	logs.FinalizeLog()
-	app_interface.Shutdown()
+	engineInitialized.UnSet()
+
+	// Call exit(0) form java so the jvm knows whats happening.
+	err = app_interface.Shutdown()
+	if err != nil {
+		fmt.Printf("engine: failed to shutdown app: %s", err.Error())
+	}
 }
 
 func IsEngineInitialized() bool {

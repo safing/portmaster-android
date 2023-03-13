@@ -62,3 +62,12 @@ func SendUIEvent(event Event) error {
 func SendUIWindowEvent(name, data string) error {
 	return SendUIEvent(Event{Name: name, Target: "window", Data: data})
 }
+
+func MinimizeApp() error {
+	_, err := activityFunctions.call("MinimizeApp", nil)
+	if err != nil {
+		return fmt.Errorf("failed to minimize app: %s", err)
+	}
+
+	return nil
+}

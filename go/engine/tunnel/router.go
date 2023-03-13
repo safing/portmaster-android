@@ -189,8 +189,10 @@ func DefaultUDPRouting(stack *stack.Stack, fr *udp.ForwarderRequest) error {
 	ipAddress := net.IP(fr.ID().LocalAddress)
 
 	scope := netutils.GetIPScope(ipAddress)
-	if scope == netutils.Global && isSpnEnabled() {
-		return routeUDPThroughSPN(stack, fr)
+	if scope == netutils.Global {
+		if isSpnEnabled() && captain.ClientReady() {
+			return routeUDPThroughSPN(stack, fr)
+		}
 	}
 
 	return routeUDPThroughDefaultInterface(stack, fr)

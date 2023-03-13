@@ -2,11 +2,19 @@ package engine
 
 import (
 	"encoding/json"
+	"math/rand"
 	"sync"
+
+	"github.com/safing/portmaster-android/go/app_interface"
+)
+
+var (
+	stateUpToDate      = "up-to-date"
+	statePendingUpdate = "pending-update"
+	stateDownloading   = "downloading"
 )
 
 type UpdateState struct {
-	// Possible values: "up-to-data", "pending-update", "downloading"
 	State          string
 	Resources      []string
 	FinishedUpTo   int
@@ -20,7 +28,7 @@ type UpdateState struct {
 
 func NewUpdateState() UpdateState {
 	return UpdateState{
-		State:          "up-to-data",
+		State:          stateUpToDate,
 		Resources:      nil,
 		FinishedUpTo:   0,
 		WaitingForWifi: false,
@@ -33,7 +41,15 @@ func NewUpdateState() UpdateState {
 func (u *UpdateState) SetPendingUpdateState(resources []string) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	u.State = "pending-update"
+	if u.State == stateUpToDate {
+		notification := &app_interface.Notification{
+			ID:      rand.Int31(),
+			Title:   "Update available",
+			Message: "New GeoIP data is available, click for more details.",
+		}
+		_ = app_interface.ShowNotification(notification)
+	}
+	u.State = statePendingUpdate
 	u.Resources = resources
 	u.notify()
 }
@@ -41,7 +57,7 @@ func (u *UpdateState) SetPendingUpdateState(resources []string) {
 func (u *UpdateState) SetDownloadingState(index int) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	u.State = "downloading"
+	u.State = stateDownloading
 	u.FinishedUpTo = index
 	u.notify()
 }
@@ -49,7 +65,15 @@ func (u *UpdateState) SetDownloadingState(index int) {
 func (u *UpdateState) SetUpToDateState() {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	u.State = "up-to-date"
+	if u.State == stateDownloading {
+		notification := &app_interface.Notification{
+			ID:      rand.Int31(),
+			Title:   "Update downloaded",
+			Message: "GeoIP data was successfully downloaded.",
+		}
+		_ = app_interface.ShowNotification(notification)
+	}
+	u.State = stateUpToDate
 	u.Resources = nil
 	u.FinishedUpTo = 0
 	u.WaitingForWifi = false

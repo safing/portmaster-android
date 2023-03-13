@@ -139,16 +139,7 @@ func RemoveSubscription(eventID string) {
 }
 
 func Shutdown() {
-	tunnel.Disable()
-	err := config.SetConfigOption("spn/enable", false)
-	if err != nil {
-		log.Errorf("engine: failed to disable SPN: %s", err)
-	}
 	engine.OnDestroy()
-	err = app_interface.Shutdown()
-	if err != nil {
-		log.Errorf("engine: failed to shutdown app: %s", err.Error())
-	}
 }
 
 func CreateIssue(debugInfo string, genUrl bool, issueRequestStr string) (string, error) {

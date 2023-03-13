@@ -141,14 +141,14 @@ public class JavaBridge extends Plugin {
   }
 
   @PluginMethod
-  public void isWifiEnabled(PluginCall call) {
-    WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
+  public void setWelcomeScreenShowed(PluginCall call) {
     try {
-      String jsonString = String.format("{\"enabled\": %s}", wifiManager.isWifiEnabled() ? "true" : "false");
-      call.resolve(new JSObject(jsonString));
-    } catch (JSONException e) {
-      call.reject("failed to get wifi status");
+      boolean showed = call.getBoolean("showed");
+      Settings.setWelcomeScreenShowed(getActivity(), showed);
+      call.resolve();
+    }catch(Exception e) {
+      e.printStackTrace();
+      call.reject(e.getMessage());
     }
   }
 }

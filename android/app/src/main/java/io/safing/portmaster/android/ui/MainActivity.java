@@ -18,12 +18,14 @@ import androidx.annotation.NonNull;
 
 import engine.Engine;
 import io.safing.portmaster.android.R;
+import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.GoInterface;
 import io.safing.portmaster.android.os.NetworkProxy;
 import io.safing.portmaster.android.os.OSFunctions;
 import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.util.CancelNotification;
 import io.safing.portmaster.android.util.DebugInfoDialog;
+import io.safing.portmaster.android.util.MinimizeApp;
 import io.safing.portmaster.android.util.ShowNotification;
 import io.safing.portmaster.android.util.ServiceCommand;
 import io.safing.portmaster.android.util.UIEvent;
@@ -38,11 +40,12 @@ public class MainActivity extends BridgeActivity {
 
   // Function objects that are called from go
   private ServiceCommand serviceCommand;
-  private UIEvent sendUIEvent;
+  private Function sendUIEvent;
   private DebugInfoDialog getDebugInfoDialogFunction;
+  private Function minimizeApp;
 
-  private ShowNotification showNotification;
-  private CancelNotification cancelNotification;
+  private Function showNotification;
+  private Function cancelNotification;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -62,10 +65,7 @@ public class MainActivity extends BridgeActivity {
 
     // Call parent onCreate
     super.onCreate(savedInstanceState);
-    boolean showWelcomeScreen = Settings.ShouldShowWelcomeScreen(this);
-    if(!showWelcomeScreen) {
-      initEngine();
-    }
+    initEngine();
   }
 
   @Override
@@ -79,8 +79,9 @@ public class MainActivity extends BridgeActivity {
   }
 
   public void initEngine() {
-    // Create notification channel if it's not created.
-    if(!isNotificationChannelCreated()) {
+    // Create notification channel if it's not created and the welcome screen is not active.
+    boolean showWelcomeScreen = Settings.ShouldShowWelcomeScreen(this);
+    if(!showWelcomeScreen && !isNotificationChannelCreated()) {
       createNotificationChannel();
     }
 
@@ -93,6 +94,9 @@ public class MainActivity extends BridgeActivity {
 
     this.sendUIEvent = new UIEvent("SendUIEvent", this.getBridge());
     uiInterface.registerFunction(this.sendUIEvent);
+
+    this.minimizeApp = new MinimizeApp("MinimizeApp", this);
+    uiInterface.registerFunction(this.minimizeApp);
 
     // Debug info
     this.getDebugInfoDialogFunction = new DebugInfoDialog("ExportDebugInfo", this, EXPORT_DEBUG_INFO);

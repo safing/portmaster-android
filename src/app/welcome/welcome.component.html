@@ -79,10 +79,10 @@
     <ion-slide>
       <div class="slide">
         <img src="../../assets/multiple-identities-for-each-app.png" />
-        <ion-icon name="wifi-outline" size="large"></ion-icon>
 
         <p>Around 200MB of assets are going to be downloaded. This can take up to 30 minutes depending on the connections speed.</p>
-        <ion-button (click)="Download()">Background Download</ion-button>
+        <ion-button (click)="Download()">Start Download</ion-button>
+        <ion-button (click)="WaitForWifi()" *ngIf="!Update.DeviceIsOnWifi">Wait for Wifi</ion-button>
         <ion-label>
           <p>The downloaded GeoIP data is used by Portmaster to see which countries your connections are going to, and to calculate the best routes for SPN.</p>
         </ion-label>

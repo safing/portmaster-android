@@ -15,6 +15,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   @Input() User: User;
   @Output() onLogout = new EventEmitter();
   @Output() onUpdateUserInfo = new EventEmitter();
+  @Output() onShutdown = new EventEmitter();
 
   private SPNStatus: SPNStatus | null;
   private SPNErrorMsg: string = "";
@@ -98,6 +99,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
         { 
           text: "Shutdown",
           handler: () => {
+            this.onShutdown.emit();
             GoBridge.Shutdown();
           }
         },
