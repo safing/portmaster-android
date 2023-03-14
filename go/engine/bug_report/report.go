@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+
+	"github.com/safing/portbase/log"
 )
 
 type PrivateBin struct {
@@ -96,12 +98,17 @@ func UploadToPrivateBin(file, content string) (string, error) {
 		return "", fmt.Errorf("failed to parse response response: %s", err)
 	}
 
-	return bin.Urls.File[0], nil
+	url := bin.Urls.File[0]
+	log.Infof("bug-report: debug info uploaded: %s", url)
+
+	return url, nil
 }
 
 func CreateIssue(issueRequest *IssueRequest, repo string, preset string, genUrl bool) (string, error) {
 	// Create request
 	body, _ := json.Marshal(issueRequest)
+	log.Infof("bug-report: sending json issue: %s", string(body))
+
 	req, err := http.NewRequest("POST", fmt.Sprintf("https://support.safing.io/api/v1/issues/%s/%s", repo, preset), strings.NewReader(string(body)))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %s", err)
@@ -130,7 +137,7 @@ func CreateIssue(issueRequest *IssueRequest, repo string, preset string, genUrl 
 
 	// Check for error
 	if resp.StatusCode > 201 {
-		return "", fmt.Errorf("server returned an error code: %d body: %q", resp.StatusCode, string(respJson))
+		return "", fmt.Errorf("server returned an error code: %d body: %s", resp.StatusCode, string(respJson))
 	}
 
 	respMap := make(map[string]string)
@@ -145,6 +152,7 @@ func CreateIssue(issueRequest *IssueRequest, repo string, preset string, genUrl 
 func CreateTicket(ticketRequest *TicketRequest) error {
 	// Create request
 	body, _ := json.Marshal(ticketRequest)
+	log.Infof("bug-report: sending json ticket: %s", string(body))
 	req, err := http.NewRequest("POST", "https://support.safing.io/api/v1/ticket", strings.NewReader(string(body)))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)

@@ -8,7 +8,7 @@ import (
 	"github.com/safing/portmaster-android/go/app_interface"
 )
 
-var (
+const (
 	stateUpToDate      = "up-to-date"
 	statePendingUpdate = "pending-update"
 	stateDownloading   = "downloading"

@@ -52,21 +52,14 @@
           </ion-accordion>
           <ion-accordion value="apps">
             <ion-item slot="header" color="light">
-              <ion-label>Query all installed apps</ion-label>
+              <ion-label>Passive permissions</ion-label>
             </ion-item>
             <div class="ion-padding" slot="content">
+              Query all installed apps
               <ion-label>
                 <p>Needed so Portmaster knows which connection comes from which app.</p>
               </ion-label>
-              <ion-button (click)="NetworkState()">Acknowledge</ion-button>
-            </div>
-          </ion-accordion>
-          <ion-accordion value="netstate">
-            <ion-item slot="header" color="light">
-              <ion-label>Access network and Wifi state</ion-label>
-            </ion-item>
-            <div class="ion-padding" slot="content">
-              <ion-label>
+              <ion-label>Access network and Wifi state
                 <p>Needed so Portmaster can properly route connections and reconnect when a network interface changes.</p>
                 <p>Portmaster is fully open source so everything can be verified.</p>
               </ion-label>

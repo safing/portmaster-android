@@ -6,7 +6,6 @@ import (
 	"math/rand"
 
 	"github.com/safing/portbase/api"
-	"github.com/safing/portbase/config"
 	"github.com/safing/portbase/database"
 	"github.com/safing/portbase/database/query"
 	"github.com/safing/portbase/database/record"
@@ -69,9 +68,8 @@ func start() error {
 
 	updateState = NewUpdateState()
 	updateState.SetWifiState(IsCurrentNetworkNotMetered.IsSet())
-	config.SetConfigOption("core/automaticUpdates", false)
 
-	UpdateListener()
+	setupUpdateListener()
 
 	return nil
 }
@@ -213,7 +211,7 @@ func RemoveSubscription(eventID string) {
 	}
 }
 
-func UpdateListener() {
+func setupUpdateListener() {
 	module.StartServiceWorker("update-listener", 0, func(ctx context.Context) error {
 		// Query current update state.
 		query := query.New("runtime:core/updates/state")

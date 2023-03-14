@@ -17,6 +17,8 @@ import (
 	"github.com/safing/portmaster-android/go/engine/logs"
 	"github.com/safing/portmaster-android/go/engine/tunnel"
 	_ "github.com/safing/portmaster/network"
+	"github.com/safing/portmaster/updates"
+	"github.com/safing/spn/access"
 	_ "github.com/safing/spn/captain"
 	"github.com/safing/spn/conf"
 	"github.com/safing/spn/sluice"
@@ -52,6 +54,12 @@ func OnCreate(appDir string) {
 	conf.EnableClient(true)
 	// Disable SPN listeners.
 	sluice.EnableListener = false
+
+	// Disables auto update for large files. Small files will still be auto downloaded. (filter lists)
+	updates.DisableSoftwareAutoUpdate = true
+
+	// Don't connect after login. GeoIP data is probably not downloaded.
+	access.ConnectAfterLogin = false
 
 	// Initialize database.
 	err = dataroot.Initialize(dataDir, 0o0755)

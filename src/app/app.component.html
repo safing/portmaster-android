@@ -51,7 +51,7 @@
   </div>
 </ion-app>
 
-<app-user-info [User]="User" [isOpen]="isUserInfoOpen" (onRefresh)="updateUserInfo()" (onLogout)="logout()" #userinfo></app-user-info>
+<app-user-info [User]="User" (onRefresh)="updateUserInfo()" (onLogout)="logout()" #userinfo></app-user-info>
 <app-bug-report #bugreport></app-bug-report>
 <app-enabled-apps #enabledapps></app-enabled-apps>
 <app-logs #logs></app-logs>

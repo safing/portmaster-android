@@ -16,7 +16,7 @@
     <ion-button fill="clear" (click)="downloadNow()">Download Now</ion-button>
     <ion-button fill="clear" (click)="downloadOnWifi()" *ngIf="!Update.DeviceIsOnWifi && !Update.WaitingForWifi">Wait for Wifi</ion-button>
   </div>
-  <div *ngIf="Update.State == 'downloading'">
+  <div *ngIf="Update.State == 'downloading' && Update.Resources != null">
     <ion-card-header>
       <ion-card-title>Downloading GeoIP Data</ion-card-title>
     </ion-card-header>

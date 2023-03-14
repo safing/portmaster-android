@@ -81,7 +81,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadingCtrl.create({
       message: 'Shuting down...',
       duration: 0,
-      spinner: 'circles',
+      spinner: 'circular',
     }).then((loading) => {
       loading.present();
     });

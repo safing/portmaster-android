@@ -52,6 +52,10 @@ export class SPNButton {
     }
 
     GetButtonColor(): string {
+        if(this.SPNStatus == null) {
+            return "";
+        }
+
         if(this.SPNStatus.Status == "disabled") {
             return "primary";    
         }

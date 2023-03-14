@@ -3,6 +3,7 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/safing/portbase/config"
 	"github.com/safing/portbase/log"
@@ -108,7 +109,8 @@ func GetDebugInfoFile() {
 
 func GetDebugInfo() (string, error) {
 	debugInfo, err := logs.GetDebugInfo("github")
-	return string(debugInfo), err
+	escaped := strings.ReplaceAll(string(debugInfo), `"`, `\"`)
+	return escaped, err
 }
 
 func DatabaseSubscribe(call PluginCall) {

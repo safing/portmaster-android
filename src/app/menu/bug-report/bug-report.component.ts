@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController } from '@ionic/angular';
 import GoBridge from '../../plugins/go.bridge';
 import JavaBridge from '../../plugins/java.bridge';
 import { TicketRequest } from '../../types/issue.types';
@@ -25,7 +25,7 @@ export class BugReportComponent extends MenuItem implements OnInit {
   public IncludeDebugInfo: boolean = true;
 	public DebugInfo:  string | null;
 
-  constructor(private alertController: AlertController, private modalCtrl: ModalController) {
+  constructor(private alertController: AlertController, private modalCtrl: ModalController, private loadingCtrl: LoadingController) {
     super()
   }
 
@@ -38,6 +38,17 @@ export class BugReportComponent extends MenuItem implements OnInit {
     }, (err) => {
       console.log("failed to get debug info:", err);
     });
+  }
+
+  protected onClose(): void {
+    super.onClose();
+    this.ReportTitle = null;
+    this.WhatHappened = null;
+    this.WhatWasExpected = null;
+    this.HowToReproduce = null;
+    this.AdditionalInfo = null;
+    this.IncludeDebugInfo = true;
+    this.DebugInfo = null;
   }
 
   public githubReport(genUrl: boolean) : Promise<string> {
@@ -89,13 +100,20 @@ export class BugReportComponent extends MenuItem implements OnInit {
 
     var genUrl = (role === "with-account");
     try {
+      var loadingOverlay = await this.loadingCtrl.create({
+        message: 'Loading...',
+        duration: 0,
+        spinner: 'circular',
+      });
+      loadingOverlay.present();
       var url = await this.githubReport(genUrl);
       console.log("url:", url);
+      loadingOverlay.dismiss();
 
       if(genUrl) {
         await JavaBridge.openUrlInBrowser({url: url});
       } else {
-        await this.alertController.create({
+        const alert = await this.alertController.create({
           header: "Issue Create",
           message: "We successfully created the issue on Github for you. Use the following link to check for updates: ",
           buttons: [{
@@ -110,7 +128,8 @@ export class BugReportComponent extends MenuItem implements OnInit {
       }
       this.modalCtrl.dismiss(null)
     }catch(err) {
-      this.showMessage("Error", err)
+      loadingOverlay.dismiss();
+      await this.showMessage("Error", err)
     }
   }
 
@@ -160,11 +179,19 @@ export class BugReportComponent extends MenuItem implements OnInit {
       debugInfo = this.DebugInfo;
     }
     try {
-    await GoBridge.CreateTicket(debugInfo, JSON.stringify(ticketRequest));
+      var loadingOverlay = await this.loadingCtrl.create({
+        message: 'Loading...',
+        duration: 0,
+        spinner: 'circular',
+      });
+      loadingOverlay.present();
+      await GoBridge.CreateTicket(debugInfo, JSON.stringify(ticketRequest));
+      loadingOverlay.dismiss();
       await this.showMessage("Ticket Created!", "");
       // Close the window.
       this.modalCtrl.dismiss(null)
     } catch (err) {
+      loadingOverlay.dismiss();
       this.showMessage("Error", err);
     }
   }
