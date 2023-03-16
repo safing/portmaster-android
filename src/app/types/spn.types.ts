@@ -76,4 +76,6 @@ export class UpdateState {
     FinishedUpTo: number | null;
     WaitingForWifi: boolean;
     DeviceIsOnWifi: boolean;
+	ApkUpdateAvailable: boolean;
+	ApkDownloadLink:    string;
 }

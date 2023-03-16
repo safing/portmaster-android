@@ -40,14 +40,14 @@ func OnCreate(appDir string) {
 
 	engineInitialized.Set()
 
-	info.Set("PortmasterAndroid", "0.0.1", "AGPLv3", true)
+	platformInfo, err := app_interface.GetPlatformInfo()
+	info.Set("PortmasterAndroid", platformInfo.VersionName, "AGPLv3", true)
 	log.SetAdapter(logs.GetLogFunc())
 
 	fmt.Println("engine: initializing...")
 	fmt.Printf("%s %s %s\n", info.GetInfo().Name, info.Version(), info.GetInfo().BuildDate)
 
 	// Get application data dir. Were the application has access to write and read.
-	var err error
 	dataDir = appDir
 
 	// Enable SPN client.

@@ -26,7 +26,7 @@ export class BugReportComponent extends MenuItem implements OnInit {
 	public DebugInfo:  string | null;
 
   constructor(private alertController: AlertController, private modalCtrl: ModalController, private loadingCtrl: LoadingController) {
-    super()
+    super();
   }
 
   ngOnInit() {}
@@ -42,6 +42,9 @@ export class BugReportComponent extends MenuItem implements OnInit {
 
   protected onClose(): void {
     super.onClose();
+  }
+
+  private resetForm(): void {
     this.ReportTitle = null;
     this.WhatHappened = null;
     this.WhatWasExpected = null;
@@ -123,13 +126,16 @@ export class BugReportComponent extends MenuItem implements OnInit {
               } 
             }]
         }); 
+
         await alert.present();
         await alert.onDidDismiss();
       }
-      this.modalCtrl.dismiss(null)
+
+      this.resetForm();
+      this.modalCtrl.dismiss(null);
     }catch(err) {
       loadingOverlay.dismiss();
-      await this.showMessage("Error", err)
+      await this.showMessage("Error", err);
     }
   }
 
@@ -157,7 +163,7 @@ export class BugReportComponent extends MenuItem implements OnInit {
 
     const result = await alert.onDidDismiss();
     if(result.role === "cancel") {
-      return
+      return;
     }
 
     var email = result.data.values[0];
@@ -189,7 +195,8 @@ export class BugReportComponent extends MenuItem implements OnInit {
       loadingOverlay.dismiss();
       await this.showMessage("Ticket Created!", "");
       // Close the window.
-      this.modalCtrl.dismiss(null)
+      this.resetForm();
+      this.modalCtrl.dismiss(null);
     } catch (err) {
       loadingOverlay.dismiss();
       this.showMessage("Error", err);
@@ -202,6 +209,6 @@ export class BugReportComponent extends MenuItem implements OnInit {
         message: message,
         buttons: [ "Ok" ]
       }); 
-    await alert.present()
+    await alert.present();
   }
 }

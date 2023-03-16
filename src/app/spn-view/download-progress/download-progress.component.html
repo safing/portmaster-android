@@ -29,3 +29,12 @@
     </ion-card-content>
   </div>
 </ion-card>
+
+<ion-card *ngIf="Update.ApkUpdateAvailable">
+  <ion-card-header>
+    <ion-card-title>New Portmaster update is available</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    Go to <a href="{{Update.ApkDownloadLink}}">{{Update.ApkDownloadLink}}</a> to learn more.
+  </ion-card-content>
+</ion-card>

@@ -72,18 +72,7 @@ public class GoPluginCall implements engine.PluginCall {
 
   @Override
   public void error(String err) {
-      call.reject(escape(err));
-  }
-
-  private static String escape(String s){
-    return s.replace("\\", "\\\\")
-      .replace("\t", "\\t")
-      .replace("\b", "\\b")
-      .replace("\n", "\\n")
-      .replace("\r", "\\r")
-      .replace("\f", "\\f")
-      .replace("\'", "\\'")
-      .replace("\"", "\\\"");
+      call.reject(err);
   }
 
   @Override

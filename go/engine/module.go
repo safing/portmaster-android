@@ -9,6 +9,7 @@ import (
 	"github.com/safing/portbase/database"
 	"github.com/safing/portbase/database/query"
 	"github.com/safing/portbase/database/record"
+	"github.com/safing/portbase/info"
 	"github.com/safing/portbase/log"
 	"github.com/safing/portbase/modules"
 	"github.com/safing/portbase/updater"
@@ -43,8 +44,9 @@ var (
 	activeNotifications map[string]*app_interface.Notification
 	activeSubscriptions map[string]chan struct{}
 
-	updateState            UpdateState
-	downloadRequestChannel chan struct{}
+	updateState                    UpdateState
+	downloadRequestChannel         chan struct{}
+	notifyUserForDownloadedUpdates bool
 
 	GeoIPDataAvailable bool = false
 )
@@ -75,6 +77,7 @@ func start() error {
 }
 
 func notificationListener() {
+	// Listen for notifications from the portmaster core and forward them to the system notifier.
 	module.StartServiceWorker("notification-listener", 0, func(ctx context.Context) error {
 		query := query.New("notifications:all/")
 		iter, err := dbInterface.Query(query)
@@ -228,8 +231,8 @@ func setupUpdateListener() {
 
 		// Parse the current state.
 		for rec := range iter.Next {
-			jsonData, _ := api.MarshalRecord(rec, false)
-			log.Infof("Update State: %s", string(jsonData))
+			regState := rec.(*updates.RegistryStateExport)
+			updateStateFromRegistryState(regState)
 		}
 
 		networkChangeChannel := make(chan bool)
@@ -240,28 +243,24 @@ func setupUpdateListener() {
 			select {
 			case rec := <-sub.Feed:
 				regState := rec.(*updates.RegistryStateExport)
+				updateStateFromRegistryState(regState)
 
-				switch {
-				case regState.ID != updater.StateDownloading && len(regState.Updates.PendingDownload) > 0:
-					updateState.SetPendingUpdateState(regState.Updates.PendingDownload)
-				case regState.ID == updater.StateDownloading:
-					details := regState.Details.(*updater.StateDownloadingDetails)
-					updateState.SetDownloadingState(details.FinishedUpTo)
-				case regState.ID == updater.StateReady:
-					updateState.SetUpToDateState()
+				// Check for new apk update, and update UI state.
+				err := checkForNewVersionOfApk()
+				if err != nil {
+					log.Errorf("android-engine: failed to check for apk update: %s", err)
 				}
-
-				jsonData, _ := api.MarshalRecord(rec, false)
-				log.Infof("Update State: %s", string(jsonData))
 			case notMetered := <-networkChangeChannel:
 				if notMetered {
 					if updateState.IsWaitingForWifi() {
 						updates.TriggerUpdate(true)
+						notifyUserForDownloadedUpdates = true
 					}
 				}
 				updateState.SetWifiState(notMetered)
 			case <-downloadRequestChannel:
 				updates.TriggerUpdate(true)
+				notifyUserForDownloadedUpdates = true
 			case <-ctx.Done():
 				return nil
 			}
@@ -281,12 +280,44 @@ func SubscribeToUpdateListener(eventID string, call PluginCall) {
 	updateState.SetUiSubscription(eventID, call)
 }
 
+func updateStateFromRegistryState(regState *updates.RegistryStateExport) {
+	// Send new state to the UI.
+	switch {
+	case regState.ID != updater.StateDownloading && len(regState.Updates.PendingDownload) > 0:
+		updateState.SetPendingUpdateState(regState.Updates.PendingDownload)
+	case regState.ID == updater.StateDownloading:
+		details := regState.Details.(*updater.StateDownloadingDetails)
+		updateState.SetDownloadingState(details.FinishedUpTo)
+	case regState.ID == updater.StateReady:
+		updateState.SetUpToDateState(notifyUserForDownloadedUpdates)
+		notifyUserForDownloadedUpdates = false
+	}
+}
+
+func checkForNewVersionOfApk() error {
+	androidApk, err := updates.GetVersion("android_any/app/portmaster-beta.apk")
+	if err != nil {
+		return err
+	}
+
+	// Check for new apk version.
+	if info.GetInfo().Version != androidApk.VersionNumber {
+		updateState.SetApkUpdateState(true, "https://safing.io/download")
+	} else {
+		updateState.SetApkUpdateState(false, "")
+	}
+
+	return nil
+}
+
 func IsGeoIPDataAvailable() (bool, error) {
+	// Get geoip v4 resource
 	geoipv4, err := updates.GetVersion("intel/geoip/geoipv4.mmdb.gz")
 	if err != nil {
 		return false, err
 	}
 
+	// Get geoip v6 resource
 	geoipv6, err := updates.GetVersion("intel/geoip/geoipv6.mmdb.gz")
 	if err != nil {
 		return false, err

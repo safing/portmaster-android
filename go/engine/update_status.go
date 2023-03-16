@@ -15,11 +15,13 @@ const (
 )
 
 type UpdateState struct {
-	State          string
-	Resources      []string
-	FinishedUpTo   int
-	WaitingForWifi bool
-	DeviceIsOnWifi bool
+	State              string
+	Resources          []string
+	FinishedUpTo       int
+	WaitingForWifi     bool
+	DeviceIsOnWifi     bool
+	ApkUpdateAvailable bool
+	ApkDownloadLink    string
 
 	lock       sync.RWMutex
 	notifyCall PluginCall
@@ -44,7 +46,7 @@ func (u *UpdateState) SetPendingUpdateState(resources []string) {
 	if u.State == stateUpToDate {
 		notification := &app_interface.Notification{
 			ID:      rand.Int31(),
-			Title:   "Update available",
+			Title:   "GeoIP update available",
 			Message: "New GeoIP data is available, click for more details.",
 		}
 		_ = app_interface.ShowNotification(notification)
@@ -62,10 +64,10 @@ func (u *UpdateState) SetDownloadingState(index int) {
 	u.notify()
 }
 
-func (u *UpdateState) SetUpToDateState() {
+func (u *UpdateState) SetUpToDateState(sendNotification bool) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	if u.State == stateDownloading {
+	if u.State == stateDownloading && sendNotification {
 		notification := &app_interface.Notification{
 			ID:      rand.Int31(),
 			Title:   "Update downloaded",
@@ -114,6 +116,14 @@ func (u *UpdateState) SetUiSubscription(eventID string, call PluginCall) {
 		// Send current state
 		u.notify()
 	}
+}
+
+func (u *UpdateState) SetApkUpdateState(newUpdate bool, link string) {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	u.ApkUpdateAvailable = newUpdate
+	u.ApkDownloadLink = link
+	u.notify()
 }
 
 func (u *UpdateState) notify() {

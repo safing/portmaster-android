@@ -2,6 +2,7 @@ package io.safing.portmaster.android.os;
 
 import android.os.Build;
 
+import io.safing.portmaster.android.BuildConfig;
 import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.Result;
 
@@ -12,10 +13,11 @@ public class PlatformInfo extends Function {
     public String Manufacturer;
     public String Brand;
     public String Board;
-    public int Base;
-    public String Incremental;
     public int SDK;
-    public String VersionCode;
+    public int VersionCode;
+    public String VersionName;
+    public String ApplicationID;
+    public String BuildType;
   }
 
   public PlatformInfo(String name) {
@@ -29,10 +31,11 @@ public class PlatformInfo extends Function {
     info.Manufacturer = Build.MANUFACTURER;
     info.Brand = Build.BRAND;
     info.Board = Build.BOARD;
-    info.Base = Build.VERSION_CODES.BASE;
-    info.Incremental = Build.VERSION.INCREMENTAL;
     info.SDK = Build.VERSION.SDK_INT;
-    info.VersionCode =  Build.VERSION.RELEASE;
+    info.VersionCode = BuildConfig.VERSION_CODE;
+    info.VersionName = BuildConfig.VERSION_NAME;
+    info.ApplicationID = BuildConfig.APPLICATION_ID;
+    info.BuildType = BuildConfig.BUILD_TYPE;
 
     return toResultFromObject(info);
   }
