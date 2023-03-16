@@ -18,6 +18,7 @@ import (
 	"github.com/safing/portbase/log"
 	"github.com/safing/portbase/utils"
 	"github.com/safing/portbase/utils/debug"
+	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster/status"
 	"github.com/safing/portmaster/updates"
 	"github.com/safing/spn/captain"
@@ -30,16 +31,16 @@ type LogLine struct {
 	ID       uint64
 }
 
-const BufferSize = 10_000
+// Number of lines to hold for the UI
+const BufferSize = 1000
 
 var (
-	LogBuffer     []LogLine
-	logsRoot      *utils.DirStructure
-	logCounter    uint64
-	mutex         sync.RWMutex
-	logFile       *os.File
-	writeToStdout bool = true
-	logSink       io.Writer
+	LogBuffer  []LogLine
+	logsRoot   *utils.DirStructure
+	logCounter uint64
+	mutex      sync.RWMutex
+	logFile    *os.File
+	logSink    io.Writer
 )
 
 func formatDuplicates(duplicates uint64) string {
@@ -61,7 +62,6 @@ func format(msg log.Message, duplicates uint64) (string, string) {
 	content := fmt.Sprintf("%s %s", formatDuplicates(duplicates), msg.Text())
 
 	return meta, content
-
 }
 
 var logFunc log.AdapterFunc = func(msg log.Message, duplicates uint64) {
@@ -82,16 +82,21 @@ var logFunc log.AdapterFunc = func(msg log.Message, duplicates uint64) {
 	}
 
 	// Write to file and stdout if enabled
-	_, _ = logSink.Write([]byte(fmt.Sprintf("%s -> %s %s\n", meta, msg.Severity().String(), content)))
+	if logSink != nil {
+		_, _ = logSink.Write([]byte(fmt.Sprintf("%s -> %s %s\n", meta, msg.Severity().String(), content)))
+	}
 }
 
 // InitLogs initialize logs
 func InitLogs() {
-	logFile = getLogFile(info.Version(), ".log")
-	if writeToStdout {
+	platformInfo, err := app_interface.GetPlatformInfo()
+	if err != nil {
+		fmt.Printf("logs: failed to get platform info: %s", err)
+	}
+
+	if platformInfo.BuildType == "debug" {
+		logFile = getLogFile(info.Version(), ".log")
 		logSink = io.MultiWriter(logFile, os.Stdout)
-	} else {
-		logSink = logFile
 	}
 }
 
