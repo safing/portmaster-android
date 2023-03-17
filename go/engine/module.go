@@ -47,6 +47,8 @@ var (
 	updateState                    UpdateState
 	downloadRequestChannel         chan struct{}
 	notifyUserForDownloadedUpdates bool
+	
+	notifyUserForAvailableApkUpdate bool
 
 	GeoIPDataAvailable bool = false
 )
@@ -235,6 +237,7 @@ func setupUpdateListener() {
 			updateStateFromRegistryState(regState)
 		}
 
+		//Subscribe to changes in the network interfaceses.
 		networkChangeChannel := make(chan bool)
 		SubscribeToNetworkChangeEvent(networkChangeChannel)
 		defer UnsubscribeFromNetworkChangeEvent(networkChangeChannel)
@@ -269,10 +272,12 @@ func setupUpdateListener() {
 }
 
 func DownloadUpdates() {
+	// Trigger download
 	downloadRequestChannel <- struct{}{}
 }
 
 func DownloadUpdatesOnWifiConnected() {
+	// Set flag so download can start as soon as wifi is avaliable.
 	updateState.DownloadOnWifiConnected()
 }
 
@@ -295,7 +300,7 @@ func updateStateFromRegistryState(regState *updates.RegistryStateExport) {
 }
 
 func checkForNewVersionOfApk() error {
-	androidApk, err := updates.GetVersion("android_any/app/portmaster-beta.apk")
+	androidApk, err := updates.GetVersionWithFullID("android_any/app/portmaster-beta.apk")
 	if err != nil {
 		return err
 	}
@@ -303,8 +308,21 @@ func checkForNewVersionOfApk() error {
 	// Check for new apk version.
 	if info.GetInfo().Version != androidApk.VersionNumber {
 		updateState.SetApkUpdateState(true, "https://safing.io/download")
+
+		if notifyUserForAvailableApkUpdate {
+			notification := &app_interface.Notification{
+				ID: rand.Int31(),
+			}
+
+			notification.Title = "Portmaster update is available"
+			notification.Message = ""
+
+			_ = app_interface.ShowNotification(notification)
+			notifyUserForAvailableApkUpdate = false
+		}
 	} else {
 		updateState.SetApkUpdateState(false, "")
+		notifyUserForAvailableApkUpdate = true
 	}
 
 	return nil
