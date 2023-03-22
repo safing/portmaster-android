@@ -151,4 +151,10 @@ public class JavaBridge extends Plugin {
       call.reject(e.getMessage());
     }
   }
+
+  @PluginMethod
+  public void openVPNSettings(PluginCall call) {
+    getActivity().startActivity(new Intent(android.provider.Settings.ACTION_VPN_SETTINGS));
+    call.resolve();
+  }
 }

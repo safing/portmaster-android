@@ -1,0 +1,50 @@
+<ion-modal [isOpen]="isOpen" (willDismiss)="onClose()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>System Settings</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <p style="text-align:center">
+      How to turn on always-on VPN and block connections outside of the VPN service:
+      </p>
+      <ion-slides pager="true">
+        <ion-slide>
+          <div class="slide">
+            <img class="slide-image" src="../../assets/main-vpn-settings.jpg" />
+            
+            <ion-label>
+              Tap the <ion-icon name="settings-outline"></ion-icon> next to the Portmaster icon.
+            </ion-label>
+            <br>
+            <br>
+            <br>
+            <br>
+          </div>
+        </ion-slide>
+        <ion-slide>
+          <div class="slide">
+            <img class="slide-image" src="../../assets/always-on-setting.jpg" />
+            By enabling this setting the system will make sure that Portmaster is always running, even after restart.
+          </div>
+        </ion-slide>
+        <ion-slide>
+          <div class="slide">
+            <img class="slide-image" src="../../assets/block-connections-setting.jpg" />
+            This setting will prevent apps accessing the internet outside of Portmaster.
+          </div>
+        </ion-slide>
+        <ion-slide>
+          <div class="slide">
+            <img class="slide-image" src="../../assets/global-vpn-setting.jpg" />
+            This will appear if you have multiple profiles and will enable the Portmaster VPN service for all profiles.
+          </div>
+        </ion-slide>
+      </ion-slides>
+      <ion-list style="text-align:center">
+        <ion-button (click)="openSystemVPNSettings()">Open VPN Settings</ion-button>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

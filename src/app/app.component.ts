@@ -9,6 +9,7 @@ import JavaBridge from './plugins/java.bridge';
 import GoBridge from './plugins/go.bridge';
 import { BugReportComponent } from './menu/bug-report/bug-report.component';
 import { UserInfoComponent } from './menu/user-info/user-info.component';
+import { VpnSettingsComponent } from './menu/vpn-settings/vpn-settings.component';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,7 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild("bugreport") BugReportModal: BugReportComponent;
   @ViewChild("enabledapps") EnabledAppsModal: EnabledAppsComponent;
   @ViewChild("logs") LogsModal: LogsComponent;
+  @ViewChild("vpnsettings") VPNSettings: VpnSettingsComponent;
 
   constructor(private modalController: ModalController, private loadingCtrl: LoadingController) {}
   async ngOnInit(): Promise<void> {

@@ -15,9 +15,10 @@ import { BugReportComponent } from './menu/bug-report/bug-report.component';
 import { EnabledAppsComponent } from './menu/enabled-apps/enabled-apps.component';
 import { SystemAppList } from './menu/enabled-apps/enabled-apps.filter';
 import { LogsComponent } from './menu/logs/logs.component';
+import { VpnSettingsComponent } from './menu/vpn-settings/vpn-settings.component';
 
 @NgModule({
-  declarations: [AppComponent, UserInfoComponent, BugReportComponent, EnabledAppsComponent, SystemAppList, LogsComponent],
+  declarations: [AppComponent, UserInfoComponent, BugReportComponent, EnabledAppsComponent, SystemAppList, LogsComponent, VpnSettingsComponent],
   imports: [BrowserModule,
     IonicModule.forRoot(), 
     FormsModule,

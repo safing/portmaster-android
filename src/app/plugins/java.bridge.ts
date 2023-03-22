@@ -11,6 +11,7 @@ export interface JavaBridgeInterface {
     shouldShowWelcomeScreen(): Promise<any>;
     openUrlInBrowser(data: {url: string}): Promise<void>;
     setWelcomeScreenShowed(data: {showed: boolean}): Promise<void>;
+    openVPNSettings(): Promise<void>;
 
     // Default plugin functions.
     addListener(eventId, listener): Promise<any>;
