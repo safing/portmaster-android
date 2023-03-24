@@ -10,7 +10,7 @@ require (
 	github.com/safing/portmaster v0.7.8
 	github.com/safing/spn v0.3.7
 	github.com/tevino/abool v1.2.0
-	gvisor.dev/gvisor v0.0.0-20230324023313-5a9bde0fb6fd
+	gvisor.dev/gvisor v0.0.0-20220817001344-846276b3dbc5
 )
 
 require (
