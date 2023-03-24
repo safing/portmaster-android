@@ -59,7 +59,7 @@ func OnCreate(appDir string) {
 	updates.DisableSoftwareAutoUpdate = true
 
 	// Don't connect after login. GeoIP data is probably not downloaded.
-	access.ConnectAfterLogin = false
+	access.EnableAfterLogin = false
 
 	// Initialize database.
 	err = dataroot.Initialize(dataDir, 0o0755)
