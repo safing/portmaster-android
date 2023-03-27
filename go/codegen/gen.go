@@ -107,6 +107,6 @@ func main() {
 	}
 
 	writeToGoFile("../engine/ui/exported/proxy.go", functions)
-	writeToJavaFile("../../android/app/src/main/java/io/safing/portmaster/android/ui/GoBridge.java", functions)
+	writeToJavaFile("../../android/portmaster/src/main/java/io/safing/portmaster/android/ui/GoBridge.java", functions)
 	writeToTSFile("../../src/app/plugins/go.bridge.ts", functions)
 }

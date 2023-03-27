@@ -12,11 +12,11 @@ export class LoginComponent {
   @Input() Error: string;
   @Output() onLogin = new EventEmitter<[string, string]>();
 
-  private Username: string
-  private Password: string
+  Username: string
+  Password: string
 
-  private ShowPassword: boolean
-  private PasswordFieldType: "password" | "text";
+  ShowPassword: boolean
+  PasswordFieldType: "password" | "text";
 
   constructor() { 
     this.PasswordFieldType = "password";

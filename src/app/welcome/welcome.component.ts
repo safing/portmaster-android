@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core';
 import { IonAccordionGroup, IonSlides} from '@ionic/angular';
 import GoBridge, { GoInterface } from '../plugins/go.bridge';
@@ -18,7 +18,7 @@ enum Slides {
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss'],
 })
-export class WelcomeComponent implements OnInit {
+export class WelcomeComponent implements OnInit, OnDestroy {
 
   @Output() onExit = new EventEmitter();
   @ViewChild('slides') slides: IonSlides;
@@ -26,10 +26,10 @@ export class WelcomeComponent implements OnInit {
 
   private readonly EventID = "welcome-screen-updater";
   private Listener: PluginListenerHandle;
-  private Update: UpdateState = new UpdateState();
+  Update: UpdateState = new UpdateState();
 
-  private NotificationPermissionGranted : boolean = false;
-  private VPNPermissionGranted : boolean = false;
+  NotificationPermissionGranted : boolean = false;
+  VPNPermissionGranted : boolean = false;
 
   constructor(private changeDetector: ChangeDetectorRef) { }
 
@@ -45,12 +45,16 @@ export class WelcomeComponent implements OnInit {
     });
     this.permissionsGroup.value = "vpn";
 
-    this.Listener = await GoInterface.addListener(this.EventID, async (update: any) => {
+    this.Listener = await GoInterface.addListener(this.EventID, (update: any) => {
       this.Update = update;
       this.changeDetector.detectChanges();
     });
 
     GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
+  }
+
+  ngOnDestroy(): void {
+    this.Listener.remove();
   }
 
   public async onActiveIndexChange() {

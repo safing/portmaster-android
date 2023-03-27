@@ -6,12 +6,12 @@
   <ion-item>
     <ion-label>Password:</ion-label>
     <ion-input type="{{PasswordFieldType}}" [(ngModel)]="Password"></ion-input>
-    <ion-button fill="clear" (click)="togglePasswordVisibility($event);"icon-only>
+    <ion-button fill="clear" (click)="togglePasswordVisibility();"icon-only>
       <ion-icon name="eye" *ngIf="!ShowPassword"></ion-icon>
       <ion-icon name="eye-off" *ngIf="ShowPassword"></ion-icon>
     </ion-button>
   </ion-item>
-  <ion-button expand="full" (click)="login($event);">Login</ion-button>
+  <ion-button expand="full" (click)="login();">Login</ion-button>
   <ion-item>
     <ion-label class="ion-text-center">Don't have an account?<br><a href="https://account.safing.io/account/sign_up">Sign Up</a></ion-label>
   </ion-item>

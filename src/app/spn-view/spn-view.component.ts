@@ -17,9 +17,9 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   @Output() onUpdateUserInfo = new EventEmitter();
   @Output() onShutdown = new EventEmitter();
 
-  private SPNStatus: SPNStatus | null;
-  private SPNErrorMsg: string = "";
-  private IsGeoIPDataAvailable: boolean = false;
+  SPNStatus: SPNStatus | null;
+  SPNErrorMsg: string = "";
+  IsGeoIPDataAvailable: boolean = false;
 
   private DatabaseListeners: Array<DatabaseListener> = new Array();
 

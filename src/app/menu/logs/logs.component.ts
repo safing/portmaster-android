@@ -15,9 +15,10 @@ class LogLine {
   styleUrls: ['./logs.component.scss'],
 })
 export class LogsComponent extends MenuItem implements OnInit {
-  private Logs: LogLine[];
   private Timer: any;
+  
   @ViewChild('content') content: any;
+  Logs: LogLine[];
   
   constructor() {
     super()

@@ -15,7 +15,7 @@ export class VpnSettingsComponent extends MenuItem implements OnInit {
 
   ngOnInit() { }
 
-  private openSystemVPNSettings() {
+  openSystemVPNSettings() {
     JavaBridge.openVPNSettings();
   }
 }

@@ -193,7 +193,7 @@ func initializeLogFile(logFilePath string, identifier string, version string) *o
 }
 
 func finalizeLogFile(logFile *os.File) {
-	// If log file is not initilized just return.
+	// If log file is not initialized just return.
 	if logFile == nil {
 		return
 	}

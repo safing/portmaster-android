@@ -17,9 +17,9 @@ import { VpnSettingsComponent } from './menu/vpn-settings/vpn-settings.component
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private User: User = null;
-  private ShowWelcomeScreen: boolean = false;
-  private LoginError: string = "";
+  User: User = null;
+  ShowWelcomeScreen: boolean = false;
+  LoginError: string = "";
 
   @ViewChild("userinfo") UserInfoModal: UserInfoComponent;
   @ViewChild("bugreport") BugReportModal: BugReportComponent;
@@ -79,7 +79,7 @@ export class AppComponent implements OnInit, OnDestroy {
     user.canUseSPN = user.current_plan?.feature_ids.includes('spn');
   }
 
-  private showShutdownOverlay() {
+  showShutdownOverlay() {
     this.loadingCtrl.create({
       message: 'Shuting down...',
       duration: 0,

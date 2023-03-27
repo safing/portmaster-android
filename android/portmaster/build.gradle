@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
   compileSdk 33
   defaultConfig {
-        applicationId "io.safing.portmaster.android.beta"
+        applicationId "io.safing.portmaster.android"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -17,9 +17,18 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable false
+          minifyEnabled true
+          proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+          debuggable false
+        }
+        stable {
+          initWith release
+          matchingFallbacks = ['release']
+        }
+        beta {
+         initWith release
+         applicationIdSuffix = ".beta"
+          matchingFallbacks = ['release']
         }
     }
 }
@@ -49,7 +58,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    implementation (name:'govpn', ext:'aar') { changing = true }
+    implementation (name:'golib', ext:'aar') { changing = true }
 }
 
 apply from: 'capacitor.build.gradle'

@@ -25,6 +25,7 @@ export interface Record {
 export interface SPNStatus extends Record {
     Status: 'failed' | 'disabled' | 'connecting' | 'connected';
     HomeHubID: string;
+    HomeHubName: string;
     ConnectedIP: string;
     ConnectedTransport: string;
     ConnectedSince: string | null;
@@ -71,7 +72,7 @@ export class User {
 }
 
 export class UpdateState {
-    State: "up-to-date" | "new-update" | "downloading";
+    State: "up-to-date" | "pending-update" | "downloading";
     Resources: string[] | null; 
     FinishedUpTo: number | null;
     WaitingForWifi: boolean;

@@ -11,15 +11,16 @@ import { UpdateState } from 'src/app/types/spn.types';
 export class DownloadProgressComponent implements OnInit, OnDestroy {
 
   private readonly EventID = "downloader-progress";
-  private Update: UpdateState = new UpdateState();
   private Listener: PluginListenerHandle;
+
+  Update: UpdateState = new UpdateState();
 
   @Output() OnDownloadComplete = new EventEmitter();
 
   constructor(private changeDetector: ChangeDetectorRef) { }
  
   async ngOnInit() {
-    this.Listener = await GoInterface.addListener(this.EventID, async (update: any) => {
+    this.Listener = await GoInterface.addListener(this.EventID, (update: any) => {
       console.log("update:", JSON.stringify(update))
       if(this.Update.State == "downloading" && update.State == "up-to-date") {
         this.OnDownloadComplete.emit(null);
@@ -36,11 +37,11 @@ export class DownloadProgressComponent implements OnInit, OnDestroy {
     GoBridge.UnsubscribeFromUpdater();
   }
 
-  private downloadNow() {
+  downloadNow() {
     GoBridge.DownloadPendingUpdates();
   }
 
-  private downloadOnWifi() {
+  downloadOnWifi() {
     GoBridge.DownloadUpdatesOnWifiConnected();
   }
 }
