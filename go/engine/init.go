@@ -18,10 +18,16 @@ import (
 	"github.com/safing/portmaster-android/go/engine/tunnel"
 	_ "github.com/safing/portmaster/network"
 	"github.com/safing/portmaster/updates"
+	"github.com/safing/portmaster/updates/helper"
 	"github.com/safing/spn/access"
 	_ "github.com/safing/spn/captain"
 	"github.com/safing/spn/conf"
 	"github.com/safing/spn/sluice"
+)
+
+const (
+	StableApplicationID = "io.safing.portmaster.android"
+	BetaApplicationID   = "io.safing.portmaster.android.beta"
 )
 
 var (
@@ -57,6 +63,7 @@ func OnCreate(appDir string) {
 
 	// Disables auto update for large files. Small files will still be auto downloaded. (filter lists)
 	updates.DisableSoftwareAutoUpdate = true
+	helper.IntelOnly()
 
 	// Don't connect after login. GeoIP data is probably not downloaded.
 	access.EnableAfterLogin = false

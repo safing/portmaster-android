@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/safing/portbase/api"
+	"github.com/safing/portbase/config"
 	"github.com/safing/portbase/database"
 	"github.com/safing/portbase/database/query"
 	"github.com/safing/portbase/database/record"
@@ -47,8 +48,6 @@ var (
 	updateState                    UpdateState
 	downloadRequestChannel         chan struct{}
 	notifyUserForDownloadedUpdates bool
-	
-	notifyUserForAvailableApkUpdate bool
 
 	GeoIPDataAvailable bool = false
 )
@@ -64,6 +63,18 @@ func init() {
 }
 
 func start() error {
+	// Switch to the beta channel if it's a beta build.
+	platformInfo, err := app_interface.GetPlatformInfo()
+	if err != nil {
+		log.Errorf("engine: failed to set release level to beta: %s", err)
+	}
+	if platformInfo.ApplicationID == BetaApplicationID {
+		err := config.SetConfigOption("code/releaseLevel", "beta")
+		if err != nil {
+			log.Errorf("engine: failed to set release level to beta: %s", err)
+		}
+	}
+
 	// Get database interface.
 	dbInterface = database.NewInterface(nil)
 	notificationListener()
@@ -308,21 +319,8 @@ func checkForNewVersionOfApk() error {
 	// Check for new apk version.
 	if info.GetInfo().Version != androidApk.VersionNumber {
 		updateState.SetApkUpdateState(true, "https://safing.io/download")
-
-		if notifyUserForAvailableApkUpdate {
-			notification := &app_interface.Notification{
-				ID: rand.Int31(),
-			}
-
-			notification.Title = "Portmaster update is available"
-			notification.Message = ""
-
-			_ = app_interface.ShowNotification(notification)
-			notifyUserForAvailableApkUpdate = false
-		}
 	} else {
 		updateState.SetApkUpdateState(false, "")
-		notifyUserForAvailableApkUpdate = true
 	}
 
 	return nil
