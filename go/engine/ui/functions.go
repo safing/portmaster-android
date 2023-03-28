@@ -201,8 +201,8 @@ func SubscribeToUpdater(call PluginCall) {
 		return
 	}
 
-	call.Resolve()
 	engine.SubscribeToUpdateListener(eventID, call)
+	call.Resolve()
 }
 
 func UnsubscribeFromUpdater() {

@@ -1,7 +1,7 @@
 package app_interface
 
 import (
-	"log"
+	"fmt"
 	"net"
 )
 
@@ -11,11 +11,10 @@ type NetworkAddress struct {
 	IsIPv6       bool
 }
 
-func (a *NetworkAddress) ToIPNet() *net.IPNet {
+func (a *NetworkAddress) ToIPNet() (*net.IPNet, error) {
 	ip := net.ParseIP(a.Addr)
 	if ip == nil {
-		log.Printf("failed to parse ip: %s", a.Addr)
-		return nil
+		return nil, fmt.Errorf("failed to parse ip: %s", a.Addr)
 	}
 
 	var mask net.IPMask
@@ -25,7 +24,7 @@ func (a *NetworkAddress) ToIPNet() *net.IPNet {
 		mask = net.CIDRMask(a.PrefixLength, net.IPv4len)
 	}
 	ipNet := &net.IPNet{IP: ip, Mask: mask}
-	return ipNet
+	return ipNet, nil
 }
 
 func (a *NetworkAddress) String() string {

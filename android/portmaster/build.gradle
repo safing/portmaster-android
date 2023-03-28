@@ -17,7 +17,7 @@ android {
     }
     buildTypes {
         release {
-          minifyEnabled true
+          minifyEnabled false
           proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
           debuggable false
         }
@@ -26,8 +26,8 @@ android {
           matchingFallbacks = ['release']
         }
         beta {
-         initWith release
-         applicationIdSuffix = ".beta"
+          initWith release
+          applicationIdSuffix = ".beta"
           matchingFallbacks = ['release']
         }
     }

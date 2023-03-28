@@ -32,4 +32,5 @@ npm-debug.log*
 /plugins
 /www
 android/.idea
-android/app/release
+android/portmaster/release
+android/portmaster/src/main/assets/public

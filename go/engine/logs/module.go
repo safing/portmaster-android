@@ -97,6 +97,8 @@ func InitLogs() {
 	if platformInfo.BuildType == "debug" {
 		logFile = getLogFile(info.Version(), ".log")
 		logSink = io.MultiWriter(logFile, os.Stdout)
+	} else {
+		logSink = os.Stdout
 	}
 }
 
