@@ -71,13 +71,3 @@ try {
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
-
-task copyPlaceholder(type: Copy) {
-  from(file('libs/GoBridge.java'))
-  into('src/main/java/io/safing/portmaster/android/ui/')
-}
-
-task generateUIBridgeCode(dependsOn: ['copyPlaceholder', 'testDebugUnitTest']) {
-  println "Generating Go binding for ionic..."
-  onlyIf = {true}
-}
