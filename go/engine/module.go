@@ -16,6 +16,8 @@ import (
 	"github.com/safing/portbase/updater"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster/updates"
+
+	semver "github.com/hashicorp/go-version"
 )
 
 type PluginCall interface {
@@ -317,7 +319,8 @@ func checkForNewVersionOfApk() error {
 	}
 
 	// Check for new apk version.
-	if info.GetInfo().Version != androidApk.VersionNumber {
+	currentVersion, _ := semver.NewVersion(info.GetInfo().Version)
+	if androidApk.SemVer().GreaterThan(currentVersion) {
 		updateState.SetApkUpdateState(true, "https://safing.io/download")
 	} else {
 		updateState.SetApkUpdateState(false, "")
