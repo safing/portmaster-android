@@ -2,6 +2,7 @@ package io.safing.portmaster.android.ui;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -15,6 +16,8 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import java.io.File;
 
 import engine.Engine;
 import io.safing.portmaster.android.R;
@@ -50,6 +53,9 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     Log.v("MainActivity", "OnCreate");
+    // TODO: remove when a proper shutdown process is in place. (not system.exit(0))
+    deleteCache(this);
+
     // Register plugins for UI.
     registerPlugin(GoBridge.class);
     registerPlugin(JavaBridge.class);
@@ -202,6 +208,38 @@ public class MainActivity extends BridgeActivity {
     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
       connectivityManager = getApplicationContext().getSystemService(ConnectivityManager.class);
       connectivityManager.registerDefaultNetworkCallback(networkCallback);
+    }
+  }
+
+  private void deleteCache(Context context) {
+    try {
+      File dir = new File(context.getCacheDir(), "WebView");
+      String[] children = dir.list();
+      for (int i = 0; i < children.length; i++) {
+        if(children[i].startsWith("Crash")) {
+          deleteDir(new File(dir, children[i]));
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private boolean deleteDir(File dir) {
+    if (dir != null && dir.isDirectory()) {
+      String[] children = dir.list();
+      for (int i = 0; i < children.length; i++) {
+        boolean success = deleteDir(new File(dir, children[i]));
+        if (!success) {
+          return false;
+        }
+      }
+
+      return dir.delete();
+    } else if(dir != null && dir.isFile()) {
+      return dir.delete();
+    } else {
+      return false;
     }
   }
 }
