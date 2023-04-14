@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.safing.portmaster.android',
-  appName: 'portmaster-android',
+  appName: 'Portmaster',
   webDir: 'www',
   bundledWebRuntime: false,
   loggingBehavior: 'none',
