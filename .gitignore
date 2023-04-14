@@ -34,3 +34,4 @@ npm-debug.log*
 android/.idea
 android/portmaster/release
 android/portmaster/src/main/assets/public
+android/app/libs/golib-sources.jar

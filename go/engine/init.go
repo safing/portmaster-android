@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 
+	"github.com/safing/portbase/api"
 	_ "github.com/safing/portbase/database/storage/bbolt"
 	"github.com/safing/portbase/dataroot"
 	"github.com/safing/portbase/info"
@@ -56,6 +57,9 @@ func OnCreate(appDir string) {
 	// Get application data dir. Were the application has access to write and read.
 	dataDir = appDir
 
+	// Disable HTTP server.
+	api.EnableServer = false
+
 	// Enable SPN client.
 	conf.EnableClient(true)
 	// Disable SPN listeners.
@@ -63,6 +67,7 @@ func OnCreate(appDir string) {
 
 	// Disables auto update for large files. Small files will still be auto downloaded. (filter lists)
 	updates.DisableSoftwareAutoUpdate = true
+	updates.DisableUpdateSchedule()
 	helper.IntelOnly()
 
 	// Don't connect after login. GeoIP data is probably not downloaded.
@@ -80,7 +85,10 @@ func OnCreate(appDir string) {
 		_ = fmt.Errorf("engine: %s", err)
 	}
 
-	// log.SetLogLevel(log.ErrorLevel)
+	// Setup logs
+	if platformInfo.BuildType == "debug" {
+		log.SetLogLevel(log.TraceLevel)
+	}
 	logs.InitLogs()
 
 	// Run the spn service and all the dependencies.

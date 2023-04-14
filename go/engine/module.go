@@ -304,8 +304,10 @@ func updateStateFromRegistryState(regState *updates.RegistryStateExport) {
 	case regState.ID != updater.StateDownloading && len(regState.Updates.PendingDownload) > 0:
 		updateState.SetPendingUpdateState(regState.Updates.PendingDownload)
 	case regState.ID == updater.StateDownloading:
-		details := regState.Details.(*updater.StateDownloadingDetails)
-		updateState.SetDownloadingState(details.FinishedUpTo)
+		details, ok := regState.Details.(*updater.StateDownloadingDetails)
+		if ok {
+			updateState.SetDownloadingState(details.FinishedUpTo)
+		}
 	case regState.ID == updater.StateReady:
 		updateState.SetUpToDateState(notifyUserForDownloadedUpdates)
 		notifyUserForDownloadedUpdates = false

@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/safing/portbase/log"
+	"github.com/safing/portmaster/netenv"
 	"github.com/tevino/abool"
 )
 
@@ -47,6 +48,9 @@ func OnNetworkDisconnected() {
 
 // OnNetworkConnected called from java when a network interface changes some of its properties.
 func OnNetworkCapabilitiesChanged(network Network) {
+	// Trigger online check
+	netenv.TriggerOnlineStatusInvestigation()
+
 	networkChangeMutex.Lock()
 	defer networkChangeMutex.Unlock()
 

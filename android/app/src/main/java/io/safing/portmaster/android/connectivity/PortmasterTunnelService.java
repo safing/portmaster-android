@@ -136,7 +136,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     // Create tunnel interface.
     Builder builder = this.new Builder()
       .setMtu(1500)
-      .addAddress("10.0.2.15", 24)
+      .addAddress("100.127.247.245", 30)
       .addRoute("0.0.0.0", 0)
       .addDnsServer("9.9.9.9");
 
