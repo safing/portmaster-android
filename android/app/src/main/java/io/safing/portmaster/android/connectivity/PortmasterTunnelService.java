@@ -3,17 +3,24 @@ package io.safing.portmaster.android.connectivity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import java.net.DatagramSocket;
 import java.util.Set;
@@ -22,7 +29,9 @@ import engine.Engine;
 import io.safing.portmaster.android.R;
 import io.safing.portmaster.android.go_interface.Function;
 import io.safing.portmaster.android.go_interface.GoInterface;
+import io.safing.portmaster.android.os.NetworkProxy;
 import io.safing.portmaster.android.os.OSFunctions;
+import io.safing.portmaster.android.receiver.SystemIdleEventReceiver;
 import io.safing.portmaster.android.settings.Settings;
 import io.safing.portmaster.android.ui.MainActivity;
 import io.safing.portmaster.android.util.CancelNotification;
@@ -40,6 +49,9 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
   public static final String ACTION_SHUTDOWN = COMMAND_PREFIX + "shutdown";
 
   private PendingIntent mConfigureIntent;
+
+  BroadcastReceiver systemIdleEventReceiver = null;
+  ConnectivityManager.NetworkCallback networkCallback = null;
 
   private Function showNotification;
   private Function cancelNotification;
@@ -62,6 +74,9 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     Engine.setOSFunctions(OSFunctions.get());
 
     super.onCreate();
+
+    // Register receivers for system events.
+    registerEvents();
 
     // Create the intent to "configure" the connection (just start PortmasterVPNService).
     mConfigureIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),
@@ -115,6 +130,7 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
 
   @Override
   public void onDestroy() {
+    unregisterSystemEvents();
     // Send destroy signal to go library, App may still be running
     Engine.onServiceDestroy();
     stopForeground(true);
@@ -158,7 +174,6 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
     }
 
     // Create a new interface using the builder and save the parameters.
-    final ParcelFileDescriptor tunnelInterface;
     synchronized (this) {
       ParcelFileDescriptor fd = builder.establish();
       if(fd != null) {
@@ -182,6 +197,38 @@ public class PortmasterTunnelService extends VpnService implements Handler.Callb
       // or other notification behaviors after this
       NotificationManager notificationManager = getSystemService(NotificationManager.class);
       notificationManager.createNotificationChannel(channel);
+    }
+  }
+
+  private void registerEvents() {
+    // System sleep events
+    systemIdleEventReceiver = new SystemIdleEventReceiver();
+
+    IntentFilter filter = new IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED);
+    this.registerReceiver(systemIdleEventReceiver, filter);
+
+    // Network interfaces change events
+    networkCallback = new NetworkCallbacks();
+    ConnectivityManager connectivityManager = null;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      connectivityManager = getApplicationContext().getSystemService(ConnectivityManager.class);
+      connectivityManager.registerDefaultNetworkCallback(networkCallback);
+    }
+  }
+
+  private void unregisterSystemEvents() {
+    if(systemIdleEventReceiver != null) {
+      this.unregisterReceiver(systemIdleEventReceiver);
+      systemIdleEventReceiver = null;
+    }
+
+    if(networkCallback != null) {
+      ConnectivityManager connectivityManager = null;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        connectivityManager = getApplicationContext().getSystemService(ConnectivityManager.class);
+        connectivityManager.registerDefaultNetworkCallback(networkCallback);
+      }
+      networkCallback = null;
     }
   }
 }

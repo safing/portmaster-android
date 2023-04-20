@@ -6,8 +6,9 @@ android {
         applicationId "io.safing.portmaster.android"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion 29
         versionCode 4
-        versionName "0.0.12"
+        versionName "0.0.12-droid.${versionCode}"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
