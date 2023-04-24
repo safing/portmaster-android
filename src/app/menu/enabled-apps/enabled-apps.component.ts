@@ -1,16 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 
-import { ModalController } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import GoBridge from '../../plugins/go.bridge';
 import JavaBridge from '../../plugins/java.bridge';
 import { MenuItem } from '../menu.item';
 
 import { Application } from './application';
+import { SystemAppList } from './enabled-apps.filter';
+import { CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-enabled-apps',
   templateUrl: './enabled-apps.component.html',
   styleUrls: ['./enabled-apps.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, SystemAppList]
 })
 export class EnabledAppsComponent extends MenuItem implements OnInit {
   AppList: Application[];

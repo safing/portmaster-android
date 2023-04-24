@@ -1,43 +1,47 @@
-<ion-item color="disclaimer">
-  <ion-label class="ion-text-wrap"><p>This version is not optimized for battery performance. We are working on improving this for future versions.</p></ion-label>
-</ion-item>
-<ion-item>
-  <ion-label>VPN Service </ion-label><ion-button slot="end" (click)="Shutdown()" color="danger"><ion-icon
-      name="power-outline"></ion-icon></ion-button>
-</ion-item>
-<ion-item>
-  <ion-label>Secure DNS</ion-label><ion-label slot="end">work in progress</ion-label>
-</ion-item>
-<ion-item>
-  <ion-label>Privacy Filter</ion-label><ion-label slot="end">work in progress</ion-label>
-</ion-item>
-<ion-item>
-  <ion-label>SPN {{SPNStatus?.Status}}</ion-label>
-  <spn-button [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onEnable)="enableSPN()"
-    (onDisable)="disableSPN()"></spn-button>
-</ion-item>
-<ion-item *ngIf="!User?.canUseSPN">
-  <ion-label color="danger">Your account does not have access to the SPN</ion-label>
-</ion-item>
-<ion-item *ngIf="isSPNConnected()">
-  <ion-label class="ion-text-wrap">
-    <p>
-      Home: {{SPNStatus.HomeHubName}}
-      <br>
-      Connection: {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
-      <br>
-      Connected Since: {{SPNStatus.ConnectedSince | date:'medium'}}
-    </p>
-  </ion-label>
-</ion-item>
-<ion-item *ngIf="!IsGeoIPDataAvailable">
-  <ion-label class="ion-text-wrap">
-    <p>The GeoIP update is required before you can start using the SPN.</p>
-  </ion-label>
-</ion-item>
-<ion-item *ngIf="SPNErrorMsg.length > 0">
-  <ion-label class="ion-text-wrap">
-    <p>{{SPNErrorMsg}}</p>
-  </ion-label>
-</ion-item>
-<app-download-progress (OnDownloadComplete)="CheckGeoIPData()"></app-download-progress>
+<ion-content>
+  <ion-item color="disclaimer">
+    <ion-label class="ion-text-wrap"><p>This version is not optimized for battery performance. We are working on improving this for future versions.</p></ion-label>
+  </ion-item>
+  <ion-item>
+    <ion-label>VPN Service </ion-label><ion-button slot="end" (click)="Shutdown()" color="danger"><ion-icon
+        name="power-outline"></ion-icon></ion-button>
+  </ion-item>
+  <ion-item>
+    <ion-label>Secure DNS</ion-label><ion-label slot="end">work in progress</ion-label>
+  </ion-item>
+  <ion-item>
+    <ion-label>Privacy Filter</ion-label><ion-label slot="end">work in progress</ion-label>
+  </ion-item>
+  <ion-item>
+    <ion-label>SPN {{SPNStatus?.Status}}</ion-label>
+    <spn-button [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onEnable)="enableSPN()"
+      (onDisable)="disableSPN()"></spn-button>
+  </ion-item>
+  <ion-item *ngIf="!User?.canUseSPN">
+    <ion-label color="danger">Your account does not have access to the SPN</ion-label>
+  </ion-item>
+  <ion-item *ngIf="isSPNConnected()">
+    <ion-label class="ion-text-wrap">
+      <p>
+        Home: {{SPNStatus.HomeHubName}}
+        <br>
+        Connection: {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
+        <br>
+        Connected Since: {{SPNStatus.ConnectedSince | date:'medium'}}
+      </p>
+    </ion-label>
+  </ion-item>
+  <ion-item *ngIf="!IsGeoIPDataAvailable">
+    <ion-label class="ion-text-wrap">
+      <p>The GeoIP update is required before you can start using the SPN.</p>
+    </ion-label>
+  </ion-item>
+  <ion-item *ngIf="SPNErrorMsg.length > 0">
+    <ion-label class="ion-text-wrap">
+      <p>{{SPNErrorMsg}}</p>
+    </ion-label>
+  </ion-item>
+  <app-download-progress (OnDownloadComplete)="CheckGeoIPData()"></app-download-progress>
+  <div class="link" color="white">
+ 
+</div></ion-content>

@@ -1,20 +1,25 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { AlertController, Platform } from '@ionic/angular';
+import { AlertController, IonicModule, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { Database, DatabaseListener } from "../db-interface/module"
 import GoBridge from '../plugins/go.bridge';
-import { User, SPNStatus } from "../types/spn.types"
+import { UserProfile, SPNStatus } from "../types/spn.types"
+import { SPNButton } from './spn-button/spn-button.component';
+import { DownloadProgressComponent } from './download-progress/download-progress.component';
+import { CommonModule } from '@angular/common';
+import { SPNService } from '../services/spn.service';
 
 @Component({
   selector: 'spn-view-container',
   templateUrl: './spn-view.component.html',
   styleUrls: ['./spn-view.component.scss'],
+  standalone: true,
+  imports: [SPNButton, DownloadProgressComponent, CommonModule, IonicModule]
 })
 export class SPNViewComponent implements OnInit, OnDestroy {
-  @Input() User: User;
-  @Output() onLogout = new EventEmitter();
-  @Output() onUpdateUserInfo = new EventEmitter();
+  User: UserProfile;
+  
   @Output() onShutdown = new EventEmitter();
 
   SPNStatus: SPNStatus | null;
@@ -25,21 +30,37 @@ export class SPNViewComponent implements OnInit, OnDestroy {
 
   private resumeSubscription: Subscription;
 
-  constructor(private changeDetector: ChangeDetectorRef, private alertController: AlertController, private platform: Platform) {
+  constructor(private changeDetector: ChangeDetectorRef, 
+              private alertController: AlertController,
+              private platform: Platform,
+              private spnService: SPNService) {
     this.SPNStatus = null;
   }
 
   async ngOnInit() {
-    var listener = await Database.Subscribe("runtime:spn/status", (msg: SPNStatus) => {
-      this.SPNStatus = msg;
-      console.log("SPN event", JSON.stringify(msg))
+    this.spnService.watchSPNStatus().subscribe((status: SPNStatus) => {
+      if(status == null) {
+        return;
+      }
+      this.SPNStatus = status;
+      console.log("Spn status update:", JSON.stringify(status));
       // Update UI.
       this.changeDetector.detectChanges();
     });
 
-    this.DatabaseListeners.push(listener);
+    this.spnService.watchProfile().subscribe((user: UserProfile) => {
+      this.User = user;
+      console.log("User profile update:", JSON.stringify(user));
 
-    listener = await Database.Subscribe("runtime:subsystems/spn", (msg: any) => {
+      if(user != null) {
+        this.User.canUseSPN = user.current_plan?.feature_ids.includes('spn');
+      }
+
+      // Update UI.
+      this.changeDetector.detectChanges();
+    });
+
+    var listener = await Database.Subscribe("runtime:subsystems/spn", (msg: any) => {
       this.SPNErrorMsg = msg.Modules[0].FailureMsg;
       console.log("runtime:subsystems/spn", this.SPNErrorMsg)
       // Update UI.
@@ -59,7 +80,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
 
   async ngOnDestroy() {
     this.DatabaseListeners.forEach((listener) => {
-      listener.remove();
+      listener.unsubscribe();
     });
 
     this.resumeSubscription.unsubscribe();
@@ -74,7 +95,8 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   }
 
   async updateUserInfo() {
-    this.onUpdateUserInfo.emit()
+    // this.onUpdateUserInfo.emit()
+    this.spnService.userProfile(true);
   }
 
   isSPNConnected(): boolean {

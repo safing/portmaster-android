@@ -5,6 +5,7 @@ import { SPNStatus } from "../../types/spn.types";
 @Component({
     selector: "spn-button",
     templateUrl: './spn-button.component.html',
+    standalone: true,
 })
 export class SPNButton {
     @Input() SPNStatus: SPNStatus;

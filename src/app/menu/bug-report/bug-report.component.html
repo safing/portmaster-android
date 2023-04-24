@@ -1,6 +1,6 @@
 <ion-modal [isOpen]="isOpen" (willDismiss)="onClose()">
-<ng-template>
   <ion-content>
+    
     <ion-item>
       <ion-title>Title</ion-title>
     </ion-item>
@@ -31,6 +31,7 @@
     <ion-item>
       <ion-textarea [autoGrow]="true" placeholder="Provide extra details if needed" [(ngModel)]="AdditionalInfo"></ion-textarea>
     </ion-item>
+  
 
     <ion-item>
       <ion-label>Include debug info </ion-label><ion-toggle [(ngModel)]="IncludeDebugInfo"></ion-toggle>
@@ -58,5 +59,4 @@
     <ion-button (click)="privateTicketReport()">Send private ticket</ion-button>
 
   </ion-content>
-</ng-template>
 </ion-modal>

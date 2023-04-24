@@ -1,14 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController } from '@ionic/angular';
+import { AlertController, IonicModule, LoadingController, ModalController } from '@ionic/angular';
 import GoBridge from '../../plugins/go.bridge';
 import JavaBridge from '../../plugins/java.bridge';
 import { TicketRequest } from '../../types/issue.types';
 import { MenuItem } from '../menu.item';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-bug-report',
   templateUrl: './bug-report.component.html',
   styleUrls: ['./bug-report.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
 export class BugReportComponent extends MenuItem implements OnInit {
   
@@ -33,11 +37,11 @@ export class BugReportComponent extends MenuItem implements OnInit {
 
   public show() {
     super.show();
-    GoBridge.GetDebugInfo().then((result: string) => {
-      this.DebugInfo = result;
-    }, (err) => {
-      console.log("failed to get debug info:", err);
-    });
+    // GoBridge.GetDebugInfo().then((result: string) => {
+    //   this.DebugInfo = result;
+    // }, (err) => {
+    //   console.log("failed to get debug info:", err);
+    // });
   }
 
   protected onClose(): void {

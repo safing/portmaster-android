@@ -45,7 +45,7 @@ func RestartTunnel() {
 	tunnel.Reconnect()
 }
 
-// GetUser ts:(User)
+// GetUser ts:(UserProfile)
 func GetUser() (*access.UserRecord, error) {
 	return access.GetUser()
 }
@@ -74,7 +74,6 @@ func Login(call PluginCall) {
 			userJson, _ := json.Marshal(user)
 			log.Info(string(userJson))
 			call.ResolveJson(string(userJson))
-
 		}
 	}()
 }
@@ -83,7 +82,7 @@ func Logout() error {
 	return access.Logout(false, true)
 }
 
-// ts:(User)
+// ts:(UserProfile)
 func UpdateUserInfo() (*access.UserRecord, error) {
 	user, _, err := access.UpdateUser()
 	return user, err

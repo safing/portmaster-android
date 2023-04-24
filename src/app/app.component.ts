@@ -1,10 +1,12 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, EnvironmentInjector, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
 
 import { EnabledAppsComponent } from './menu/enabled-apps/enabled-apps.component';
 import { LogsComponent } from './menu/logs/logs.component';
 import { LoadingController, ModalController} from '@ionic/angular';
 
-import {User} from "./types/spn.types"
+import {UserProfile} from "./types/spn.types"
 import JavaBridge from './plugins/java.bridge';
 import GoBridge from './plugins/go.bridge';
 import { BugReportComponent } from './menu/bug-report/bug-report.component';
@@ -15,17 +17,19 @@ import { VpnSettingsComponent } from './menu/vpn-settings/vpn-settings.component
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
+  standalone: true,
+  imports: [IonicModule, CommonModule],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  User: User = null;
+  User: UserProfile = null;
   ShowWelcomeScreen: boolean = false;
   LoginError: string = "";
 
-  @ViewChild("userinfo") UserInfoModal: UserInfoComponent;
-  @ViewChild("bugreport") BugReportModal: BugReportComponent;
-  @ViewChild("enabledapps") EnabledAppsModal: EnabledAppsComponent;
-  @ViewChild("logs") LogsModal: LogsComponent;
-  @ViewChild("vpnsettings") VPNSettings: VpnSettingsComponent;
+  // @ViewChild("userinfo") UserInfoModal: UserInfoComponent;
+  // @ViewChild("bugreport") BugReportModal: BugReportComponent;
+  // @ViewChild("enabledapps") EnabledAppsModal: EnabledAppsComponent;
+  // @ViewChild("logs") LogsModal: LogsComponent;
+  // @ViewChild("vpnsettings") VPNSettings: VpnSettingsComponent;
 
   constructor(private modalController: ModalController, private loadingCtrl: LoadingController) {}
   async ngOnInit(): Promise<void> {
@@ -35,7 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.User = await GoBridge.GetUser();
       this.updateUserCanUseSPNValue(this.User);
     } catch (err) {}
- }
+  }
 
   ngOnDestroy(): void {}
 
@@ -75,7 +79,7 @@ export class AppComponent implements OnInit, OnDestroy {
     GoBridge.GetDebugInfoFile();
   }
 
-  private updateUserCanUseSPNValue(user: User) {
+  private updateUserCanUseSPNValue(user: UserProfile) {
     user.canUseSPN = user.current_plan?.feature_ids.includes('spn');
   }
 

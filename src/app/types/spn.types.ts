@@ -56,7 +56,7 @@ class View {
     ShowLogoutButton?: boolean;
 }
 
-export class User {
+export class UserProfile {
     username: string;
     state: string;
     balance: number;

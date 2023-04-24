@@ -6,7 +6,7 @@ export class DatabaseListener {
         private eventID: string,
         private pluginListener: PluginListenerHandle) { }
 
-    public remove() {
+    public unsubscribe() {
         this.pluginListener.remove();
         GoBridge.RemoveSubscription(this.eventID);
     }

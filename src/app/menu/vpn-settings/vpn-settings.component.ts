@@ -6,6 +6,8 @@ import { MenuItem } from '../menu.item';
   selector: 'app-vpn-settings',
   templateUrl: './vpn-settings.component.html',
   styleUrls: ['./vpn-settings.component.scss'],
+  standalone: true,
+  imports: []
 })
 export class VpnSettingsComponent extends MenuItem implements OnInit {
 

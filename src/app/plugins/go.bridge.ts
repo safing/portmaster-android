@@ -1,6 +1,6 @@
 
 import { Plugin, registerPlugin } from '@capacitor/core';
-import { SPNStatus, User } from '../types/spn.types';
+import { SPNStatus, UserProfile } from '../types/spn.types';
 
 export interface GoBridgeInterface extends Plugin {
 	EnableSPN(): Promise<void>
@@ -59,8 +59,8 @@ export class GoBridgeClass {
 		return GoInterface.RestartTunnel();
 	}
 	
-	public GetUser(): Promise<User> {
-		return new Promise<User>((resolve, reject) => {
+	public GetUser(): Promise<UserProfile> {
+		return new Promise<UserProfile>((resolve, reject) => {
             GoInterface.GetUser().then((result) => {
                resolve(result.ret0);
             }, (result) => {
@@ -77,8 +77,8 @@ export class GoBridgeClass {
 		return GoInterface.Logout();
 	}
 	
-	public UpdateUserInfo(): Promise<User> {
-		return new Promise<User>((resolve, reject) => {
+	public UpdateUserInfo(): Promise<UserProfile> {
+		return new Promise<UserProfile>((resolve, reject) => {
             GoInterface.UpdateUserInfo().then((result) => {
                resolve(result.ret0);
             }, (result) => {
