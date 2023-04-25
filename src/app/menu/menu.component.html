@@ -1,45 +1,23 @@
 <ion-content>
-  <!-- <ion-item *ngIf="User != null" (click)="UserInfoModal.show()">
+  <ion-item *ngIf="User?.username" (click)="openUserInfo()">
     <ion-label expand="full" id="user-info">User Info</ion-label>
-  </ion-item> -->
-  <!-- <ion-item (click)="EnabledAppsModal.show()">
+  </ion-item>
+  <ion-item (click)="openEnabledApps()">
     <ion-label expand="full">Apps Settings</ion-label>
   </ion-item>
-  <ion-item (click)="VPNSettings.show()">
+  <ion-item (click)="openVPNSettings()">
     <ion-label expand="full">System Settings</ion-label>
-  </ion-item> -->
-  <ion-item (click)="isOpen = true">
+  </ion-item>
+  <ion-item (click)="openLogs()">
     <ion-label expand="full">Logs</ion-label>
   </ion-item>
-  <!-- <ion-item (click)="BugReportModal.show()">
+  <ion-item (click)="openBugReport()">
     <ion-label expand="full">Report a Bug 🐞</ion-label>
-  </ion-item> -->
-  <!-- <ion-item (click)="exportDebugInfo()">
+  </ion-item>
+  <ion-item (click)="exportDebugInfo()">
     <ion-label expand="full">Export Debug Info</ion-label>
-  </ion-item> -->
-  <!-- <ion-item *ngIf="User != null" (click)="logout()">
+  </ion-item>
+  <ion-item *ngIf="User?.username" (click)="logout()">
     <ion-label expand="full" color="danger">Logout</ion-label>
-  </ion-item> -->
+  </ion-item>
 </ion-content>
-
-<!-- <app-user-info #userinfo></app-user-info>
-<app-bug-report #bugreport></app-bug-report>
-<app-enabled-apps #enabledapps></app-enabled-apps>  -->
-<!-- <app-logs #logs></app-logs> -->
-<!-- <app-vpn-settings #vpnsettings></app-vpn-settings> -->
-
-
-<ion-modal [isOpen]="isOpen" (willDismiss)="onClose()" #logs>
-  <ion-header>
-    <ion-list-header>
-      <ion-label>Logs</ion-label>
-    </ion-list-header>
-  </ion-header>
-  <ion-content id="content">
-    <div *ngFor="let line of Logs">
-      <hr>
-      <div class="logline {{line.Severity}}">{{line.Meta}}</div>
-      <div class="logline {{line.Severity}}">{{line.Severity}}:{{line.Content}}</div>
-    </div>
-  </ion-content>
-</ion-modal>

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
-import { SPNStatus } from "../../types/spn.types";
+import { SPNStatus, UserProfile } from "../../types/spn.types";
 
 @Component({
     selector: "spn-button",
@@ -8,13 +8,20 @@ import { SPNStatus } from "../../types/spn.types";
     standalone: true,
 })
 export class SPNButton {
+    @Input() User: UserProfile;
     @Input() SPNStatus: SPNStatus;
     @Input() IsGeoIPDataAvailable: boolean;
 
     @Output() onEnable = new EventEmitter();
     @Output() onDisable = new EventEmitter();
+    @Output() onLogin = new EventEmitter();
 
     async onClick() {
+        if(!this.User?.username) {
+            this.onLogin.emit();
+            return;
+        }
+
         switch(this.SPNStatus.Status) {
             case "disabled": {
                 this.onEnable.emit()
@@ -28,6 +35,10 @@ export class SPNButton {
     }
 
     GetButtonText(): string {
+        if(!this.User?.username) {
+            return "Login";
+        }
+
         if(!this.IsGeoIPDataAvailable) {
             return "Missing data"
         }

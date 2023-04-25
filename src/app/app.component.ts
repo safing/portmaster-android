@@ -1,6 +1,6 @@
 import { Component, EnvironmentInjector, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+import { IonicModule, NavController, Platform } from '@ionic/angular';
+import { CommonModule, LocationStrategy } from '@angular/common';
 
 import { EnabledAppsComponent } from './menu/enabled-apps/enabled-apps.component';
 import { LogsComponent } from './menu/logs/logs.component';
@@ -21,17 +21,14 @@ import { VpnSettingsComponent } from './menu/vpn-settings/vpn-settings.component
   imports: [IonicModule, CommonModule],
 })
 export class AppComponent implements OnInit, OnDestroy {
+
+  public environmentInjector = inject(EnvironmentInjector);
+
   User: UserProfile = null;
   ShowWelcomeScreen: boolean = false;
   LoginError: string = "";
 
-  // @ViewChild("userinfo") UserInfoModal: UserInfoComponent;
-  // @ViewChild("bugreport") BugReportModal: BugReportComponent;
-  // @ViewChild("enabledapps") EnabledAppsModal: EnabledAppsComponent;
-  // @ViewChild("logs") LogsModal: LogsComponent;
-  // @ViewChild("vpnsettings") VPNSettings: VpnSettingsComponent;
-
-  constructor(private modalController: ModalController, private loadingCtrl: LoadingController) {}
+  constructor(private modalController: ModalController, private loadingCtrl: LoadingController, private platform: Platform, private locationStrategy: LocationStrategy) {}
   async ngOnInit(): Promise<void> {
     var result = await JavaBridge.shouldShowWelcomeScreen();
     this.ShowWelcomeScreen = result.show;
@@ -39,6 +36,12 @@ export class AppComponent implements OnInit, OnDestroy {
       this.User = await GoBridge.GetUser();
       this.updateUserCanUseSPNValue(this.User);
     } catch (err) {}
+
+
+    this.platform.backButton.subscribeWithPriority(10, () => {
+      this.locationStrategy.back()
+    });
+
   }
 
   ngOnDestroy(): void {}

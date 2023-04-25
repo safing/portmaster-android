@@ -14,10 +14,10 @@
   </ion-item>
   <ion-item>
     <ion-label>SPN {{SPNStatus?.Status}}</ion-label>
-    <spn-button [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onEnable)="enableSPN()"
-      (onDisable)="disableSPN()"></spn-button>
+    <spn-button [User]="User" [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onEnable)="enableSPN()"
+      (onDisable)="disableSPN()" (onLogin)="openLoginPage()"></spn-button>
   </ion-item>
-  <ion-item *ngIf="!User?.canUseSPN">
+  <ion-item *ngIf="User?.username && !User?.canUseSPN">
     <ion-label color="danger">Your account does not have access to the SPN</ion-label>
   </ion-item>
   <ion-item *ngIf="isSPNConnected()">

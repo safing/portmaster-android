@@ -1,14 +1,22 @@
-<ion-modal [isOpen]="isOpen" (willDismiss)="onClose()">
-  <ion-header>
-    <ion-list-header>
-      <ion-label>Logs</ion-label>
-    </ion-list-header>
-  </ion-header>
-  <ion-content id="content">
-    <div *ngFor="let line of Logs">
-      <hr>
-      <div class="logline {{line.Severity}}">{{line.Meta}}</div>
-      <div class="logline {{line.Severity}}">{{line.Severity}}:{{line.Content}}</div>
-    </div>
-  </ion-content>
-</ion-modal>
+
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button (click)="Close()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Logs</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<!-- <ion-header>
+  <ion-list-header>
+    <ion-label>Logs</ion-label>
+  </ion-list-header>
+</ion-header> -->
+<ion-content #content>
+  <div *ngFor="let line of Logs">
+    <hr>
+    <div class="logline {{line.Severity}}">{{line.Meta}}</div>
+    <div class="logline {{line.Severity}}">{{line.Severity}}:{{line.Content}}</div>
+  </div>
+</ion-content>

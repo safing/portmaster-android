@@ -3,8 +3,7 @@ import { AlertController, IonicModule, LoadingController, ModalController } from
 import GoBridge from '../../plugins/go.bridge';
 import JavaBridge from '../../plugins/java.bridge';
 import { TicketRequest } from '../../types/issue.types';
-import { MenuItem } from '../menu.item';
-import { CommonModule } from '@angular/common';
+import { CommonModule, LocationStrategy } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -12,9 +11,9 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './bug-report.component.html',
   styleUrls: ['./bug-report.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, IonicModule, FormsModule]
 })
-export class BugReportComponent extends MenuItem implements OnInit {
+export class BugReportComponent implements OnInit {
   
   // Title
   public ReportTitle:  string | null;
@@ -29,23 +28,14 @@ export class BugReportComponent extends MenuItem implements OnInit {
   public IncludeDebugInfo: boolean = true;
 	public DebugInfo:  string | null;
 
-  constructor(private alertController: AlertController, private modalCtrl: ModalController, private loadingCtrl: LoadingController) {
-    super();
-  }
+  constructor(private alertController: AlertController, private loadingCtrl: LoadingController, private locationStrategy: LocationStrategy) {}
 
-  ngOnInit() {}
-
-  public show() {
-    super.show();
-    // GoBridge.GetDebugInfo().then((result: string) => {
-    //   this.DebugInfo = result;
-    // }, (err) => {
-    //   console.log("failed to get debug info:", err);
-    // });
-  }
-
-  protected onClose(): void {
-    super.onClose();
+  ngOnInit() {
+    GoBridge.GetDebugInfo().then((result: string) => {
+      this.DebugInfo = result;
+    }, (err) => {
+      console.log("failed to get debug info:", err);
+    });
   }
 
   private resetForm(): void {
@@ -136,7 +126,7 @@ export class BugReportComponent extends MenuItem implements OnInit {
       }
 
       this.resetForm();
-      this.modalCtrl.dismiss(null);
+      this.locationStrategy.back();
     }catch(err) {
       loadingOverlay.dismiss();
       await this.showMessage("Error", err);
@@ -200,7 +190,7 @@ export class BugReportComponent extends MenuItem implements OnInit {
       await this.showMessage("Ticket Created!", "");
       // Close the window.
       this.resetForm();
-      this.modalCtrl.dismiss(null);
+      this.locationStrategy.back();
     } catch (err) {
       loadingOverlay.dismiss();
       this.showMessage("Error", err);

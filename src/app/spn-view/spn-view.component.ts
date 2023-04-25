@@ -9,6 +9,7 @@ import { SPNButton } from './spn-button/spn-button.component';
 import { DownloadProgressComponent } from './download-progress/download-progress.component';
 import { CommonModule } from '@angular/common';
 import { SPNService } from '../services/spn.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'spn-view-container',
@@ -20,8 +21,6 @@ import { SPNService } from '../services/spn.service';
 export class SPNViewComponent implements OnInit, OnDestroy {
   User: UserProfile;
   
-  @Output() onShutdown = new EventEmitter();
-
   SPNStatus: SPNStatus | null;
   SPNErrorMsg: string = "";
   IsGeoIPDataAvailable: boolean = false;
@@ -33,7 +32,8 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   constructor(private changeDetector: ChangeDetectorRef, 
               private alertController: AlertController,
               private platform: Platform,
-              private spnService: SPNService) {
+              private spnService: SPNService,
+              private router: Router) {
     this.SPNStatus = null;
   }
 
@@ -121,7 +121,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
         { 
           text: "Shutdown",
           handler: () => {
-            this.onShutdown.emit();
+            // TODO: show shutdown overlay
             GoBridge.Shutdown();
           }
         },
@@ -157,7 +157,12 @@ export class SPNViewComponent implements OnInit, OnDestroy {
       }
       GoBridge.Shutdown();
     }
-  } 
+  }
+
+  openLoginPage() {
+    console.log("onLogin event");
+    this.router.navigate(["/login"])
+  }
 
   async CheckGeoIPData() {
     this.IsGeoIPDataAvailable = await GoBridge.IsGeoIPDataAvailable();

@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core';
 import GoBridge, { GoInterface } from 'src/app/plugins/go.bridge';
-import { UpdateState } from 'src/app/types/spn.types';
+import { SPNService } from 'src/app/services/spn.service';
+import { UpdateState, UserProfile } from 'src/app/types/spn.types';
 
 @Component({
   selector: 'app-download-progress',

@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UserProfile } from '../../types/spn.types';
-import { MenuItem } from '../menu.item';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { SPNService } from 'src/app/services/spn.service';
 
 @Component({
   selector: 'app-user-info',
@@ -11,21 +11,23 @@ import { IonicModule } from '@ionic/angular';
   standalone: true,
   imports: [CommonModule]
 })
-export class UserInfoComponent extends MenuItem implements OnInit {
+export class UserInfoComponent implements OnInit {
 
-  @Input() User: UserProfile;
-
-  @Output() onLogout = new EventEmitter();
-  @Output() onRefresh = new EventEmitter();
+  User: UserProfile;
   
-  constructor() {
-    super()
+  constructor(private spnService: SPNService) {
+    this.spnService.watchProfile().subscribe((user) => {
+      this.User = user;
+    });
   }
+
   ngOnInit() {}
 
+  refresh() {
+    this.spnService.userProfile(true);
+  }
 
   public logout() {
-    this.onLogout.emit();
-    this.isOpen = false;
+    this.spnService.logout();
   }
 }

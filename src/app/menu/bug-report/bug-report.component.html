@@ -1,62 +1,57 @@
-<ion-modal [isOpen]="isOpen" (willDismiss)="onClose()">
-  <ion-content>
-    
-    <ion-item>
-      <ion-title>Title</ion-title>
-    </ion-item>
-    <ion-item>
-      <ion-textarea [autoGrow]="true" placeholder="Summarize your report" [(ngModel)]="ReportTitle"></ion-textarea>
-    </ion-item>
-    <ion-item>
-      <ion-title>What happened?</ion-title>
-    </ion-item>
-    <ion-item>  
-      <ion-textarea [autoGrow]="true" placeholder="Describe what happened in detail" [(ngModel)]="WhatHappened"></ion-textarea>
-    </ion-item>
-    <ion-item>
-      <ion-title>What did you expect to happen?</ion-title>
-    </ion-item>
-    <ion-item>
-      <ion-textarea [autoGrow]="true" placeholder="Describe what you expected to happen instead" [(ngModel)]="WhatWasExpected"></ion-textarea>
-    </ion-item>
-    <ion-item>
-      <ion-title>How did you reproduce it?</ion-title>
-    </ion-item>
-    <ion-item>
-      <ion-textarea [autoGrow]="true" placeholder="Describe how to reproduce the issue" [(ngModel)]="HowToReproduce"></ion-textarea>
-    </ion-item>
-    <ion-item>
-      <ion-title>Additional information</ion-title>
-    </ion-item>
-    <ion-item>
-      <ion-textarea [autoGrow]="true" placeholder="Provide extra details if needed" [(ngModel)]="AdditionalInfo"></ion-textarea>
-    </ion-item>
-  
+<ion-content>
+  <ion-item>
+    <ion-title>Title</ion-title>
+  </ion-item>
+  <ion-item>
+    <ion-textarea [autoGrow]="true" placeholder="Summarize your report" [(ngModel)]="ReportTitle"></ion-textarea>
+  </ion-item>
+  <ion-item>
+    <ion-title>What happened?</ion-title>
+  </ion-item>
+  <ion-item>  
+    <ion-textarea [autoGrow]="true" placeholder="Describe what happened in detail" [(ngModel)]="WhatHappened"></ion-textarea>
+  </ion-item>
+  <ion-item>
+    <ion-title>What did you expect to happen?</ion-title>
+  </ion-item>
+  <ion-item>
+    <ion-textarea [autoGrow]="true" placeholder="Describe what you expected to happen instead" [(ngModel)]="WhatWasExpected"></ion-textarea>
+  </ion-item>
+  <ion-item>
+    <ion-title>How did you reproduce it?</ion-title>
+  </ion-item>
+  <ion-item>
+    <ion-textarea [autoGrow]="true" placeholder="Describe how to reproduce the issue" [(ngModel)]="HowToReproduce"></ion-textarea>
+  </ion-item>
+  <ion-item>
+    <ion-title>Additional information</ion-title>
+  </ion-item>
+  <ion-item>
+    <ion-textarea [autoGrow]="true" placeholder="Provide extra details if needed" [(ngModel)]="AdditionalInfo"></ion-textarea>
+  </ion-item>
 
+  <ion-item>
+    <ion-label>Include debug info </ion-label><ion-toggle [(ngModel)]="IncludeDebugInfo"></ion-toggle>
+  </ion-item>
+  <div *ngIf="IncludeDebugInfo">
     <ion-item>
-      <ion-label>Include debug info </ion-label><ion-toggle [(ngModel)]="IncludeDebugInfo"></ion-toggle>
+      <ion-label  class="ion-text-wrap">
+        <p>The following debug information will be sent together with your report. Please check it and remove potentially sensitive information. The debug information sent with your reports will be saved on Safing's self-hosted pastebin server and is viewable via its created url. The data is automatically destroyed after one month.</p>
+      </ion-label>
     </ion-item>
-    <div *ngIf="IncludeDebugInfo">
-      <ion-item>
-        <ion-label  class="ion-text-wrap">
-          <p>The following debug information will be sent together with your report. Please check it and remove potentially sensitive information. The debug information sent with your reports will be saved on Safing's self-hosted pastebin server and is viewable via its created url. The data is automatically destroyed after one month.</p>
-        </ion-label>
-      </ion-item>
-      <ion-accordion-group>
-        <ion-accordion value="first">
-          <ion-item slot="header">
-            <ion-title>Included Debug Info</ion-title>
+    <ion-accordion-group>
+      <ion-accordion value="first">
+        <ion-item slot="header">
+          <ion-title>Included Debug Info</ion-title>
+        </ion-item>
+        <div slot="content">
+          <ion-item >
+            <ion-textarea [autoGrow]="true" [(ngModel)]="DebugInfo"></ion-textarea>
           </ion-item>
-          <div slot="content">
-            <ion-item >
-              <ion-textarea [autoGrow]="true" [(ngModel)]="DebugInfo"></ion-textarea>
-            </ion-item>
-          </div>
-        </ion-accordion>
-      </ion-accordion-group>
-    </div>
-    <ion-button (click)="githubSelectAlert()"><ion-icon slot="start" name="logo-github"></ion-icon> Create on github</ion-button>
-    <ion-button (click)="privateTicketReport()">Send private ticket</ion-button>
-
-  </ion-content>
-</ion-modal>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </div>
+  <ion-button (click)="githubSelectAlert()"><ion-icon slot="start" name="logo-github"></ion-icon> Create on github</ion-button>
+  <ion-button (click)="privateTicketReport()">Send private ticket</ion-button>
+</ion-content>

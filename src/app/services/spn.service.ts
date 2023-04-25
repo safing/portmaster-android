@@ -11,8 +11,8 @@ import { Database, DatabaseListener } from "../db-interface/module";
 @Injectable({ providedIn: 'root' })
 export class SPNService {
 
-  private SPNStatusSubject = new BehaviorSubject<SPNStatus>(null);
-  private UserProfileSubject = new BehaviorSubject<UserProfile>(null);
+  private SPNStatusSubject = new BehaviorSubject<SPNStatus | null>(null);
+  private UserProfileSubject = new BehaviorSubject<UserProfile | null>(null);
   
 
   constructor() {

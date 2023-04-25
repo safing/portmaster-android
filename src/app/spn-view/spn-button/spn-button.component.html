@@ -1,1 +1,1 @@
-<ion-button [disabled]="!IsGeoIPDataAvailable" (click)="onClick()" [color]="GetButtonColor()">{{GetButtonText()}}</ion-button>
+<ion-button [disabled]="User?.username && !IsGeoIPDataAvailable" (click)="onClick()" [color]="GetButtonColor()">{{GetButtonText()}}</ion-button>

@@ -3,34 +3,32 @@ import { TabsPage } from './tabs.page';
 
 export const routes: Routes = [
   {
-    path: 'tabs',
+    path: '',
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
+        path: 'main',
         loadComponent: () =>
           import('../spn-view/spn-view.component').then((m) => m.SPNViewComponent),
       },
       {
-        path: 'tab2',
-        loadComponent: () =>
-          import('../login/login.component').then((m) => m.LoginComponent),
+        path: 'help',
+        loadComponent: () => import('../help/help.component').then((m) => m.HelpComponent),
       },
       {
-        path: 'tab3',
-        loadComponent: () =>
-          import('../menu/menu.component').then((m) => m.MenuComponent),
+        path: 'menu',
+        loadComponent: () => import('../menu/menu.component').then((m) => m.MenuComponent),  
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/main',
         pathMatch: 'full',
       },
     ],
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/main',
     pathMatch: 'full',
   },
 ];
