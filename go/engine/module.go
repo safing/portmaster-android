@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"sync"
 
 	"github.com/safing/portbase/api"
 	"github.com/safing/portbase/config"
@@ -45,7 +46,7 @@ var (
 	dbInterface *database.Interface
 
 	activeNotifications map[string]*app_interface.Notification
-	activeSubscriptions map[string]chan struct{}
+	activeSubscriptions sync.Map // [string]chan struct{}
 
 	updateState                    UpdateState
 	downloadRequestChannel         chan struct{}
@@ -58,7 +59,7 @@ const eventPrefix = "ui-event-"
 
 func init() {
 	activeNotifications = make(map[string]*app_interface.Notification)
-	activeSubscriptions = make(map[string]chan struct{})
+	activeSubscriptions = sync.Map{}
 
 	module = modules.Register("android-engine", nil, start, nil, "base", "notifications", "updates", "netenv")
 	module.Enable()
@@ -163,7 +164,7 @@ func UISubscribeRequest(req *SubscribeRequest) {
 
 		// Create a cancel channel.
 		cancelChannel := make(chan struct{})
-		activeSubscriptions[serviceID] = cancelChannel
+		activeSubscriptions.Store(serviceID, cancelChannel)
 
 		// Query current state.
 		query := query.New(req.Query)
@@ -215,17 +216,18 @@ func UISubscribeRequest(req *SubscribeRequest) {
 }
 
 func CancelAllUISubscriptions() {
-	for _, cancel := range activeSubscriptions {
-		cancel <- struct{}{}
-	}
+	activeSubscriptions.Range(func(key any, cancel any) bool {
+		cancel.(chan struct{}) <- struct{}{}
+		return true
+	})
 
-	activeSubscriptions = make(map[string]chan struct{})
+	activeSubscriptions = sync.Map{}
 }
 
 func RemoveSubscription(eventID string) {
-	if channel, ok := activeSubscriptions[eventID]; ok {
-		channel <- struct{}{}
-		delete(activeSubscriptions, eventID)
+
+	if channel, ok := activeSubscriptions.LoadAndDelete(eventID); ok {
+		channel.(chan struct{}) <- struct{}{}
 	}
 }
 
@@ -250,7 +252,7 @@ func setupUpdateListener() {
 			updateStateFromRegistryState(regState)
 		}
 
-		//Subscribe to changes in the network interfaceses.
+		//Subscribe to changes in the network interfaces.
 		networkChangeChannel := make(chan bool)
 		SubscribeToNetworkChangeEvent(networkChangeChannel)
 		defer UnsubscribeFromNetworkChangeEvent(networkChangeChannel)
