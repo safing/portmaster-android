@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { UserProfile } from '../types/spn.types';
 import { Router, RouterModule } from '@angular/router';
 import { SPNService } from '../services/spn.service';
+import GoBridge from '../plugins/go.bridge';
 
 @Component({
   selector: 'app-menu',
@@ -19,40 +20,15 @@ import { SPNService } from '../services/spn.service';
   imports: [CommonModule, IonicModule, FormsModule ]
 })
 export class MenuComponent {
-  isOpen: boolean = false;
-  User: UserProfile = null;
+  constructor(private router: Router) {}
 
-  constructor(private router: Router, private spnService: SPNService) {
-    spnService.watchProfile().subscribe((user) => {
-      this.User = user;
-    });
-  }
-
-  openUserInfo() {
-    this.router.navigate(["/menu/user-info"]);
-  }
-
-  openEnabledApps() {
-    this.router.navigate(["/menu/enabled-apps"]);
-  }
 
   openVPNSettings() {
     this.router.navigate(["/menu/vpn-settings"]);
   }
 
-  openLogs() {
-    this.router.navigate(["/menu/logs"]);
-  }
-
   openBugReport() {
     this.router.navigate(["/menu/bug-report"]);
   }
-
-  exportDebugInfo() {
-    // this.router.navigate(["/menu/vpn-settings"]);
-  }
-
-  logout() {
-    this.spnService.logout();
-  }
+  
 }

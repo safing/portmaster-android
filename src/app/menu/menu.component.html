@@ -1,23 +1,3 @@
 <ion-content>
-  <ion-item *ngIf="User?.username" (click)="openUserInfo()">
-    <ion-label expand="full" id="user-info">User Info</ion-label>
-  </ion-item>
-  <ion-item (click)="openEnabledApps()">
-    <ion-label expand="full">Apps Settings</ion-label>
-  </ion-item>
-  <ion-item (click)="openVPNSettings()">
-    <ion-label expand="full">System Settings</ion-label>
-  </ion-item>
-  <ion-item (click)="openLogs()">
-    <ion-label expand="full">Logs</ion-label>
-  </ion-item>
-  <ion-item (click)="openBugReport()">
-    <ion-label expand="full">Report a Bug 🐞</ion-label>
-  </ion-item>
-  <ion-item (click)="exportDebugInfo()">
-    <ion-label expand="full">Export Debug Info</ion-label>
-  </ion-item>
-  <ion-item *ngIf="User?.username" (click)="logout()">
-    <ion-label expand="full" color="danger">Logout</ion-label>
-  </ion-item>
+  
 </ion-content>

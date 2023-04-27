@@ -1,5 +1,30 @@
 <ion-content>
-  <ion-item>
-    <ion-label>Help Page</ion-label>
-  </ion-item>
+  <section class="help-section" (click)="openVPNSettings()">
+    <h4>Setup Auto-Start and Always-On</h4>
+    <label class="secondary-text">Configure portmaster to be always running, even when the device restarts.</label>
+  </section>
+  <section class="help-section" (click)="openBugReport()">
+    <h4>🐞 Report a Bug</h4>
+    <label class="secondary-text">Found a bug? Report your discovery and make the Portmaster better for everyone.</label>
+  </section>
+  
+  <ion-item-divider></ion-item-divider>
+  <ion-accordion-group>
+    <ion-accordion value="vpn">
+      <ion-item slot="header" color="light">
+        <ion-label>Advanced Settings</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        <ion-item (click)="openEnabledApps()">
+          <ion-label expand="full">Apps Settings</ion-label>
+        </ion-item>
+        <ion-item (click)="openLogs()">
+          <ion-label expand="full">Logs</ion-label>
+        </ion-item>
+        <ion-item (click)="exportDebugInfo()">
+          <ion-label expand="full">Export Debug Info</ion-label>
+        </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 </ion-content>

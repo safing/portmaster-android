@@ -81,6 +81,25 @@
 	--ion-color-disclaimer-contrast-rgb: 0,0,0;
 	--ion-color-disclaimer-shade: #d9c26f;
 	--ion-color-disclaimer-tint: #f8e08b;
+
+  --ion-color-pm-accent: #404040;
+	--ion-color-pm-accent-rgb: 64,64,64;
+	--ion-color-pm-accent-contrast: #ffffff;
+	--ion-color-pm-accent-contrast-rgb: 255,255,255;
+	--ion-color-pm-accent-shade: #383838;
+	--ion-color-pm-accent-tint: #535353;
+
+  --protection-ok-primary  : rgb(29, 233, 102);
+  --protection-ok-secondary: rgb(24, 130, 61);
+  --protection-ok-tertiary : rgb(20, 61, 36);
+
+  --protection-warn-primary  : rgb(233, 216, 29);
+  --protection-warn-secondary: rgb(130, 121, 24);
+  --protection-warn-tertiary : rgb(61, 58, 20);
+
+  --protection-fail-primary  : rgb(224, 29, 29);
+  --protection-fail-secondary: rgb(129, 24, 24);
+  --protection-fail-tertiary : rgb(61, 20, 20);
 }
 
 .ion-color-disclaimer {
@@ -90,6 +109,15 @@
 	--ion-color-contrast-rgb: var(--ion-color-disclaimer-contrast-rgb);
 	--ion-color-shade: var(--ion-color-disclaimer-shade);
 	--ion-color-tint: var(--ion-color-disclaimer-tint);
+}
+
+.ion-color-pm-accent {
+	--ion-color-base: var(--ion-color-pm-accent);
+	--ion-color-base-rgb: var(--ion-color-pm-accent-rgb);
+	--ion-color-contrast: var(--ion-color-pm-accent-contrast);
+	--ion-color-contrast-rgb: var(--ion-color-pm-accent-contrast-rgb);
+	--ion-color-shade: var(--ion-color-pm-accent-shade);
+	--ion-color-tint: var(--ion-color-pm-accent-tint);
 }
 
 // @media (prefers-color-scheme: dark) {
@@ -241,7 +269,7 @@
     --ion-color-step-900: #e7e7e7;
     --ion-color-step-950: #f3f3f3;
 
-    --ion-item-background: #1e1e1e;
+    --ion-item-background: #121212;
 
     --ion-toolbar-background: #1f1f1f;
 

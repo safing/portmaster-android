@@ -3,7 +3,6 @@ import GoBridge from '../../plugins/go.bridge';
 import { CommonModule, LocationStrategy, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonInfiniteScrollContent, IonicModule } from '@ionic/angular';
-import { MenuComponent } from '../menu.component';
 
 class LogLine {
   Meta: string
@@ -33,7 +32,6 @@ export class LogsComponent implements OnInit, OnDestroy {
         this.Logs = logs;
         
         if(this.content != undefined) {
-          // console.log("Content: ", JSON.stringify(this.content))
           this.content.scrollToBottom();
         }
         this.logUpdater();

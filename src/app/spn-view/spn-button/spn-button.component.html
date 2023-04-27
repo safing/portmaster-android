@@ -1,1 +1,16 @@
-<ion-button [disabled]="User?.username && !IsGeoIPDataAvailable" (click)="onClick()" [color]="GetButtonColor()">{{GetButtonText()}}</ion-button>
+<!-- 
+<ion-toggle [ngModel]="toggleState" (ngModelChange)="userTriggered()"></ion-toggle> -->
+
+<div *ngIf="!User?.username">
+    <ion-button (click)="onClick()" color="primary">Upgrade</ion-button>
+</div>
+
+<!-- <div *ngIf="User?.username"> -->
+    <label (click)="onClick()" for="toggle" class="toggle-container"
+    [class.connected]="SPNStatus?.Status === 'connected'"
+    [class.connecting]="SPNStatus?.Status === 'connecting'"
+    [class.failed]="SPNStatus?.Status === 'failed'">
+        <button type="button"  class="real-checkbox"></button>
+        <div class="toggle-button"></div>
+    </label>
+<!-- </div> -->

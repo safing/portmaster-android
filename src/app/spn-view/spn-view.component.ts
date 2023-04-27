@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { AlertController, IonicModule, Platform } from '@ionic/angular';
+import { AlertController, IonicModule, LoadingController, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { Database, DatabaseListener } from "../db-interface/module"
@@ -10,13 +10,14 @@ import { DownloadProgressComponent } from './download-progress/download-progress
 import { CommonModule } from '@angular/common';
 import { SPNService } from '../services/spn.service';
 import { Router } from '@angular/router';
+import { SecurityLockComponent } from './security-lock/security-lock';
 
 @Component({
   selector: 'spn-view-container',
   templateUrl: './spn-view.component.html',
   styleUrls: ['./spn-view.component.scss'],
   standalone: true,
-  imports: [SPNButton, DownloadProgressComponent, CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, SPNButton, DownloadProgressComponent, SecurityLockComponent ]
 })
 export class SPNViewComponent implements OnInit, OnDestroy {
   User: UserProfile;
@@ -30,6 +31,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   private resumeSubscription: Subscription;
 
   constructor(private changeDetector: ChangeDetectorRef, 
+              private loadingCtrl: LoadingController,
               private alertController: AlertController,
               private platform: Platform,
               private spnService: SPNService,
@@ -78,7 +80,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     this.CheckGeoIPData();
   }
 
-  async ngOnDestroy() {
+  ngOnDestroy() {
     this.DatabaseListeners.forEach((listener) => {
       listener.unsubscribe();
     });
@@ -86,17 +88,20 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     this.resumeSubscription.unsubscribe();
   }
 
-  async enableSPN() {
+  openUserInfo() {
+    if(this.User?.username) {
+      this.router.navigate(["/menu/user-info"]);
+    } else {
+      this.router.navigate(["/login"]);
+    }
+  }
+
+  enableSPN() {
     GoBridge.EnableSPN();
   }
 
-  async disableSPN() {
+  disableSPN() {
     GoBridge.DisableSPN();
-  }
-
-  async updateUserInfo() {
-    // this.onUpdateUserInfo.emit()
-    this.spnService.userProfile(true);
   }
 
   isSPNConnected(): boolean {
@@ -121,7 +126,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
         { 
           text: "Shutdown",
           handler: () => {
-            // TODO: show shutdown overlay
+            this.showShutdownOverlay();
             GoBridge.Shutdown();
           }
         },
@@ -167,5 +172,15 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   async CheckGeoIPData() {
     this.IsGeoIPDataAvailable = await GoBridge.IsGeoIPDataAvailable();
     this.changeDetector.detectChanges();
+  }
+
+  showShutdownOverlay() {
+    this.loadingCtrl.create({
+      message: 'Shuting down...',
+      duration: 0,
+      spinner: 'circular',
+    }).then((loading) => {
+      loading.present();
+    });
   }
 }

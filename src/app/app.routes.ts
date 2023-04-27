@@ -6,6 +6,10 @@ export const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
+    path: 'welcome',
+    loadComponent: () => import('./welcome/welcome.component').then((m) => m.WelcomeComponent),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./login/login.component').then((m) => m.LoginComponent),

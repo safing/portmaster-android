@@ -1,3 +1,7 @@
+.md body {
+  --ion-item-background: #121212;
+}
+
 #container {
   text-align: center;
 
@@ -24,4 +28,31 @@
 
 #container a {
   text-decoration: none;
+}
+
+.header {
+  // position: relative;
+  height: 25%;
+}
+
+.shield {
+  position: relative;
+  float: left;
+  height: 10%;
+}
+
+.shutdown-button {
+  // position: absolute;
+  left: 85%;
+  top: 10%
+}
+
+.user-button {
+  // position: absolute;
+  left: 85%;
+  top: 35%
+}
+
+.spn-button {
+  // position: relative;
 }

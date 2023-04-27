@@ -5,6 +5,7 @@ import { SPNStatus, UserProfile } from "../../types/spn.types";
 @Component({
     selector: "spn-button",
     templateUrl: './spn-button.component.html',
+    styleUrls: ['./spn-button.component.scss'],
     standalone: true,
 })
 export class SPNButton {
@@ -17,14 +18,16 @@ export class SPNButton {
     @Output() onLogin = new EventEmitter();
 
     async onClick() {
-        if(!this.User?.username) {
-            this.onLogin.emit();
-            return;
-        }
+        console.log("Clicked");
+        // if(!this.User?.username) {
+        //     this.onLogin.emit();
+        //     return;
+        // }
 
         switch(this.SPNStatus.Status) {
             case "disabled": {
                 this.onEnable.emit()
+                this.SPNStatus.Status = "connecting";
                 break;
             }
             default: {
@@ -32,6 +35,7 @@ export class SPNButton {
                 break;
             }
         }
+
     }
 
     GetButtonText(): string {
