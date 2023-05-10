@@ -3,7 +3,6 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, LocationStrategy } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { SPNService } from '../services/spn.service';
 import { Router } from '@angular/router';
 import GoBridge from '../plugins/go.bridge';
 

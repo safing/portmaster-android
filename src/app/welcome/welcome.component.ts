@@ -51,7 +51,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
 
-    GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
+    // GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
   }
 
   ngOnDestroy(): void {
@@ -70,14 +70,14 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   public Download() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
-    GoBridge.DownloadPendingUpdates();
+    // GoBridge.DownloadPendingUpdates();
     JavaBridge.setWelcomeScreenShowed({showed: true});
   }
 
   public WaitForWifi() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
-    GoBridge.DownloadUpdatesOnWifiConnected();
+    // GoBridge.DownloadUpdatesOnWifiConnected();
     JavaBridge.setWelcomeScreenShowed({showed: true});
   } 
 

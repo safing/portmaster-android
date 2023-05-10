@@ -3,7 +3,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, LocationStrategy } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { SPNService } from '../services/spn.service';
+import { SPNService } from '../lib/spn.service';
+// import { SPNService } from '@safing/portmaster-api/src/lib/spn.service';
 
 
 @Component({
@@ -14,22 +15,23 @@ import { SPNService } from '../services/spn.service';
   imports: [CommonModule, FormsModule, IonicModule]
 })
 export class LoginComponent {
-  // @Input() User: UserProfile | null;
   Error: string;
-  // @Output() onLogin = new EventEmitter<[string, string]>();
-
+  
   Username: string
   Password: string
 
   ShowPassword: boolean
   PasswordFieldType: "password" | "text";
 
-  constructor(private spnService: SPNService, private location: LocationStrategy) { 
+  constructor(
+    private spnService: SPNService, 
+    private location: LocationStrategy) { 
     this.PasswordFieldType = "password";
   }
 
-  async login(): Promise<void> {
-    this.spnService.login({username: this.Username, password: this.Password}).subscribe(
+  login() {
+    this.spnService.login({username: this.Username, password: this.Password})
+    .subscribe(
       _ => {
         this.location.back();
       },

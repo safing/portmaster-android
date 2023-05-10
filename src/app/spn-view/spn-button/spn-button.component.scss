@@ -10,7 +10,7 @@ $border: 0.05em;
   border-radius: $height;
   position: relative;
   cursor: pointer;
-  background-color: #f5f2f2;
+  background-color: rgb(136 136 136);
   transition: border-color 300ms;
 
   .real-checkbox{

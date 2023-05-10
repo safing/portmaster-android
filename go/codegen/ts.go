@@ -27,7 +27,7 @@ const typeScriptClassMethodTemplate = `{{if .CreateProxy}}
 {{end}}`
 const typescriptFileTemplate = `
 import { Plugin, registerPlugin } from '@capacitor/core';
-import { SPNStatus, UserProfile } from '../types/spn.types';
+import { SPNStatus, UserProfile } from '../lib/spn.types';
 
 export interface GoBridgeInterface extends Plugin {
 %s

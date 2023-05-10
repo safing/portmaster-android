@@ -15,7 +15,6 @@
         <ion-icon name="power-outline"></ion-icon>
       </ion-button>
     </ion-item>
-    
 
     <ion-item style="text-align: right; width: 50%; float: right;">
       <ion-label >
@@ -25,35 +24,46 @@
         <ion-icon src="../../assets/menu/user.svg"></ion-icon>
       </ion-button>
     </ion-item>
-    
-    
   </div>
   
-  <ion-item>
-    <ion-label >
-      SPN: <p>Increase privacy protection</p>
-    </ion-label>
-    <spn-button slot="end" class="spn-button" [User]="User" [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onEnable)="enableSPN()" (onDisable)="disableSPN()" (onLogin)="openLoginPage()"></spn-button>
-  </ion-item>
-  <!-- <ion-item *ngIf="User?.username && !User?.canUseSPN">
-    <ion-label color="danger">Your account does not have access to the SPN</ion-label>
-  </ion-item> -->
-  <ion-item *ngIf="isSPNConnected()">
-    <ion-label class="ion-text-wrap">
+  <ion-item button>
+    <ion-label (click)="openConnectionInfo()" [ngSwitch]="SPNStatus?.Status">
+      SPN
       <p>
-        Home: {{SPNStatus.HomeHubName}}
-        <br>
-        {{SPNStatus.ConnectedIP}} {{SPNStatus.ConnectedTransport}}
-  
+        <ng-template ngSwitchCase="disabled">
+          Increase privacy protection
+        </ng-template>
+        <ng-template ngSwitchCase="failed">
+          Failed to connect
+        </ng-template>
+        <ng-template ngSwitchCase="connecting">
+          Connecting to the SPN ...
+        </ng-template>
+        <ng-template ngSwitchCase="connected">
+          <u>You're protected</u>
+        </ng-template>
       </p>
     </ion-label>
+    <spn-button slot="end" class="spn-button" [User]="User" [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onStateChange)="setSPNEnabled($event)" (onLogin)="openLoginPage()"></spn-button>
   </ion-item>
+
+  <ion-list class="notification-list" >
+      <ion-item *ngFor="let notification of notifications" (click)="openNotification(notification)">
+        <div class="notification">
+          <ion-icon class="bell-icon" src="../../assets/menu/bell.svg"></ion-icon>
+          {{notification.Title}}
+          <div class="notification-content">{{notification.Message}}</div>
+        </div>
+      </ion-item>
+      <p *ngIf="notifications.length == 0" class="notification-placeholder">No new notifications <ion-icon class="bell-icon" src="../../assets/menu/bell.svg"></ion-icon></p>
+  </ion-list>
+
   <ion-item *ngIf="!IsGeoIPDataAvailable">
     <ion-label class="ion-text-wrap">
       <p>The GeoIP update is required before you can start using the SPN.</p>
     </ion-label>
   </ion-item>
-  <ion-item *ngIf="SPNErrorMsg.length > 0">
+  <ion-item *ngIf="SPNStatus?.Status == 'failed' && SPNErrorMsg.length > 0">
     <ion-label class="ion-text-wrap">
       <p>{{SPNErrorMsg}}</p>
     </ion-label>

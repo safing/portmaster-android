@@ -7,31 +7,31 @@
   <ion-grid *ngIf="!User?.view || User?.view?.ShowAccountData">
     <ion-row class="user_row">
       <ion-col size="5">Package</ion-col>
-      <ion-col size="7">{{ User.current_plan?.name }}</ion-col>
+      <ion-col size="7">{{ User?.current_plan?.name }}</ion-col>
     </ion-row>
     <ion-row class="user_row">
       <ion-col size="5">Package Runs Until</ion-col>
-      <ion-col size="7">{{ User.subscription?.ends_at | date:'medium' }}</ion-col>
+      <ion-col size="7">{{ User?.subscription?.ends_at | date:'medium' }}</ion-col>
     </ion-row>
     <ion-row class="user_row">
       <ion-col size="5">Username</ion-col>
-      <ion-col size="7">{{ User.username }} </ion-col>
+      <ion-col size="7">{{ User?.username }} </ion-col>
     </ion-row>
     <ion-row class="user_row">
       <ion-col size="5">Device Name</ion-col>
-      <ion-col size="7">{{ User.device?.name }}</ion-col>
+      <ion-col size="7">{{ User?.device?.name }}</ion-col>
     </ion-row>
     <ion-row class="user_row">
       <ion-col size="5">Device ID</ion-col>
-      <ion-col size="7">{{ User.device?.id }}</ion-col>
+      <ion-col size="7">{{ User?.device?.id }}</ion-col>
     </ion-row>
     <ion-row class="user_row">
       <ion-col size="5">Account State</ion-col>
-      <ion-col size="7">{{ User.state }} </ion-col>
+      <ion-col size="7">{{ User?.state }} </ion-col>
     </ion-row>
     <ion-row class="user_row">
       <ion-col size="5">Logged in Since</ion-col>
-      <ion-col size="7">{{ User.LoggedInAt | date:'medium' }} </ion-col>
+      <ion-col size="7">{{ User?.LoggedInAt | date:'medium' }} </ion-col>
     </ion-row>
   </ion-grid>
   <ion-row>

@@ -1,41 +1,45 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
-import { SPNStatus, UserProfile } from "../../types/spn.types";
+import { CommonModule } from "@angular/common";
+import { IonicModule } from "@ionic/angular";
+import { SPNStatus, UserProfile } from "src/app/lib/spn.types";
 
 @Component({
     selector: "spn-button",
     templateUrl: './spn-button.component.html',
     styleUrls: ['./spn-button.component.scss'],
     standalone: true,
+    imports: [CommonModule, IonicModule]
 })
 export class SPNButton {
     @Input() User: UserProfile;
     @Input() SPNStatus: SPNStatus;
     @Input() IsGeoIPDataAvailable: boolean;
 
-    @Output() onEnable = new EventEmitter();
-    @Output() onDisable = new EventEmitter();
+    @Output() onStateChange = new EventEmitter<boolean>();
     @Output() onLogin = new EventEmitter();
 
+    constructor() {
+        console.log("SPN button: " + JSON.stringify(this.User));
+    }
+
     async onClick() {
-        console.log("Clicked");
-        // if(!this.User?.username) {
-        //     this.onLogin.emit();
-        //     return;
-        // }
+        if(!this.User?.username) {
+            this.onLogin.emit();
+            return;
+        }
 
         switch(this.SPNStatus.Status) {
             case "disabled": {
-                this.onEnable.emit()
+                this.onStateChange.emit(true)
                 this.SPNStatus.Status = "connecting";
                 break;
             }
             default: {
-                this.onDisable.emit();
+                this.onStateChange.emit(false);
                 break;
             }
         }
-
     }
 
     GetButtonText(): string {
