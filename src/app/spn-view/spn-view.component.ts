@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SecurityLockComponent } from './security-lock/security-lock';
 import { FormsModule } from '@angular/forms';
-import { Notification, NotificationState, NotificationType, getNotificationTypeString } from '../types/notifications.types';
+import { Notification, NotificationState, NotificationType, getNotificationTypeString } from '../services/notifications.types';
 import { SPNStatus, UserProfile } from '../lib/spn.types';
 import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';

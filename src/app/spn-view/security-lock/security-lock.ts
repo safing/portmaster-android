@@ -1,9 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { combineLatest, Subject } from "rxjs";
-import { SecurityLevel } from "src/app/types/core.types";
-
-
+import { SecurityLevel } from "src/app/lib/core.types";
 
 interface SecurityOption {
   level: SecurityLevel;

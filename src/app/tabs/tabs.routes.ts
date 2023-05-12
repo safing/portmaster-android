@@ -17,7 +17,7 @@ export const routes: Routes = [
       },
       {
         path: 'menu',
-        loadComponent: () => import('../menu/menu.component').then((m) => m.MenuComponent),  
+        loadComponent: () => import('../settings/settings.component').then((m) => m.SettingsComponent),  
       },
       {
         path: '',

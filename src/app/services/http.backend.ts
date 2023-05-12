@@ -6,12 +6,12 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Injectable} from '@angular/core';
-import {Observable, Observer} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 
 // import {HttpDownloadProgressEvent, HttpErrorResponse, HttpEvent, HttpEventType, HttpHeaderResponse, HttpJsonParseError, HttpResponse, HttpStatusCode, HttpUploadProgressEvent} from './response';
-import { HttpBackend, HttpClient, HttpEvent, HttpHandler, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpBackend, HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
 import GoBridge from '../plugins/go.bridge';
 
 
@@ -19,7 +19,7 @@ import GoBridge from '../plugins/go.bridge';
  * Determine an appropriate URL for the response, by checking either
  * XMLHttpRequest.responseURL or the X-Request-URL header.
  */
-function getResponseUrl(xhr: any): string|null {
+function getResponseUrl(xhr: any): string | null {
   if ('responseURL' in xhr && xhr.responseURL) {
     return xhr.responseURL;
   }
@@ -65,8 +65,8 @@ export class HttpGoBackend implements HttpBackend {
       });
 
       // Send request to the go library and wait for a response.
-      GoBridge.PerformRequest({requestJson: JSON.stringify(requestJson)}).then((body: string) => {
-        subscriber.next(new HttpResponse<any>({body: body}));
+      GoBridge.PerformRequest({ requestJson: JSON.stringify(requestJson) }).then((body: string) => {
+        subscriber.next(new HttpResponse<any>({ body: body }));
       }).catch((err: string) => {
         subscriber.error(err);
       }).finally(() => {

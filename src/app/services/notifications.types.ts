@@ -2,7 +2,7 @@
 
 import { IntelEntity } from "../lib/network.types";
 import { Record } from "../lib/portapi.types";
-import { getEnumKey } from "../types/core.types";
+import { getEnumKey } from "../lib/core.types";
 
 /**
  * BaseAction defines a user selectable action and can
