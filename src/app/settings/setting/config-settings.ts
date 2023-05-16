@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TrackByFunction, ViewChildren } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TrackByFunction, ViewChildren, ViewChild } from "@angular/core";
 import { BehaviorSubject, Subscription, combineLatest } from "rxjs";
 import { ConfigService } from "src/app/lib/config.service";
 import { ExpertiseLevelNumber, Setting, releaseLevelFromName } from "src/app/lib/config.types";
@@ -6,7 +6,7 @@ import { GenericSettingComponent, SaveSettingEvent } from "./generic-setting/gen
 import { StatusService } from "src/app/services/status.service";
 import { Subsystem } from "src/app/services/status.types";
 import { CommonModule } from "@angular/common";
-import { IonicModule } from "@ionic/angular";
+import { IonicModule, IonModal } from "@ionic/angular";
 
 interface Category {
   name: string;
@@ -38,6 +38,10 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   activeCategory = '';
   loading = true;
 
+  @ViewChild(IonModal) editModal: IonModal;
+  editSetting: Setting;
+
+  
   @Input()
   resetLabelText = 'Reset to system default';
 
@@ -362,5 +366,21 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
       block: 'start',
       inline: 'nearest',
     })
+  }
+
+  openEditModal(event: {setting: Setting, index: number}) {
+    console.log(JSON.stringify(event));
+    this.editSetting = event.setting;
+    this.editModal.present();
+  }
+
+  onEditModalDissmiss(event: any) {}
+
+  cancel() {
+    this.editModal.dismiss(null, 'cancel');
+  }
+
+  confirm() {
+    this.editModal.dismiss(null, 'confirm');
   }
 }

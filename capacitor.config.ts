@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   bundledWebRuntime: false,
   loggingBehavior: 'debug',
   server: {
-    url: "http://10.117.0.247:8100",
+    url: "http://192.168.88.11:8100",
     cleartext: true
   },
   // cordova: {

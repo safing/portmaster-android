@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { IonicModule, ItemReorderEventDetail } from "@ionic/angular";
-import { BaseSetting, ExpertiseLevelNumber, ExternalOptionHint, OptionType, optionTypeName, ReleaseLevel, SettingValueType, WellKnown } from "src/app/lib/config.types";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
+import { IonModal, IonicModule, ItemReorderEventDetail } from "@ionic/angular";
+import { BaseSetting, ExpertiseLevelNumber, ExternalOptionHint, OptionType, optionTypeName, ReleaseLevel, Setting, SettingValueType, WellKnown } from "src/app/lib/config.types";
 
 export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
   key: string;
@@ -30,6 +30,8 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
   readonly optionType = OptionType;
   readonly releaseLevel = ReleaseLevel;
   readonly wellKnown = WellKnown;
+  
+  @Output() edit = new EventEmitter<{setting: Setting, index: number}>();
 
   _setting: S = null;
   type: string = '';
@@ -64,7 +66,14 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     ev.detail.complete();
   }
 
-}
+  onToggle(event: any) {
+    event.stopPropagation();
+  }
+
+  stopPropagation(event: any) {
+    event.stopPropagation();
+  }
+ }
 //   @ViewChild('helpTemplate', { read: TemplateRef, static: true })
 //   helpTemplate: TemplateRef<any> | null = null;
 //   // private helpDialogRef: SfngDialogRef<any> | null = null;

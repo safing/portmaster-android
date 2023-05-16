@@ -11,12 +11,39 @@
       <ion-item color="pm-accent">{{cat.name}}</ion-item>
 
       <!-- Settings -->
-      <app-generic-setting *ngFor="let setting of cat.settings; trackBy: configService.trackBy"
-        [setting]="setting"></app-generic-setting>
+      <app-generic-setting *ngFor="let setting of cat.settings; trackBy: configService.trackBy" [setting]="setting"
+        (edit)="openEditModal($event)"></app-generic-setting>
     </ion-list>
 
   </ion-list>
 </ion-list>
+
+<ion-modal trigger=" edit-modal" (willDismiss)="onWillDismiss($event)">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="cancel()">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>{{editSetting.Name}}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-item>
+        <ion-select value="exclude">
+          <ion-select-option value="exclude">Exclude</ion-select-option>
+          <ion-select-option value="allow">Allow</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-input></ion-input>
+      </ion-item>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 
 <!-- <div class="settings-nav hidden sfng-md:block" *ngIf="!loading" [@fadeIn]
   [ngClass]="{'w-48 pl-12': !compactView, 'w-36 pl-3': compactView}">

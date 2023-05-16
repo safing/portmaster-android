@@ -1,23 +1,38 @@
-<ion-item *ngIf="type == 'bool'">
-  <ion-label>{{_setting.Name}}</ion-label>
-  <ion-toggle></ion-toggle>
-</ion-item>
+<ion-accordion-group>
+  <ion-accordion *ngIf="type == 'bool'">
+    <ion-item slot="header">
+      <ion-label>{{_setting.Name}}</ion-label>
+      <ion-toggle (click)="onToggle($event)"></ion-toggle>
+    </ion-item>
+    <ion-label slot="content">
+        <p class="ion-padding">{{_setting.Description}}</p>
+    </ion-label>
+  </ion-accordion>
 
-<ion-item *ngIf="type == 'string'">
-  <ion-label>{{_setting.Name}}</ion-label>
-  <ion-input class="text-input"></ion-input>
-</ion-item>
+  <ion-accordion *ngIf="type == 'string'">
+    <ion-item slot="header">
+      <ion-label>{{_setting.Name}}</ion-label>
+      <ion-input class="text-input" (click)="stopPropagation($event)"></ion-input>
+    </ion-item>
+    <ion-label slot="content">
+        <p class="ion-padding">{{_setting.Description}}</p>
+    </ion-label>
+  </ion-accordion>
 
-<ion-item *ngIf="type == 'select'">
-  <ion-label>{{_setting.Name}}</ion-label>
-  <ion-select [value]="_setting.DefaultValue">
-    <ion-select-option *ngFor="let value of _setting.PossibleValues"
-      [value]="value.Value">{{value.Name}}</ion-select-option>
-  </ion-select>
-</ion-item>
+  <ion-accordion *ngIf="type == 'select'">
+    <ion-item slot="header">
+      <ion-label>{{_setting.Name}}</ion-label>
+      <ion-select [value]="_setting.DefaultValue" (click)="stopPropagation($event)">
+        <ion-select-option *ngFor="let value of _setting.PossibleValues"
+          [value]="value.Value">{{value.Name}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-label slot="content">
+        <p class="ion-padding">{{_setting.Description}}</p>
+    </ion-label>
+  </ion-accordion>
 
-<ion-accordion-group *ngIf="type == '[]string'">
-  <ion-accordion value="vpn">
+  <ion-accordion *ngIf="type == '[]string'">
     <ion-item slot="header">
       <ion-label>{{_setting.Name}}</ion-label>
       <ion-label>
@@ -26,18 +41,21 @@
     </ion-item>
     <ion-list slot="content">
       <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">
-        <ion-item>
+        <ion-item (click)="edit.emit({setting: _setting, index: 0})">
           <ion-reorder slot="end"></ion-reorder>
           <ion-label color="danger">Exclude</ion-label>
           <ion-label>US</ion-label>
         </ion-item>
-        <ion-item>
+        <ion-item (click)="edit.emit({setting: _setting, index: 1})">
           <ion-reorder slot="end"></ion-reorder>
           <ion-label color="success">Allow</ion-label>
           <ion-label>BG</ion-label>
         </ion-item>
       </ion-reorder-group>
-      <ion-button color="pm-accent" expand="full">New rule</ion-button>
+      <ion-button class="add-rule-button" (click)="edit.emit({setting: _setting, index: -1})">+ Add Rule</ion-button>
+      <ion-label>
+        <p class="ion-padding">{{_setting.Description}}</p>
+      </ion-label>
     </ion-list>
   </ion-accordion>
 </ion-accordion-group>
