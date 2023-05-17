@@ -35,27 +35,23 @@
   <ion-accordion *ngIf="type == '[]string'">
     <ion-item slot="header">
       <ion-label>{{_setting.Name}}</ion-label>
-      <ion-label>
-        <p>2 Rules</p>
+      <ion-label *ngIf="_currentValue.length > 0">
+        <p>{{_currentValue.length}} Rules</p>
       </ion-label>
     </ion-item>
     <ion-list slot="content">
       <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">
-        <ion-item (click)="edit.emit({setting: _setting, index: 0})">
+        <ion-item *ngFor="let value of displayValues; let i = index;" (click)="onValueClicked(i)">
+          <ion-label [color]="value.color">{{symbolMap[value.action]}}</ion-label>
+          <ion-label>{{value.rule}}</ion-label>
           <ion-reorder slot="end"></ion-reorder>
-          <ion-label color="danger">Exclude</ion-label>
-          <ion-label>US</ion-label>
-        </ion-item>
-        <ion-item (click)="edit.emit({setting: _setting, index: 1})">
-          <ion-reorder slot="end"></ion-reorder>
-          <ion-label color="success">Allow</ion-label>
-          <ion-label>BG</ion-label>
         </ion-item>
       </ion-reorder-group>
-      <ion-button class="add-rule-button" (click)="edit.emit({setting: _setting, index: -1})">+ Add Rule</ion-button>
+      <ion-button class="add-rule-button" (click)="onValueClicked(-1)">+ Add Rule</ion-button>
       <ion-label>
         <p class="ion-padding">{{_setting.Description}}</p>
       </ion-label>
     </ion-list>
   </ion-accordion>
 </ion-accordion-group>
+

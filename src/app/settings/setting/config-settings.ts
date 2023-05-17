@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TrackByFunction, ViewChildren, ViewChild } from "@angular/core";
 import { BehaviorSubject, Subscription, combineLatest } from "rxjs";
 import { ConfigService } from "src/app/lib/config.service";
-import { ExpertiseLevelNumber, Setting, releaseLevelFromName } from "src/app/lib/config.types";
+import { ExpertiseLevelNumber, Setting, SettingValueType, releaseLevelFromName } from "src/app/lib/config.types";
 import { GenericSettingComponent, SaveSettingEvent } from "./generic-setting/generic-setting";
 import { StatusService } from "src/app/services/status.service";
 import { Subsystem } from "src/app/services/status.types";
@@ -39,9 +39,9 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   loading = true;
 
   @ViewChild(IonModal) editModal: IonModal;
-  editSetting: Setting;
+  editSetting: GenericSettingComponent<Setting>;
+  editSettingValue: SettingValueType<Setting>;
 
-  
   @Input()
   resetLabelText = 'Reset to system default';
 
@@ -368,11 +368,12 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
     })
   }
 
-  openEditModal(event: {setting: Setting, index: number}) {
-    console.log(JSON.stringify(event));
+  openEditModal(event: {setting: GenericSettingComponent<Setting>, index: number}) {
     this.editSetting = event.setting;
     this.editModal.present();
   }
+
+  onWillDismiss() {}
 
   onEditModalDissmiss(event: any) {}
 
