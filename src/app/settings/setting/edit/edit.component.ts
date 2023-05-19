@@ -1,7 +1,8 @@
 import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, Output, ViewChild, AfterViewInit} from "@angular/core";
-import { IonInput, IonSelect, IonicModule, ModalController } from "@ionic/angular";
-import { BaseSetting, SettingValueType } from "src/app/lib/config.types";
+import { Component, EventEmitter, Input, Output, ViewChild, AfterViewInit, OnInit, ChangeDetectorRef } from "@angular/core";
+import { IonInput, IonRadioGroup, IonSelect, IonicModule, ModalController } from "@ionic/angular";
+import { MarkdownModule } from "ngx-markdown";
+import { BaseSetting, QuickSetting, SettingValueType } from "src/app/lib/config.types";
 
 export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
   key: string;
@@ -16,21 +17,27 @@ export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
   standalone: true,
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.scss'],
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, MarkdownModule],
 })
-export class SettingsEditComponent implements AfterViewInit {
+export class SettingsEditComponent implements OnInit, AfterViewInit {
 
   @ViewChild(IonInput) roleInput: IonInput;
-  @ViewChild(IonSelect) actionSelect: IonSelect;
+  @ViewChild(IonRadioGroup) actionSelect: IonRadioGroup;
 
   @Input()
   title: string;
 
   @Input()
-  value: Array<String>;
+  value: Array<string>;
 
   @Input()
   index: number;
+
+  @Input()
+  help: string;
+
+  @Input()
+  quickSettings: QuickSetting<string>;
 
   @Output()
   editCompleted = new EventEmitter<Array<String>>();
@@ -39,30 +46,55 @@ export class SettingsEditComponent implements AfterViewInit {
   @Input()
   symbolMap: any;
 
-  constructor(private modalCtrl: ModalController) { }
+  isUpdate: boolean = false;
+
+  constructor(private modalCtrl: ModalController,
+    private changeDetector: ChangeDetectorRef) { }
+
+  ngOnInit(): void {
+    if (this.index >= 0) {
+      // Updating existing value.
+      this.isUpdate = true;
+    } else {
+      // Adding new value, not updating.
+      this.isUpdate = false;
+    }
+    console.log("Quick Settings:", JSON.stringify(this.quickSettings));
+  }
 
   ngAfterViewInit(): void {
-    if(this.index >= 0) {
-      let action = this.value[this.index].trim().charAt(0);
-      let role = this.value[this.index].slice(1).trim();
-      this.actionSelect.value = action;
-      this.roleInput.value = role;
+    if (this.index >= 0) {
+      this.updateValue(this.value[this.index]);
     } else {
       this.actionSelect.value = '-';
     }
   }
+
   cancel() {
     this.modalCtrl.dismiss(null, 'dismiss');
   }
 
   confirm() {
     let newValue = this.actionSelect.value + " " + this.roleInput.value;
-    if(this.index >= 0) {
+    if (this.index >= 0) {
       this.value[this.index] = newValue;
     } else {
       this.value.push(newValue);
     }
     this.modalCtrl.dismiss(this.value, 'confirm');
+  }
+
+  updateValue(value: string) {
+    let action = value.trim().charAt(0);
+    let role = value.slice(1).trim();
+    this.actionSelect.value = action;
+    this.roleInput.value = role;
+  }
+
+  applyQuickSetting(setting: QuickSetting<string>) {
+    console.log(JSON.stringify(setting));
+    this.updateValue(setting.Value[0]);
+    this.changeDetector.checkNoChanges();
   }
 }
 

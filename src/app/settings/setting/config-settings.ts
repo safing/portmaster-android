@@ -154,10 +154,10 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
           this.settings = new Map();
 
           // Get the current release level as a number (fallback to 'stable' is something goes wrong)
-          const currentReleaseLevelSetting = settings.find(s => s.Key === 'core/releaseLevel');
-          const currentReleaseLevel = releaseLevelFromName(
-            currentReleaseLevelSetting?.Value || currentReleaseLevelSetting?.DefaultValue || 'stable' as any
-          );
+          // const currentReleaseLevelSetting = settings.find(s => s.Key === 'core/releaseLevel');
+          // const currentReleaseLevel = releaseLevelFromName(
+          //   currentReleaseLevelSetting?.Value || currentReleaseLevelSetting?.DefaultValue || 'stable' as any
+          // );
 
           // Make sure we only display settings that are allowed by the releaselevel setting.
           // settings = settings.filter(setting => setting.ReleaseLevel <= currentReleaseLevel);

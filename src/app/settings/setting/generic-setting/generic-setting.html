@@ -38,6 +38,9 @@
       <ion-label *ngIf="_currentValue.length > 0">
         <p>{{_currentValue.length}} Rules</p>
       </ion-label>
+      <ion-label *ngIf="_currentValue.length == 0">
+        <p>No Rules</p>
+      </ion-label>
     </ion-item>
     <ion-list slot="content">
       <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">

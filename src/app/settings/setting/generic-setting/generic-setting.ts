@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { IonicModule, ItemReorderEventDetail, ModalController } from "@ionic/angular";
-import { BaseSetting, ExpertiseLevelNumber, ExternalOptionHint, OptionType, optionTypeName, ReleaseLevel, SettingValueType, WellKnown } from "src/app/lib/config.types";
+import { BaseSetting, ExpertiseLevelNumber, ExternalOptionHint, OptionType, optionTypeName, QuickSetting, ReleaseLevel, SettingValueType, WellKnown } from "src/app/lib/config.types";
 import { SettingsEditComponent } from "../edit/edit.component";
 
 export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
@@ -116,6 +116,7 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
   }
 
   async onValueClicked(index: number) {
+    console.log(this._setting.Help);
     let modal = await this.modalCtrl.create({
       component: SettingsEditComponent,
       componentProps: {
@@ -123,6 +124,8 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
         value: this._currentValue,
         symbolMap: this.symbolMap,
         index: index,
+        help: this._setting.Help,
+        quickSettings: this.quickSettings,
       }
     });
 
@@ -138,5 +141,17 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
   onEditDone(value: SettingValueType<S>) {
     this._currentValue = value;
     this.updateDisplayValues();
+  }
+
+  get quickSettings(): QuickSetting<SettingValueType<S>>[] {
+    if (!this._setting || !this._setting.Annotations[WellKnown.QuickSetting]) {
+      return [];
+    }
+
+    const quickSettings = this._setting.Annotations[WellKnown.QuickSetting]!;
+
+    return Array.isArray(quickSettings)
+      ? quickSettings
+      : [quickSettings];
   }
 }

@@ -5,18 +5,44 @@
     </ion-buttons>
     <ion-title>{{title}}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>
+      <ion-button *ngIf="!isUpdate" (click)="confirm()" [strong]="true">Add</ion-button>
+      <ion-button *ngIf="isUpdate" (click)="confirm()" [strong]="true">Update</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
-  <ion-item>
-    <ion-select [value]="actionValue">
-      <ion-select-option value="-">{{symbolMap["-"]}}</ion-select-option>
-      <ion-select-option value="+">{{symbolMap["+"]}}</ion-select-option>
-    </ion-select>
+<ion-content>
+  <ion-item *ngIf="!isUpdate && !!quickSettings">
+    <ion-label slot="end" id="popover-button"><u>Quick Settings</u></ion-label>
   </ion-item>
+  <ion-radio-group value="-">
+    <ion-item>
+      <ion-label color="danger">{{symbolMap["-"]}}</ion-label>
+      <ion-radio value="-"></ion-radio>
+    </ion-item>
+    <ion-item>
+      <ion-label color="success">{{symbolMap["+"]}}</ion-label>
+      <ion-radio value="+"></ion-radio>
+    </ion-item>
+  </ion-radio-group>
   <ion-item>
-    <ion-input [value]="ruleValue"></ion-input>
+    <ion-input [value]="ruleValue" placeholder="Enter rule"></ion-input>
   </ion-item>
+  <ion-item *ngIf="isUpdate" >
+    <ion-button slot="start" color="danger">Delete</ion-button>
+  </ion-item>
+  <ion-label>
+    <p class="ion-padding">
+      <markdown [data]="help"></markdown>
+    </p>
+  </ion-label>
+  <ion-button >Open Menu</ion-button>
+<ion-popover trigger="popover-button" [dismissOnSelect]="true">
+  <ng-template>
+    <ion-content>
+      <ion-list>
+        <ion-item *ngFor="let setting of quickSettings" [button]="true" [detail]="false" (click)="applyQuickSetting(setting)">{{setting.Name}}</ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-popover>
 </ion-content>

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy, inject, EnvironmentInjector } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject, EnvironmentInjector } from '@angular/core';
 import { AlertController, IonicModule, LoadingController, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SecurityLockComponent } from './security-lock/security-lock';
 import { FormsModule } from '@angular/forms';
-import { Notification, NotificationState, NotificationType, getNotificationTypeString } from '../services/notifications.types';
+import { Notification, getNotificationTypeString } from '../services/notifications.types';
 import { SPNStatus, UserProfile } from '../lib/spn.types';
 import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';
@@ -32,9 +32,8 @@ export class SPNViewComponent implements OnInit, OnDestroy {
 
   private resumeEventSubscription: Subscription;
 
-  private notifications: Notification[];
-  //[{EventID:"spn:home-hub-failure",GUID:"b1cb1a66-8583-5373-a13f-da391b224bde",Type:1,Title:"SPN Failed to Connect",Category:"",Message:"Failed to connect to a home hub: failed to connect to a new home hub - tried 32 hubs: failed to launch ship: failed to connect to using tcp:17 (185.186.245.108): dial tcp 185.186.245.108:17: connect: connection refused. The Portmaster will retry to connect automatically.",EventData:null,Expires:0,State: NotificationState.Active, AvailableActions: null, SelectedActionID:"",_meta:{Created:1683721388,Modified:1683721388,Expires:0,Deleted:0,Key:"notifications:all/spn:home-hub-failure"}}];
-
+  notifications: Notification[];
+  
   public environmentInjector = inject(EnvironmentInjector);
 
   constructor(private changeDetector: ChangeDetectorRef,

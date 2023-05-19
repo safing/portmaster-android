@@ -10,7 +10,8 @@
       <ion-item color="pm-accent">{{cat.name}}</ion-item>
 
       <!-- Settings -->
-      <app-generic-setting *ngFor="let setting of cat.settings; trackBy: configService.trackBy" [setting]="setting"></app-generic-setting>
+      <app-generic-setting *ngFor="let setting of cat.settings; trackBy: configService.trackBy"
+        [setting]="setting"></app-generic-setting>
     </ion-list>
 
   </ion-list>
