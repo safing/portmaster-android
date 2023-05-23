@@ -14,3 +14,11 @@
 .description {
   padding: 1em 1em 1em 1em;
 }
+
+.not-default {
+  border-left: 0.2em solid var(--ion-color-primary);
+}
+
+.reboot-mark {
+  border-left: 0.2em solid var(--ion-color-disclaimer);
+}

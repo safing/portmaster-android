@@ -1,15 +1,18 @@
 <ion-accordion-group>
   <ion-accordion *ngIf="type == 'bool'">
-    <ion-item slot="header">
+    <ion-item slot="header" [class.not-default]="!isDefault && !pendingRestart" [class.reboot-mark]="pendingRestart">
       <ion-label>{{_setting.Name}}</ion-label>
-      <ion-toggle (click)="onToggle($event)"></ion-toggle>
+      <ion-toggle [checked]="_currentValue" (ionChange)="onToggle($event)" (click)="stopPropagation($event)"></ion-toggle>
     </ion-item>
-    <ion-label slot="content">
-        <p class="ion-padding">{{_setting.Description}}</p>
-    </ion-label>
+    <div slot="content">
+      <ion-label>
+          <p class="ion-padding">{{_setting.Description}}</p>
+      </ion-label>
+      <ion-button *ngIf="!isDefault" expand="full" color="pm-accent" (click)="resetToDefault()">Reset to system default</ion-button>
+    </div>
   </ion-accordion>
 
-  <ion-accordion *ngIf="type == 'string'">
+  <!--<ion-accordion *ngIf="type == 'string'">
     <ion-item slot="header">
       <ion-label>{{_setting.Name}}</ion-label>
       <ion-input class="text-input" (click)="stopPropagation($event)"></ion-input>
@@ -17,43 +20,51 @@
     <ion-label slot="content">
         <p class="ion-padding">{{_setting.Description}}</p>
     </ion-label>
-  </ion-accordion>
+  </ion-accordion>-->
 
   <ion-accordion *ngIf="type == 'select'">
-    <ion-item slot="header">
+    <ion-item slot="header" [class.not-default]="!isDefault && !pendingRestart" [class.reboot-mark]="pendingRestart">
       <ion-label>{{_setting.Name}}</ion-label>
-      <ion-select [value]="_setting.DefaultValue" (click)="stopPropagation($event)">
+      <ion-select [value]="_currentValue" (ionChange)="onSelect($event)" (click)="stopPropagation($event)">
         <ion-select-option *ngFor="let value of _setting.PossibleValues"
           [value]="value.Value">{{value.Name}}</ion-select-option>
       </ion-select>
     </ion-item>
-    <ion-label slot="content">
-        <p class="ion-padding">{{_setting.Description}}</p>
-    </ion-label>
+    <div slot="content">
+      <ion-label>
+          <p class="ion-padding">{{_setting.Description}}</p>
+      </ion-label>
+      <ion-button *ngIf="!isDefault" expand="full" color="pm-accent" (click)="resetToDefault()">Reset to system default</ion-button>
+    </div>
   </ion-accordion>
 
   <ion-accordion *ngIf="type == '[]string'">
-    <ion-item slot="header">
+    <ion-item slot="header" [class.not-default]="!isDefault && !pendingRestart" [class.reboot-mark]="pendingRestart">
       <ion-label>{{_setting.Name}}</ion-label>
-      <ion-label *ngIf="_currentValue.length > 0">
+      <ion-label *ngIf="_currentValue.length > 1" slot="end">
         <p>{{_currentValue.length}} Rules</p>
       </ion-label>
-      <ion-label *ngIf="_currentValue.length == 0">
+      <ion-label *ngIf="_currentValue.length == 1" slot="end">
+        <p>1 Rule</p>
+      </ion-label>
+      <ion-label *ngIf="_currentValue.length == 0" slot="end">
         <p>No Rules</p>
       </ion-label>
     </ion-item>
     <ion-list slot="content">
       <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">
-        <ion-item *ngFor="let value of displayValues; let i = index;" (click)="onValueClicked(i)">
+        <ion-item *ngFor="let value of displayValues; let i = index;" (click)="onArrayValueClicked(i)">
           <ion-label [color]="value.color">{{symbolMap[value.action]}}</ion-label>
           <ion-label>{{value.rule}}</ion-label>
           <ion-reorder slot="end"></ion-reorder>
         </ion-item>
+
       </ion-reorder-group>
-      <ion-button class="add-rule-button" (click)="onValueClicked(-1)">+ Add Rule</ion-button>
+      <ion-button class="add-rule-button" (click)="onArrayValueClicked(-1)">+ Add Rule</ion-button>
       <ion-label>
         <p class="ion-padding">{{_setting.Description}}</p>
       </ion-label>
+      <ion-button *ngIf="!isDefault" expand="full" color="pm-accent" (click)="resetToDefault()">Reset to system default</ion-button>
     </ion-list>
   </ion-accordion>
 </ion-accordion-group>

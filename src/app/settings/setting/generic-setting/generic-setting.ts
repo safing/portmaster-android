@@ -1,7 +1,8 @@
-import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { IonicModule, ItemReorderEventDetail, ModalController } from "@ionic/angular";
 import { BaseSetting, ExpertiseLevelNumber, ExternalOptionHint, OptionType, optionTypeName, QuickSetting, ReleaseLevel, SettingValueType, WellKnown } from "src/app/lib/config.types";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { IonicModule, ItemReorderEventDetail, ModalController } from "@ionic/angular";
 import { SettingsEditComponent } from "../edit/edit.component";
 
 export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
@@ -25,7 +26,7 @@ interface DisplayValue {
   exportAs: 'appGenericSetting',
   styleUrls: ['./generic-setting.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonicModule, CommonModule, SettingsEditComponent],
+  imports: [IonicModule, CommonModule, FormsModule, SettingsEditComponent, ReactiveFormsModule],
 })
 export class GenericSettingComponent<S extends BaseSetting<any, any>> implements OnInit, OnDestroy {
   //
@@ -40,9 +41,11 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
 
   _setting: S = null;
   type: string = '';
+  isDefault: boolean = true;
+  pendingRestart = false;
 
   /* The currently configured value. Updated by the setting() setter */
-  _currentValue: SettingValueType<S> | null = null;
+  _currentValue: any = null;
   displayValues: Array<DisplayValue>;
 
   @Input()
@@ -52,28 +55,23 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     if (s.OptType == OptionType.String && !!s.PossibleValues) {
       this.type = 'select';
     }
+    console.log(s.Name, s.Value);
+    if (s.Value !== undefined) {
+      this._currentValue = s.Value;
+      this.isDefault = s.Value === this.defaultValue;
+    } else {
+      this._currentValue = this.defaultValue;
+      this.isDefault = true;
+    }
 
-    this._currentValue = s.DefaultValue;
+    this.pendingRestart = !!s.Annotations?.[WellKnown.RestartPending];
+
     this.updateDisplayValues()
   }
 
-  updateDisplayValues() {
-    if (this._setting.OptType != OptionType.StringArray) {
-      return;
-    }
-    this.displayValues = new Array<DisplayValue>();
-    (this._currentValue as Array<string>).forEach((value: string) => {
-      let action = value.trim().charAt(0);
-      let rule = value.slice(1).trim();
-      let color = "danger";
-      if (action == "+") {
-        color = "success";
-      }
-      this.displayValues.push({ color: color, action: action, rule: rule });
-    });
-    this.changeDetector.detectChanges();
-  }
-
+  @Output()
+  onValueChanged: EventEmitter<SaveSettingEvent> = new EventEmitter();
+  
   /** Returns the symbolMap annoation for endpoint-lists */
   get symbolMap() {
     return this._setting?.Annotations[WellKnown.EndpointListVerdictNames] || {
@@ -86,15 +84,9 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     private changeDetector: ChangeDetectorRef,
     private modalCtrl: ModalController) { }
 
-  ngOnInit() {
-    // this.subscription = this.triggerSave.pipe(
-    //   debounceTime(500),
-    // ).subscribe(() => this.emitSaveRequest())
-  }
+  ngOnInit() {}
 
-  ngOnDestroy() {
-    // this.subscription.unsubscribe();
-  }
+  ngOnDestroy() {}
 
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
     // The `from` and `to` properties contain the index of the item
@@ -108,15 +100,65 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
   }
 
   onToggle(event: any) {
+    this._currentValue = event.detail.checked;
+    this.emitChangeEvent();
     event.stopPropagation();
+  }
+
+  onSelect(event: any) {
+    this._currentValue = event.target.value;
+    this.emitChangeEvent();
   }
 
   stopPropagation(event: any) {
     event.stopPropagation();
   }
 
-  async onValueClicked(index: number) {
-    console.log(this._setting.Help);
+  onEditDone(value: SettingValueType<S>) {
+    this._currentValue = value;
+    this.emitChangeEvent();
+    this.updateDisplayValues();
+  }
+
+  resetToDefault() {
+    this._currentValue = undefined;
+    this.isDefault = true;
+    this.emitChangeEvent();
+    this.updateDisplayValues();
+    this.changeDetector.detectChanges();
+  }
+  
+  private emitChangeEvent() {
+    this.onValueChanged.emit({
+      key: this._setting!.Key,
+      isDefault: false,
+      value: this._currentValue,
+      rejected: () => {},
+      accepted: () => {}
+    });
+  }
+
+  updateDisplayValues() {
+    if (this._setting.OptType != OptionType.StringArray) {
+      return;
+    }
+
+    this.displayValues = new Array<DisplayValue>();
+    (this._currentValue as Array<string>).forEach((value: string) => {
+      let action = value.trim().charAt(0);
+      let rule = value.slice(1).trim();
+      let color = "danger";
+      if (action == "+") {
+        color = "success";
+      }
+
+      this.displayValues.push({ color: color, action: action, rule: rule });
+    });
+
+    this.changeDetector.detectChanges();
+  }
+
+  async onArrayValueClicked(index: number) {
     let modal = await this.modalCtrl.create({
       component: SettingsEditComponent,
       componentProps: {
@@ -130,16 +172,9 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     });
 
     modal.present();
-    const { data, role } = await modal.onWillDismiss();
+    await modal.onWillDismiss();
 
-    if (role === 'confirm') {
-      console.log("Data: ", JSON.stringify(data));
-    }
-    this.updateDisplayValues();
-  }
-
-  onEditDone(value: SettingValueType<S>) {
-    this._currentValue = value;
+    this.emitChangeEvent();
     this.updateDisplayValues();
   }
 
@@ -153,5 +188,21 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     return Array.isArray(quickSettings)
       ? quickSettings
       : [quickSettings];
+  }
+
+  get defaultValue() {
+    // Stackable options are displayed differently.
+    if (this._setting.OptType == OptionType.StringArray) {
+      if (this._setting.GlobalDefault === undefined && this._setting.DefaultValue !== null) {
+        return this._setting.DefaultValue;
+      }
+      return [] as SettingValueType<S>;
+    }
+
+    // Return global, then default value.
+    if (this._setting.GlobalDefault !== undefined) {
+      return this._setting.GlobalDefault
+    }
+    return this._setting.DefaultValue
   }
 }

@@ -7,6 +7,7 @@ import { ConfigService } from '../lib/config.service';
 import { Setting } from '../lib/config.types';
 import { Subscription } from 'rxjs';
 import { ConfigSettingsViewComponent } from './setting/config-settings';
+import { SaveSettingEvent } from './setting/edit/edit.component';
 
 @Component({
   selector: 'app-settings',
@@ -34,9 +35,52 @@ export class SettingsComponent implements OnInit {
     const configSub = this.configService.query('')
       .subscribe(settings => {
         this.settings = settings;
-        console.log("Settings: ", JSON.stringify(settings));
         this.changeDetector.detectChanges();
       });
     this.subscription.add(configSub);
+  }
+
+  saveSetting(event: SaveSettingEvent) {
+    let idx = this.settings.findIndex(setting => setting.Key === event.key);
+    if (idx < 0) {
+      return;
+    }
+
+    const setting = {
+      ...this.settings[idx],
+    }
+
+    if (event.isDefault) {
+      delete (setting['Value']);
+    } else {
+      setting.Value = event.value;
+    }
+
+    this.configService.save(setting)
+      .subscribe({
+        next: () => {
+          if (!!event.accepted) {
+            event.accepted();
+          }
+
+          this.settings[idx] = setting;
+
+          // copy the settings into a new array so we trigger
+          // an input update due to changed array identity.
+          this.settings = [...this.settings];
+
+          // for the release level setting we need to
+          // to a page-reload since portmaster will now
+          // return more settings.
+          this.loadSettings();
+        },
+        error: err => {
+          if (!!event.rejected) {
+            event.rejected(err);
+          }
+
+          console.error(err);
+        }
+      });
   }
 }

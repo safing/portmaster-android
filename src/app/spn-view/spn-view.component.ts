@@ -61,11 +61,9 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     this.spnService.userProfile().subscribe(
       (user: UserProfile) => {
         this.User = user;
-        console.log("User profile initialize:", JSON.stringify(user));
 
         this.spnService.watchProfile().subscribe((user: UserProfile) => {
           this.User = user;
-          console.log("User profile update:", JSON.stringify(user));
         });
 
         // Update UI.
@@ -138,7 +136,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
           text: "Cancel",
         }]
     }).then((alert) => {
-      alert.present()
+      alert.present();
     });
   }
 

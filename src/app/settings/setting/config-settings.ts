@@ -1,12 +1,13 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TrackByFunction, ViewChildren, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TrackByFunction, ViewChildren, ViewChild, Output, EventEmitter } from "@angular/core";
 import { BehaviorSubject, Subscription, combineLatest } from "rxjs";
 import { ConfigService } from "src/app/lib/config.service";
-import { ExpertiseLevelNumber, Setting, SettingValueType, releaseLevelFromName } from "src/app/lib/config.types";
+import { ExpertiseLevelNumber, Setting, SettingValueType, WellKnown, releaseLevelFromName } from "src/app/lib/config.types";
 import { GenericSettingComponent, SaveSettingEvent } from "./generic-setting/generic-setting";
 import { StatusService } from "src/app/services/status.service";
 import { Subsystem } from "src/app/services/status.types";
 import { CommonModule } from "@angular/common";
-import { IonicModule, IonModal } from "@ionic/angular";
+import { AlertController, IonicModule, IonModal } from "@ionic/angular";
+import GoBridge from "src/app/plugins/go.bridge";
 
 interface Category {
   name: string;
@@ -42,38 +43,18 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   editSetting: GenericSettingComponent<Setting>;
   editSettingValue: SettingValueType<Setting>;
 
-  @Input()
-  resetLabelText = 'Reset to system default';
-
-  @Input()
-  set compactView(v: any) {
-    // this._compactView = coerceBooleanProperty(v);
-  }
   get compactView() {
     return this._compactView
   }
   private _compactView = false;
 
-  @Input()
-  set lockDefaults(v: any) {
-    // this._lockDefaults = coerceBooleanProperty(v);
-  }
   get lockDefaults() {
     return this._lockDefaults;
   }
   private _lockDefaults = false;
 
-  @Input()
-  set userSettingsMarker(v: any) {
-    // this._userSettingsMarker = coerceBooleanProperty(v);
-  }
   get userSettingsMarker() { return this._userSettingsMarker }
   private _userSettingsMarker = true;
-
-  @Input()
-  set searchTerm(v: string) {
-    this.onSearch.next(v);
-  }
 
   @Input()
   set availableSettings(v: Setting[]) {
@@ -83,29 +64,13 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   @Input()
   displayStackable: string | boolean = false;
 
-  @Input()
-  set highlightKey(key: string | null) {
-    this._highlightKey = key || null;
-    this._scrolledToHighlighted = false;
-    // If we already loaded the settings then instruct the window
-    // to scroll the setting into the view.
-    if (!!key && !!this.settings && this.settings.size > 0) {
-      this.scrollTo(key);
-      this._scrolledToHighlighted = true;
-    }
-  }
-  get highlightKey() {
-    return this._highlightKey;
-  }
-  private _highlightKey: string | null = null;
-  private _scrolledToHighlighted = false;
-
-
-  // @Output()
-  // save = new EventEmitter<SaveSettingEvent>();
+  @Output()
+  save = new EventEmitter<SaveSettingEvent>();
 
   private onSearch = new BehaviorSubject<string>('');
   private onSettingsChange = new BehaviorSubject<Setting[]>([]);
+
+  restartPending: boolean = false;
 
   @ViewChildren('navLink', { read: ElementRef })
   navLinks: QueryList<ElementRef> | null = null;
@@ -115,18 +80,20 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   constructor(
     public statusService: StatusService,
     public configService: ConfigService,
-    private elementRef: ElementRef,
+    private alertController: AlertController,
     private changeDetectorRef: ChangeDetectorRef,
   ) { }
 
   saveSetting(event: SaveSettingEvent, s: Setting) {
-    // this.save.next(event);
+    this.save.next(event);
     const subsys = this.subsystems.find(subsys => s.Key === subsys.ToggleOptionKey)
     if (!!subsys) {
       // trigger a reload of the page as we now might need to show more
       // settings.
       this.onSettingsChange.next(this.onSettingsChange.getValue());
     }
+
+    this.changeDetectorRef.detectChanges();
   }
 
   trackSubsystem: TrackByFunction<SubsystemWithExpertise> = this.statusService.trackSubsystem;
@@ -209,7 +176,12 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
             if (!pushed) {
               this.others!.push(setting);
             }
-          })
+
+            let restartPending = !!setting.Annotations?.[WellKnown.RestartPending];
+            if (restartPending) {
+              this.restartPending = true;
+            }
+          });
 
           if (this.others.length === 0) {
             this.others = null;
@@ -266,7 +238,6 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
               return subsys;
             })
 
-          console.log("Subsystems: ", JSON.stringify(this.subsystems));
 
           // Force the core subsystem to the end.
           if (this.subsystems.length >= 2 && this.subsystems[0].ID === "core") {
@@ -277,17 +248,6 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
           // // the settings.
           this.loading = false;
 
-          // If there's a highlightKey set and we have not yet scrolled
-          // to it (because it was set during component bootstrap) we
-          // need to scroll there now.
-          if (this._highlightKey !== null && !this._scrolledToHighlighted) {
-            this._scrolledToHighlighted = true;
-
-            // Use the next animation frame for scrolling
-            window.requestAnimationFrame(() => {
-              this.scrollTo(this._highlightKey || '');
-            })
-          }
         }
       )
   }
@@ -297,91 +257,22 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
     this.onSearch.complete();
   }
 
-  /**
-   * Calculates which navigation entry should be highlighted
-   * depending on the scroll position.
-   */
-  private intersectionCallback() {
-    // search our parents for the element that's scrollable
-    let elem: HTMLElement = this.elementRef.nativeElement;
-    while (!!elem) {
-      if (elem.scrollTop > 0) {
-        break;
-      }
-      elem = elem.parentElement!;
-    }
-
-    // if there's no scrolled/scrollable parent element
-    // our content itself is scrollable so use our own
-    // host element as the anchor for the calculation.
-    if (!elem) {
-      elem = this.elementRef.nativeElement;
-    }
-
-    // get the elements offset to page-top
-    var offsetTop = 0;
-    if (!!elem) {
-      const viewRect = elem.getBoundingClientRect();
-      offsetTop = viewRect.top;
-    }
-
-    this.navLinks?.some(link => {
-      const subsystem = link.nativeElement.getAttribute("subsystem");
-      const category = link.nativeElement.getAttribute("category");
-
-
-      const lastChild = (link.nativeElement as HTMLElement).lastElementChild as HTMLElement;
-      if (!lastChild) {
-        return false;
-      }
-
-      const rect = lastChild.getBoundingClientRect();
-      const styleBox = getComputedStyle(lastChild);
-
-      const offset = rect.top + rect.height - parseInt(styleBox.marginBottom) - parseInt(styleBox.paddingBottom);
-
-      if (offset >= offsetTop) {
-        this.activeSection = subsystem;
-        this.activeCategory = category;
-        return true;
-      }
-
-      return false;
-    })
-    this.changeDetectorRef.detectChanges();
-  }
-
-  /**
-   * @private
-   * Performs a smooth-scroll to the given anchor element ID.
-   *
-   * @param id The ID of the anchor element to scroll to.
-   */
-  scrollTo(id: string, cat?: Category) {
-    if (!!cat) {
-      cat.collapsed = false;
-    }
-    document.getElementById(id)?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-      inline: 'nearest',
-    })
-  }
-
-  openEditModal(event: {setting: GenericSettingComponent<Setting>, index: number}) {
-    this.editSetting = event.setting;
-    this.editModal.present();
-  }
-
-  onWillDismiss() {}
-
-  onEditModalDissmiss(event: any) {}
-
-  cancel() {
-    this.editModal.dismiss(null, 'cancel');
-  }
-
-  confirm() {
-    this.editModal.dismiss(null, 'confirm');
+  promptRestart() {
+    this.alertController.create({
+      header: "Shutting Down Portmaster",
+      message: "Restart is requierd for the changes to take effect. You have to manually start portmaster after this.",
+      buttons: [
+        {
+          text: "Ok",
+          handler: () => {
+            GoBridge.Shutdown();
+          }
+        },
+        {
+          text: "Cancel",
+        }]
+    }).then((alert) => {
+      alert.present();
+    });
   }
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, EventEmitter, Input, Output, ViewChild, AfterViewInit, OnInit, ChangeDetectorRef } from "@angular/core";
-import { IonInput, IonRadioGroup, IonSelect, IonicModule, ModalController } from "@ionic/angular";
+import { AlertController, IonInput, IonRadioGroup, IonSelect, IonicModule, ModalController } from "@ionic/angular";
 import { MarkdownModule } from "ngx-markdown";
 import { BaseSetting, QuickSetting, SettingValueType } from "src/app/lib/config.types";
 
@@ -49,6 +49,7 @@ export class SettingsEditComponent implements OnInit, AfterViewInit {
   isUpdate: boolean = false;
 
   constructor(private modalCtrl: ModalController,
+    private alertController: AlertController,
     private changeDetector: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -91,8 +92,27 @@ export class SettingsEditComponent implements OnInit, AfterViewInit {
     this.roleInput.value = role;
   }
 
+  deleteAndClose() {
+    this.alertController.create({
+      header: "Delete the current entry",
+      message: "Are you sure you want to delete the current entry?",
+      buttons: [
+        {
+          text: "Delete",
+          handler: () => {
+            this.value.splice(this.index, 1);
+            this.modalCtrl.dismiss(this.value, 'confirm');
+          }
+        },
+        {
+          text: "Cancel",
+        }]
+    }).then((alert) => {
+      alert.present();
+    });
+  }
+
   applyQuickSetting(setting: QuickSetting<string>) {
-    console.log(JSON.stringify(setting));
     this.updateValue(setting.Value[0]);
     this.changeDetector.checkNoChanges();
   }
