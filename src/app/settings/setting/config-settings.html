@@ -1,0 +1,23 @@
+<!-- navigation for the settings -->
+
+<ion-item *ngIf="restartPending" color="disclaimer" (click)="promptRestart()">
+  <ion-label class="ion-text-wrap">
+    <p><u>Shutdown</u> and start the app again to apply the changes.
+    </p>
+  </ion-label>
+</ion-item>
+<ion-list>
+  <!-- Subsystems -->
+  <ion-list *ngFor="let subsys of subsystems; trackBy: trackSubsystem" [multiple]="true">
+    <ion-item><ion-header><b>{{subsys.Name}}</b></ion-header></ion-item>
+
+    <!-- Categories -->
+    <ion-list *ngFor="let cat of settings.get(subsys.ConfigKeySpace); trackBy: trackCategory; let index=index">
+      <ion-item color="pm-accent">{{cat.name}}</ion-item>
+
+      <!-- Settings -->
+      <app-generic-setting *ngFor="let setting of cat.settings; trackBy: configService.trackBy" [setting]="setting" (onValueChanged)="saveSetting($event, setting)" ></app-generic-setting>
+    </ion-list>
+
+  </ion-list>
+</ion-list>

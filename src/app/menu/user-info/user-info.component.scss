@@ -1,9 +1,9 @@
-.header-row {
-  background: #7163AA;
-  color: #fff;
-  font-size: 18px;
+.user_row:nth-child(even){
+  // border: 1px solid #ECEEEF;
+  background-color: #343333;
 }
 
-ion-col {
-  border: 1px solid #ECEEEF;
+.user_row:nth-child(odd){
+  // border: 1px solid #ECEEEF;
+  background-color: #000000;
 }

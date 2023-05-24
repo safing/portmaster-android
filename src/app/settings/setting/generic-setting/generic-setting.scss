@@ -1,0 +1,24 @@
+.text-input {
+  background-color: var(--ion-color-pm-accent);
+  margin-left: 1em;
+}
+
+.add-rule-button {
+  --background: #00000000;
+  --border-radius: 4em;
+  --border-style: dashed;
+  --border-color: var(--ion-color-pm-accent);
+  width: 99%;
+}
+
+.description {
+  padding: 1em 1em 1em 1em;
+}
+
+.not-default {
+  border-left: 0.2em solid var(--ion-color-primary);
+}
+
+.reboot-mark {
+  border-left: 0.2em solid var(--ion-color-disclaimer);
+}

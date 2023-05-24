@@ -1,80 +1,110 @@
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { AlertController, Platform } from '@ionic/angular';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject, EnvironmentInjector } from '@angular/core';
+import { AlertController, IonicModule, LoadingController, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
-import { Database, DatabaseListener } from "../db-interface/module"
 import GoBridge from '../plugins/go.bridge';
-import { User, SPNStatus } from "../types/spn.types"
+import { SPNButton } from './spn-button/spn-button.component';
+import { DownloadProgressComponent } from './download-progress/download-progress.component';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { SecurityLockComponent } from './security-lock/security-lock';
+import { FormsModule } from '@angular/forms';
+import { Notification, getNotificationTypeString } from '../services/notifications.types';
+import { SPNStatus, UserProfile } from '../lib/spn.types';
+import { SPNService } from '../lib/spn.service';
+import { ConfigService } from '../lib/config.service';
+import { NotificationsService } from '../services/notifications.service';
+import { ShutdownService } from '../services/shutdown.service';
+// import { SPNService, SPNStatus, UserProfile } from '@safing/portmaster-api';
 
 @Component({
   selector: 'spn-view-container',
   templateUrl: './spn-view.component.html',
   styleUrls: ['./spn-view.component.scss'],
+  standalone: true,
+  imports: [CommonModule, IonicModule, FormsModule, SPNButton, DownloadProgressComponent, SecurityLockComponent]
 })
 export class SPNViewComponent implements OnInit, OnDestroy {
-  @Input() User: User;
-  @Output() onLogout = new EventEmitter();
-  @Output() onUpdateUserInfo = new EventEmitter();
-  @Output() onShutdown = new EventEmitter();
+  User: UserProfile;
 
   SPNStatus: SPNStatus | null;
   SPNErrorMsg: string = "";
   IsGeoIPDataAvailable: boolean = false;
 
-  private DatabaseListeners: Array<DatabaseListener> = new Array();
+  private resumeEventSubscription: Subscription;
 
-  private resumeSubscription: Subscription;
+  notifications: Notification[];
+  
+  public environmentInjector = inject(EnvironmentInjector);
 
-  constructor(private changeDetector: ChangeDetectorRef, private alertController: AlertController, private platform: Platform) {
+  constructor(private changeDetector: ChangeDetectorRef,
+    private shutdownService: ShutdownService,
+    private alertController: AlertController,
+    private platform: Platform,
+    private spnService: SPNService,
+    private configService: ConfigService,
+    private notificationService: NotificationsService,
+    private router: Router) {
     this.SPNStatus = null;
   }
 
-  async ngOnInit() {
-    var listener = await Database.Subscribe("runtime:spn/status", (msg: SPNStatus) => {
-      this.SPNStatus = msg;
-      console.log("SPN event", JSON.stringify(msg))
+  ngOnInit() {
+    this.spnService.status$.subscribe((status: SPNStatus) => {
+      if (status == null) {
+        return;
+      }
+      this.SPNStatus = status;
+      console.log("Spn status update:", JSON.stringify(status));
       // Update UI.
       this.changeDetector.detectChanges();
     });
 
-    this.DatabaseListeners.push(listener);
+    this.spnService.userProfile().subscribe(
+      (user: UserProfile) => {
+        this.User = user;
 
-    listener = await Database.Subscribe("runtime:subsystems/spn", (msg: any) => {
-      this.SPNErrorMsg = msg.Modules[0].FailureMsg;
-      console.log("runtime:subsystems/spn", this.SPNErrorMsg)
-      // Update UI.
-      this.changeDetector.detectChanges();
-    });
+        this.spnService.watchProfile().subscribe((user: UserProfile) => {
+          this.User = user;
+        });
 
-    this.DatabaseListeners.push(listener);
+        // Update UI.
+        this.changeDetector.detectChanges();
+      },
+      (error: string) => {
+        console.log(error);
+      });
 
-    this.resumeSubscription = this.platform.resume.subscribe(() => {
+    this.resumeEventSubscription = this.platform.resume.subscribe(() => {
       this.EnableTunnelPopup();
       this.CheckGeoIPData();
     });
 
     this.EnableTunnelPopup();
     this.CheckGeoIPData();
-  }
 
-  async ngOnDestroy() {
-    this.DatabaseListeners.forEach((listener) => {
-      listener.remove();
+    this.notificationService.new$
+    .subscribe((notifications: Notification[]) => {
+      console.log("New Notification:", JSON.stringify(notifications));
+      this.notifications = notifications;
+      this.changeDetector.detectChanges();
     });
-
-    this.resumeSubscription.unsubscribe();
   }
 
-  async enableSPN() {
-    GoBridge.EnableSPN();
+  ngOnDestroy() {
+    this.resumeEventSubscription.unsubscribe();
   }
 
-  async disableSPN() {
-    GoBridge.DisableSPN();
+  openUserInfo() {
+    if (this.User?.username) {
+      this.router.navigate(["/menu/user-info"]);
+    } else {
+      this.router.navigate(["/login"]);
+    }
   }
 
-  async updateUserInfo() {
-    this.onUpdateUserInfo.emit()
+  setSPNEnabled(v: boolean) {
+    this.configService.save(`spn/enable`, v)
+      .subscribe();
   }
 
   isSPNConnected(): boolean {
@@ -91,54 +121,72 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     return this.SPNStatus?.Status == "disabled";
   }
 
-  async Shutdown() {
-    const alert = await this.alertController.create({
-      header: "Shutting Down Portmaster",
-      message: "Shutting down the Portmaster will stop all Portmaster components and will leave your system unprotected!",
-      buttons: [
-        { 
-          text: "Shutdown",
-          handler: () => {
-            this.onShutdown.emit();
-            GoBridge.Shutdown();
-          }
-        },
-        { 
-          text: "Cancel", 
-        }]
-    }); 
-    await alert.present()
+  Shutdown() {
+    this.shutdownService.promptShutdown();
   }
 
   async EnableTunnelPopup() {
     var active = await GoBridge.IsTunnelActive()
-    if(!active) {
+    if (!active) {
       const alert = await this.alertController.create({
-              header: "VPN service is disabled!",
-              message: "Portmaster requires a virtual VPN connection to Android to work. Click Ok to enable.",
-              buttons: [ 
-                {
-                  text: "Shutdown",
-                },
-                {
-                  text: "Ok",
-                  role: "ok"
-                  
-                },
-              ]
-            }); 
+        header: "VPN service is disabled!",
+        message: "Portmaster requires a virtual VPN connection to Android to work. Click Ok to enable.",
+        buttons: [
+          {
+            text: "Shutdown",
+          },
+          {
+            text: "Ok",
+            role: "ok"
+          },
+        ]
+      });
       await alert.present()
-      const { role } =  await alert.onDidDismiss();
-      if(role == "ok") {
+      const { role } = await alert.onDidDismiss();
+      if (role == "ok") {
         GoBridge.EnableTunnel();
         return;
       }
       GoBridge.Shutdown();
     }
-  } 
+  }
 
-  async CheckGeoIPData() {
-    this.IsGeoIPDataAvailable = await GoBridge.IsGeoIPDataAvailable();
-    this.changeDetector.detectChanges();
+  openLoginPage() {
+    console.log("onLogin event");
+    this.router.navigate(["/login"])
+  }
+
+  CheckGeoIPData() {
+    GoBridge.IsGeoIPDataAvailable().then((isAvailable) => {
+      this.IsGeoIPDataAvailable = isAvailable;
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  openConnectionInfo() {
+    if (this.SPNStatus.Status != "connected") {
+      return;
+    }
+
+    this.alertController.create({
+      header: 'SPN Connection',
+      subHeader: "",
+      message: 'Home: ' + this.SPNStatus.HomeHubName + "<br>" +
+        this.SPNStatus.ConnectedIP + " " + this.SPNStatus.ConnectedTransport + "<br>",
+      buttons: ['Close'],
+    }).then((alert) => {
+      alert.present();
+    });
+  }
+
+  openNotification(notification: Notification) {
+    this.alertController.create({
+      header: notification.Title,
+      subHeader: getNotificationTypeString(notification.Type),
+      message: notification.Message,
+      buttons: ['Close'],
+    }).then((alert) => {
+      alert.present();
+    });
   }
 }

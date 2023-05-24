@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core';
-import { IonAccordionGroup, IonSlides} from '@ionic/angular';
+import { IonAccordionGroup, IonSlides, IonicModule} from '@ionic/angular';
 import GoBridge, { GoInterface } from '../plugins/go.bridge';
 import JavaBridge from '../plugins/java.bridge';
 import { UpdateState } from '../types/spn.types';
+import { CommonModule, LocationStrategy } from '@angular/common';
 
 
 enum Slides {
@@ -15,12 +16,12 @@ enum Slides {
 
 @Component({
   selector: 'welcome-screen',
+  standalone: true,
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss'],
+  imports: [CommonModule, IonicModule]
 })
 export class WelcomeComponent implements OnInit, OnDestroy {
-
-  @Output() onExit = new EventEmitter();
   @ViewChild('slides') slides: IonSlides;
   @ViewChild('permissionsGroup', { static: true }) permissionsGroup: IonAccordionGroup;
 
@@ -31,7 +32,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   NotificationPermissionGranted : boolean = false;
   VPNPermissionGranted : boolean = false;
 
-  constructor(private changeDetector: ChangeDetectorRef) { }
+  constructor(private changeDetector: ChangeDetectorRef, private locationStrategy: LocationStrategy) { }
 
   public async ngOnInit() {
     var result = await JavaBridge.isNotificationPermissionGranted();
@@ -50,7 +51,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
 
-    GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
+    // GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
   }
 
   ngOnDestroy(): void {
@@ -69,19 +70,19 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   public Download() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
-    GoBridge.DownloadPendingUpdates();
+    // GoBridge.DownloadPendingUpdates();
     JavaBridge.setWelcomeScreenShowed({showed: true});
   }
 
   public WaitForWifi() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
-    GoBridge.DownloadUpdatesOnWifiConnected();
+    // GoBridge.DownloadUpdatesOnWifiConnected();
     JavaBridge.setWelcomeScreenShowed({showed: true});
   } 
 
   public async Continue() {
-    this.onExit.emit();
+    this.locationStrategy.back();
   }
 
   public async RequestVPNPermission() {

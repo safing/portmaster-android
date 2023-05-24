@@ -1,36 +1,22 @@
 package ui
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
-	"github.com/safing/portbase/config"
+	"github.com/safing/portbase/api"
 	"github.com/safing/portbase/log"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster-android/go/engine"
 	"github.com/safing/portmaster-android/go/engine/bug_report"
 	"github.com/safing/portmaster-android/go/engine/logs"
 	"github.com/safing/portmaster-android/go/engine/tunnel"
-	"github.com/safing/spn/access"
-	"github.com/safing/spn/captain"
 )
 
 // Functions that have PluginCall as an argument are automatically exposed to the ionic UI
-
-func EnableSPN() {
-	err := config.SetConfigOption("spn/enable", true)
-	if err != nil {
-		log.Errorf("engine: failed to enable SPN: %s", err)
-	}
-}
-
-func DisableSPN() {
-	err := config.SetConfigOption("spn/enable", false)
-	if err != nil {
-		log.Errorf("engine: failed to disable SPN: %s", err)
-	}
-}
 
 func IsTunnelActive() bool {
 	return tunnel.IsActive()
@@ -43,55 +29,6 @@ func EnableTunnel() {
 
 func RestartTunnel() {
 	tunnel.Reconnect()
-}
-
-// GetUser ts:(User)
-func GetUser() (*access.UserRecord, error) {
-	return access.GetUser()
-}
-
-func Login(call PluginCall) {
-	// Get credentials from plugin call.
-	username, err := call.GetString("username")
-	if err != nil {
-		call.Error("username can't be empty")
-		return
-	}
-	password, err := call.GetString("password")
-	if err != nil {
-		call.Error("password can't be empty")
-		return
-	}
-
-	// Keep the request async. This will not affect the ui call.
-	go func() {
-		user, code, err := access.Login(username, password)
-		if code != 200 {
-			// Failed to login. Return the error.
-			call.Error(err.Error())
-		} else {
-			// Login successful
-			userJson, _ := json.Marshal(user)
-			log.Info(string(userJson))
-			call.ResolveJson(string(userJson))
-
-		}
-	}()
-}
-
-func Logout() error {
-	return access.Logout(false, true)
-}
-
-// ts:(User)
-func UpdateUserInfo() (*access.UserRecord, error) {
-	user, _, err := access.UpdateUser()
-	return user, err
-}
-
-// ts:(SPNStatus)
-func GetSPNStatus() *captain.SPNStatus {
-	return captain.GetSPNStatus()
 }
 
 func GetLogs(ID int64) []logs.LogLine {
@@ -111,33 +48,6 @@ func GetDebugInfo() (string, error) {
 	debugInfo, err := logs.GetDebugInfo("github")
 	escaped := strings.ReplaceAll(string(debugInfo), `"`, `\"`)
 	return escaped, err
-}
-
-func DatabaseSubscribe(call PluginCall) {
-	eventName, err := call.GetString("name")
-	if err != nil {
-		call.Error("Missing Name argument")
-		return
-	}
-
-	query, err := call.GetString("query")
-	if err != nil {
-		call.Error("Missing Query argument")
-		return
-	}
-
-	req := &engine.SubscribeRequest{EventName: eventName, Query: query, Call: call}
-	go func() {
-		engine.UISubscribeRequest(req) // this call will resolve the PluginCall
-	}()
-}
-
-func CancelAllSubscriptions() {
-	engine.CancelAllUISubscriptions()
-}
-
-func RemoveSubscription(eventID string) {
-	engine.RemoveSubscription(eventID)
 }
 
 func Shutdown() {
@@ -186,29 +96,82 @@ func CreateTicket(debugInfo string, ticketRequestStr string) error {
 	return bug_report.CreateTicket(&ticketRequest)
 }
 
-func DownloadPendingUpdates() {
-	engine.DownloadUpdates()
+func IsGeoIPDataAvailable() (bool, error) {
+	return engine.IsGeoIPDataAvailable()
 }
 
-func DownloadUpdatesOnWifiConnected() {
-	engine.DownloadUpdatesOnWifiConnected()
-}
-
-func SubscribeToUpdater(call PluginCall) {
-	eventID, err := call.GetString("eventID")
+func PerformRequest(call PluginCall) {
+	// Parameter requestJson.
+	requestJson, err := call.GetString("requestJson")
 	if err != nil {
-		call.Error("ui: missing eventID argument")
+		call.Error("missing requestJson argument")
 		return
 	}
 
-	engine.SubscribeToUpdateListener(eventID, call)
+	// Parse json request.
+	var request Request
+	err = json.Unmarshal([]byte(requestJson), &request)
+	if err != nil {
+		log.Errorf("engine: failed to parse ui request: %s %q", err, requestJson)
+		call.Error(err.Error())
+		return
+	}
+
+	// Handle internal requests.
+	if strings.HasPrefix(request.Url, "internal:") {
+		var apiRequest = &api.Request{}
+		ctx := context.WithValue(context.Background(), api.RequestContextKey, apiRequest)
+
+		apiRequest.Request, err = http.NewRequestWithContext(ctx, request.Method, request.Url, strings.NewReader(request.Body))
+		if err != nil {
+			log.Errorf("engine: failed to create request: %s", err)
+			call.Error(err.Error())
+			return
+		}
+
+		// Copy headers
+		for key, values := range request.Headers {
+			for _, value := range values {
+				apiRequest.Request.Header.Add(key, value)
+			}
+		}
+
+		// Get service id
+		path := strings.TrimPrefix(apiRequest.Request.URL.Path, "/v1/")
+		endpoint, err := api.GetEndpointByPath(path)
+		if err != nil {
+			log.Errorf("engine: %s", err)
+			call.Error(err.Error())
+			return
+		}
+		apiRequest.HandlerCache = endpoint
+
+		// Call service
+		response := NewResponseWriter()
+		endpoint.ServeHTTP(response, apiRequest.Request)
+
+		log.Debugf("engine: http service response: %q %d", endpoint.Path, response.statusCode)
+		if response.statusCode < http.StatusBadRequest {
+			call.ResolveJson(response.body)
+		} else {
+			// Error if status code is >= 400 (BadRequest)
+			call.Error(response.body)
+		}
+		return
+	}
+
+	// External paths are not implemented yet.
+	log.Errorf("Path not implemented for: %s", request.Url)
+	call.Error("Path not implemented")
+	return
+}
+
+func DatabaseMessage(msg string) {
+	Database.Handle([]byte(msg))
+}
+
+func SubscribeToDatabase(call PluginCall) {
+	call.KeepAlive(true)
+	dbCall = call
 	call.Resolve()
-}
-
-func UnsubscribeFromUpdater() {
-	engine.SubscribeToUpdateListener("", nil)
-}
-
-func IsGeoIPDataAvailable() (bool, error) {
-	return engine.IsGeoIPDataAvailable()
 }

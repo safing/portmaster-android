@@ -1,46 +1,27 @@
 
 import { Plugin, registerPlugin } from '@capacitor/core';
-import { SPNStatus, User } from '../types/spn.types';
+import { SPNStatus, UserProfile } from '../lib/spn.types';
 
 export interface GoBridgeInterface extends Plugin {
-	EnableSPN(): Promise<void>
-	DisableSPN(): Promise<void>
 	IsTunnelActive(): Promise<any>
 	EnableTunnel(): Promise<void>
 	RestartTunnel(): Promise<void>
-	GetUser(): Promise<any>
-	Login(any): Promise<any>
-	Logout(): Promise<void>
-	UpdateUserInfo(): Promise<any>
-	GetSPNStatus(): Promise<any>
 	GetLogs(data: any): Promise<any>
 	GetDebugInfoFile(): Promise<void>
 	GetDebugInfo(): Promise<any>
-	DatabaseSubscribe(any): Promise<any>
-	CancelAllSubscriptions(): Promise<void>
-	RemoveSubscription(data: any): Promise<void>
 	Shutdown(): Promise<void>
 	CreateIssue(data: any): Promise<any>
 	CreateTicket(data: any): Promise<void>
-	DownloadPendingUpdates(): Promise<void>
-	DownloadUpdatesOnWifiConnected(): Promise<void>
-	SubscribeToUpdater(any): Promise<any>
-	UnsubscribeFromUpdater(): Promise<void>
 	IsGeoIPDataAvailable(): Promise<any>
+	PerformRequest(any): Promise<any>
+	DatabaseMessage(data: any): Promise<void>
+	SubscribeToDatabase(any): Promise<any>
 
 }
 export const GoInterface = registerPlugin<GoBridgeInterface>("GoBridge")
 
 export class GoBridgeClass {
 
-	public EnableSPN(): Promise<void> {
-		return GoInterface.EnableSPN();
-	}
-	
-	public DisableSPN(): Promise<void> {
-		return GoInterface.DisableSPN();
-	}
-	
 	public IsTunnelActive(): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
             GoInterface.IsTunnelActive().then((result) => {
@@ -57,44 +38,6 @@ export class GoBridgeClass {
 	
 	public RestartTunnel(): Promise<void> {
 		return GoInterface.RestartTunnel();
-	}
-	
-	public GetUser(): Promise<User> {
-		return new Promise<User>((resolve, reject) => {
-            GoInterface.GetUser().then((result) => {
-               resolve(result.ret0);
-            }, (result) => {
-               reject(result);
-            });
-        });
-	}
-	
-	public Login(param: any): Promise<any> {
-		return GoInterface.Login(param);
-	}
-
-	public Logout(): Promise<void> {
-		return GoInterface.Logout();
-	}
-	
-	public UpdateUserInfo(): Promise<User> {
-		return new Promise<User>((resolve, reject) => {
-            GoInterface.UpdateUserInfo().then((result) => {
-               resolve(result.ret0);
-            }, (result) => {
-               reject(result);
-            });
-        });
-	}
-	
-	public GetSPNStatus(): Promise<SPNStatus> {
-		return new Promise<SPNStatus>((resolve, reject) => {
-            GoInterface.GetSPNStatus().then((result) => {
-               resolve(result.ret0);
-            }, (result) => {
-               reject(result);
-            });
-        });
 	}
 	
 	public GetLogs(ID: number): Promise<any> {
@@ -121,18 +64,6 @@ export class GoBridgeClass {
         });
 	}
 	
-	public DatabaseSubscribe(param: any): Promise<any> {
-		return GoInterface.DatabaseSubscribe(param);
-	}
-
-	public CancelAllSubscriptions(): Promise<void> {
-		return GoInterface.CancelAllSubscriptions();
-	}
-	
-	public RemoveSubscription(eventID: string): Promise<void> {
-		return GoInterface.RemoveSubscription({eventID: eventID});
-	}
-	
 	public Shutdown(): Promise<void> {
 		return GoInterface.Shutdown();
 	}
@@ -151,22 +82,6 @@ export class GoBridgeClass {
 		return GoInterface.CreateTicket({debugInfo: debugInfo, ticketRequestStr: ticketRequestStr});
 	}
 	
-	public DownloadPendingUpdates(): Promise<void> {
-		return GoInterface.DownloadPendingUpdates();
-	}
-	
-	public DownloadUpdatesOnWifiConnected(): Promise<void> {
-		return GoInterface.DownloadUpdatesOnWifiConnected();
-	}
-	
-	public SubscribeToUpdater(param: any): Promise<any> {
-		return GoInterface.SubscribeToUpdater(param);
-	}
-
-	public UnsubscribeFromUpdater(): Promise<void> {
-		return GoInterface.UnsubscribeFromUpdater();
-	}
-	
 	public IsGeoIPDataAvailable(): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
             GoInterface.IsGeoIPDataAvailable().then((result) => {
@@ -177,6 +92,18 @@ export class GoBridgeClass {
         });
 	}
 	
+	public PerformRequest(param: any): Promise<any> {
+		return GoInterface.PerformRequest(param);
+	}
+
+	public DatabaseMessage(msg: string): Promise<void> {
+		return GoInterface.DatabaseMessage({msg: msg});
+	}
+	
+	public SubscribeToDatabase(param: any): Promise<any> {
+		return GoInterface.SubscribeToDatabase(param);
+	}
+
 }
 
 var GoBridge = new GoBridgeClass()

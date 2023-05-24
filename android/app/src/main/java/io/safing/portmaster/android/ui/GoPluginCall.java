@@ -66,7 +66,7 @@ public class GoPluginCall implements engine.PluginCall {
     try {
       call.resolve(new JSObject(obj));
     } catch (JSONException ex) {
-      Log.v("GoPluginCall", ex.toString());
+      ex.printStackTrace();
     }
   }
 

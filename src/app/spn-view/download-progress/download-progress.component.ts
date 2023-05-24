@@ -1,12 +1,16 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core';
 import GoBridge, { GoInterface } from 'src/app/plugins/go.bridge';
 import { UpdateState } from 'src/app/types/spn.types';
 
+
 @Component({
   selector: 'app-download-progress',
   templateUrl: './download-progress.component.html',
   styleUrls: ['./download-progress.component.scss'],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class DownloadProgressComponent implements OnInit, OnDestroy {
 
@@ -29,19 +33,19 @@ export class DownloadProgressComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
 
-    GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
+    // GoBridge.SubscribeToUpdater({eventID: this.EventID});
   }
   
   ngOnDestroy(): void {
     this.Listener.remove()
-    GoBridge.UnsubscribeFromUpdater();
+    // GoBridge.UnsubscribeFromUpdater();
   }
 
   downloadNow() {
-    GoBridge.DownloadPendingUpdates();
+    // GoBridge.DownloadPendingUpdates();
   }
 
   downloadOnWifi() {
-    GoBridge.DownloadUpdatesOnWifiConnected();
+    // GoBridge.DownloadUpdatesOnWifiConnected();
   }
 }

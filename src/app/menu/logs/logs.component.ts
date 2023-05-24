@@ -1,6 +1,8 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import GoBridge from '../../plugins/go.bridge';
-import { MenuItem } from '../menu.item';
+import { CommonModule, LocationStrategy, NgTemplateOutlet } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonContent, IonInfiniteScrollContent, IonicModule } from '@ionic/angular';
 
 class LogLine {
   Meta: string
@@ -11,40 +13,36 @@ class LogLine {
 
 @Component({
   selector: 'app-logs',
+  standalone: true,
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
+  imports: [CommonModule, FormsModule, IonicModule]
 })
-export class LogsComponent extends MenuItem implements OnInit {
+export class LogsComponent implements OnInit, OnDestroy {
   private Timer: any;
   
-  @ViewChild('content') content: any;
+  @ViewChild('content') content : IonContent;
   Logs: LogLine[];
   
-  constructor() {
-    super()
+  constructor(private location: LocationStrategy) {}
+
+  ngOnInit(): void {
+      // Request the full log buffer.
+      GoBridge.GetLogs(0).then((logs: any) => {
+        this.Logs = logs;
+        
+        if(this.content != undefined) {
+          this.content.scrollToBottom();
+        }
+        this.logUpdater();
+      });
   }
 
-  ngOnInit(): void {}
-
-  public show() {
-    super.show();
-
-    // Request the full log buffer.
-    GoBridge.GetLogs(0).then((logs: any) => {
-      this.Logs = logs;
-      if(this.content != undefined) {
-        this.content.scrollToBottom();
-      }
-      this.logUpdater();
-    });
-  }
-  
-  protected onClose(): void {
-    super.onClose();
+  ngOnDestroy(): void {
     clearInterval(this.Timer);
   }
 
-  public async logUpdater() {
+  public logUpdater() {
     this.Timer = setInterval(async () => {
         var ID = 0;
         if (this.Logs != null && this.Logs.length > 0) {
@@ -61,5 +59,8 @@ export class LogsComponent extends MenuItem implements OnInit {
         }
       }, 1000)
   }
-  
+
+  Close() {
+    this.location.back()
+  }
 }

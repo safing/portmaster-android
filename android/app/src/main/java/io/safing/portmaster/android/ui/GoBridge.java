@@ -15,16 +15,6 @@ import org.json.JSONException;
 public class GoBridge extends Plugin {
 
 	@PluginMethod()
-	public void EnableSPN(PluginCall call) {
-		exported.Exported.enableSPN(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void DisableSPN(PluginCall call) {
-		exported.Exported.disableSPN(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
 	public void IsTunnelActive(PluginCall call) {
 		exported.Exported.isTunnelActive(new GoPluginCall(this, call));
 	}
@@ -37,31 +27,6 @@ public class GoBridge extends Plugin {
 	@PluginMethod()
 	public void RestartTunnel(PluginCall call) {
 		exported.Exported.restartTunnel(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void GetUser(PluginCall call) {
-		exported.Exported.getUser(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void Login(PluginCall call) {
-		exported.Exported.login(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void Logout(PluginCall call) {
-		exported.Exported.logout(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void UpdateUserInfo(PluginCall call) {
-		exported.Exported.updateUserInfo(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void GetSPNStatus(PluginCall call) {
-		exported.Exported.getSPNStatus(new GoPluginCall(this, call));
 	}
 
 	@PluginMethod()
@@ -80,21 +45,6 @@ public class GoBridge extends Plugin {
 	}
 
 	@PluginMethod()
-	public void DatabaseSubscribe(PluginCall call) {
-		exported.Exported.databaseSubscribe(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void CancelAllSubscriptions(PluginCall call) {
-		exported.Exported.cancelAllSubscriptions(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void RemoveSubscription(PluginCall call) {
-		exported.Exported.removeSubscription(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
 	public void Shutdown(PluginCall call) {
 		exported.Exported.shutdown(new GoPluginCall(this, call));
 	}
@@ -110,28 +60,23 @@ public class GoBridge extends Plugin {
 	}
 
 	@PluginMethod()
-	public void DownloadPendingUpdates(PluginCall call) {
-		exported.Exported.downloadPendingUpdates(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void DownloadUpdatesOnWifiConnected(PluginCall call) {
-		exported.Exported.downloadUpdatesOnWifiConnected(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void SubscribeToUpdater(PluginCall call) {
-		exported.Exported.subscribeToUpdater(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
-	public void UnsubscribeFromUpdater(PluginCall call) {
-		exported.Exported.unsubscribeFromUpdater(new GoPluginCall(this, call));
-	}
-
-	@PluginMethod()
 	public void IsGeoIPDataAvailable(PluginCall call) {
 		exported.Exported.isGeoIPDataAvailable(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void PerformRequest(PluginCall call) {
+		exported.Exported.performRequest(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void DatabaseMessage(PluginCall call) {
+		exported.Exported.databaseMessage(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void SubscribeToDatabase(PluginCall call) {
+		exported.Exported.subscribeToDatabase(new GoPluginCall(this, call));
 	}
 
 	public void notifyListener(String name, String data) throws JSONException {

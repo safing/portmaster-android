@@ -134,7 +134,7 @@ func SetActivityFunctions(functions app_interface.AppInterface) {
 
 func OnActivityDestroy() {
 	app_interface.RemoveActivityFunctionReference()
-	CancelAllUISubscriptions()
+	// CancelAllUISubscriptions()
 	if !app_interface.HasServiceFunctions() || !tunnel.IsActive() {
 		OnDestroy()
 	}

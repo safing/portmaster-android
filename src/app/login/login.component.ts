@@ -1,29 +1,44 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
-import {User} from "../types/spn.types"
+import { CommonModule, LocationStrategy } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
+import { SPNService } from '../lib/spn.service';
+// import { SPNService } from '@safing/portmaster-api/src/lib/spn.service';
+
 
 @Component({
   selector: 'app-login-container',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule]
 })
 export class LoginComponent {
-  @Input() User: User | null;
-  @Input() Error: string;
-  @Output() onLogin = new EventEmitter<[string, string]>();
-
+  Error: string;
+  
   Username: string
   Password: string
 
   ShowPassword: boolean
   PasswordFieldType: "password" | "text";
 
-  constructor() { 
+  constructor(
+    private spnService: SPNService, 
+    private location: LocationStrategy) { 
     this.PasswordFieldType = "password";
   }
 
-  async login(): Promise<void> {
-    this.onLogin.emit([this.Username, this.Password])
+  login() {
+    this.spnService.login({username: this.Username, password: this.Password})
+    .subscribe(
+      _ => {
+        this.location.back();
+      },
+      err => {
+        this.Error = err;
+      },
+    );
   }
 
   async togglePasswordVisibility(): Promise<void> {

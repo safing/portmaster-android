@@ -1,0 +1,76 @@
+$width: 4em;
+$height: 2em;
+$border: 0.05em;
+
+.toggle-container{
+  display: inline-block;
+  width: $width;
+  height: $height;
+  border: $border solid var(--ion-color-pm-accent);
+  border-radius: $height;
+  position: relative;
+  cursor: pointer;
+  background-color: rgb(136 136 136);
+  transition: border-color 300ms;
+
+  .real-checkbox{
+    position: absolute;
+    clip: rect(0,0,0,0);
+
+    & + .toggle-button{
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 30px;
+      transition: all 100ms;
+      margin: 0 0 0 0;
+      content: '';
+      cursor: pointer;
+      display: inline-block;
+      width: $height - $border * 2;
+      height: $height - $border * 2;
+      background-color: white;
+      border-radius: 50%;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.5) ;
+      transition: all 100ms ease-in-out;
+      
+    }
+
+    &:checked + .toggle-button{
+       background-color: var(--protection-ok-primary);
+       &::before{
+        margin-left: $height;
+       }      
+    }
+  }
+}
+
+.toggle-container.connected{
+  background-color: var(--protection-ok-primary);
+  .real-checkbox{
+    & + .toggle-button{
+      margin-left: $height;      
+    }
+  }
+}
+
+.toggle-container.connecting{
+  background-color: var(--ion-color-primary);
+  .real-checkbox{
+    & + .toggle-button{
+      margin-left: $height;      
+    }
+  }
+}
+
+.toggle-container.failed{
+  background-color: var(--protection-fail-primary);
+  .real-checkbox{
+    & + .toggle-button{
+      margin-left: $height;      
+    }
+  }
+}
+

@@ -1,45 +1,45 @@
-<ion-modal [isOpen]="isOpen" (willDismiss)="onClose()">
-  <ng-template>
-      <ion-header>
-        <ion-toolbar>
-            <ion-title>User Info</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <ion-grid *ngIf="!User?.view || User?.view?.ShowAccountData">
-          <ion-row>
-            <ion-col size="5">Package</ion-col>
-            <ion-col size="7">{{ User.current_plan?.name }}</ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="5">Package Runs Until</ion-col>
-            <ion-col size="7">{{ User.subscription?.ends_at | date:'medium' }}</ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="5">Username</ion-col>
-            <ion-col size="7">{{ User.username }} </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="5">Device Name</ion-col>
-            <ion-col size="7">{{ User.device?.name }}</ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="5">Device ID</ion-col>
-            <ion-col size="7">{{ User.device?.id }}</ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="5">Account State</ion-col>
-            <ion-col size="7">{{ User.state }} </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="5">Logged in Since</ion-col>
-            <ion-col size="7">{{ User.LoggedInAt | date:'medium' }} </ion-col>
-          </ion-row>
-        </ion-grid>
-        <ion-item>
-          <ion-button color="danger" (click)="logout()">Logout</ion-button>
-          <ion-button slot="end" (click)="onRefresh.emit()">Refresh</ion-button>
-        </ion-item>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+<ion-header>
+  <ion-toolbar>
+      <ion-title>User Info</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-grid *ngIf="!User?.view || User?.view?.ShowAccountData">
+    <ion-row class="user_row">
+      <ion-col size="5">Package</ion-col>
+      <ion-col size="7">{{ User?.current_plan?.name }}</ion-col>
+    </ion-row>
+    <ion-row class="user_row">
+      <ion-col size="5">Package Runs Until</ion-col>
+      <ion-col size="7">{{ User?.subscription?.ends_at | date:'medium' }}</ion-col>
+    </ion-row>
+    <ion-row class="user_row">
+      <ion-col size="5">Username</ion-col>
+      <ion-col size="7">{{ User?.username }} </ion-col>
+    </ion-row>
+    <ion-row class="user_row">
+      <ion-col size="5">Device Name</ion-col>
+      <ion-col size="7">{{ User?.device?.name }}</ion-col>
+    </ion-row>
+    <ion-row class="user_row">
+      <ion-col size="5">Device ID</ion-col>
+      <ion-col size="7">{{ User?.device?.id }}</ion-col>
+    </ion-row>
+    <ion-row class="user_row">
+      <ion-col size="5">Account State</ion-col>
+      <ion-col size="7">{{ User?.state }} </ion-col>
+    </ion-row>
+    <ion-row class="user_row">
+      <ion-col size="5">Logged in Since</ion-col>
+      <ion-col size="7">{{ User?.LoggedInAt | date:'medium' }} </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-row>
+    <ion-col col-6>
+      <ion-button color="danger" (click)="logout()">Logout</ion-button>
+    </ion-col>
+    <ion-col col-6 class="ion-text-end">
+      <ion-button (click)="refresh()">Refresh</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

@@ -128,8 +128,8 @@ func (u *UpdateState) SetApkUpdateState(newUpdate bool, link string) {
 
 func (u *UpdateState) notify() {
 	if u.notifyCall != nil {
-		stateJon, _ := json.Marshal(u)
+		stateJson, _ := json.Marshal(u)
 		// Send notify event to UI
-		u.notifyCall.Notify(u.eventID, string(stateJon))
+		u.notifyCall.Notify(u.eventID, string(stateJson))
 	}
 }

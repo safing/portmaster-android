@@ -1,19 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import JavaBridge from 'src/app/plugins/java.bridge';
-import { MenuItem } from '../menu.item';
 
 @Component({
   selector: 'app-vpn-settings',
   templateUrl: './vpn-settings.component.html',
   styleUrls: ['./vpn-settings.component.scss'],
+  standalone: true,
+  imports: []
 })
-export class VpnSettingsComponent extends MenuItem implements OnInit {
+export class VpnSettingsComponent implements OnInit {
 
-  constructor() { 
-    super();
-  }
+  constructor() {}
 
-  ngOnInit() { }
+  ngOnInit() {}
 
   openSystemVPNSettings() {
     JavaBridge.openVPNSettings();
