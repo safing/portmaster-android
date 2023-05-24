@@ -14,6 +14,7 @@ import { SPNStatus, UserProfile } from '../lib/spn.types';
 import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';
 import { NotificationsService } from '../services/notifications.service';
+import { ShutdownService } from '../services/shutdown.service';
 // import { SPNService, SPNStatus, UserProfile } from '@safing/portmaster-api';
 
 @Component({
@@ -37,7 +38,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   public environmentInjector = inject(EnvironmentInjector);
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private loadingCtrl: LoadingController,
+    private shutdownService: ShutdownService,
     private alertController: AlertController,
     private platform: Platform,
     private spnService: SPNService,
@@ -121,23 +122,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   }
 
   Shutdown() {
-    this.alertController.create({
-      header: "Shutting Down Portmaster",
-      message: "Shutting down the Portmaster will stop all Portmaster components and will leave your system unprotected!",
-      buttons: [
-        {
-          text: "Shutdown",
-          handler: () => {
-            this.showShutdownOverlay();
-            GoBridge.Shutdown();
-          }
-        },
-        {
-          text: "Cancel",
-        }]
-    }).then((alert) => {
-      alert.present();
-    });
+    this.shutdownService.promptShutdown();
   }
 
   async EnableTunnelPopup() {
@@ -175,16 +160,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     GoBridge.IsGeoIPDataAvailable().then((isAvailable) => {
       this.IsGeoIPDataAvailable = isAvailable;
       this.changeDetector.detectChanges();
-    });
-  }
-
-  showShutdownOverlay() {
-    this.loadingCtrl.create({
-      message: 'Shuting down...',
-      duration: 0,
-      spinner: 'circular',
-    }).then((loading) => {
-      loading.present();
     });
   }
 

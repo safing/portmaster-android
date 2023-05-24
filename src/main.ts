@@ -17,6 +17,7 @@ import { ConfigService } from './app/lib/config.service';
 import { NotificationsService } from './app/services/notifications.service';
 import { StatusService } from './app/services/status.service';
 import { MarkdownService, SECURITY_CONTEXT } from 'ngx-markdown';
+import { ShutdownService } from './app/services/shutdown.service';
 
 if (environment.production) {
   enableProdMode();
@@ -41,6 +42,7 @@ bootstrapApplication(AppComponent, {
     ConfigService,
     StatusService,
     MarkdownService,
+    ShutdownService,
     provideHttpGoClient(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     importProvidersFrom(IonicModule.forRoot({})),

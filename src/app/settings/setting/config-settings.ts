@@ -1,13 +1,13 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TrackByFunction, ViewChildren, ViewChild, Output, EventEmitter } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TrackByFunction, Output, EventEmitter } from "@angular/core";
 import { BehaviorSubject, Subscription, combineLatest } from "rxjs";
 import { ConfigService } from "src/app/lib/config.service";
-import { ExpertiseLevelNumber, Setting, SettingValueType, WellKnown, releaseLevelFromName } from "src/app/lib/config.types";
+import { ExpertiseLevelNumber, Setting, WellKnown } from "src/app/lib/config.types";
 import { GenericSettingComponent, SaveSettingEvent } from "./generic-setting/generic-setting";
 import { StatusService } from "src/app/services/status.service";
 import { Subsystem } from "src/app/services/status.types";
 import { CommonModule } from "@angular/common";
-import { AlertController, IonicModule, IonModal } from "@ionic/angular";
-import GoBridge from "src/app/plugins/go.bridge";
+import { IonicModule, IonModal } from "@ionic/angular";
+import { ShutdownService } from "src/app/services/shutdown.service";
 
 interface Category {
   name: string;
@@ -35,34 +35,10 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   others: Setting[] | null = null
   settings: Map<string, Category[]> = new Map();
 
-  activeSection = '';
-  activeCategory = '';
-  loading = true;
-
-  @ViewChild(IonModal) editModal: IonModal;
-  editSetting: GenericSettingComponent<Setting>;
-  editSettingValue: SettingValueType<Setting>;
-
-  get compactView() {
-    return this._compactView
-  }
-  private _compactView = false;
-
-  get lockDefaults() {
-    return this._lockDefaults;
-  }
-  private _lockDefaults = false;
-
-  get userSettingsMarker() { return this._userSettingsMarker }
-  private _userSettingsMarker = true;
-
   @Input()
   set availableSettings(v: Setting[]) {
     this.onSettingsChange.next(v);
   }
-
-  @Input()
-  displayStackable: string | boolean = false;
 
   @Output()
   save = new EventEmitter<SaveSettingEvent>();
@@ -72,15 +48,12 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
 
   restartPending: boolean = false;
 
-  @ViewChildren('navLink', { read: ElementRef })
-  navLinks: QueryList<ElementRef> | null = null;
-
   private subscription = Subscription.EMPTY;
 
   constructor(
     public statusService: StatusService,
     public configService: ConfigService,
-    private alertController: AlertController,
+    private shutdownService: ShutdownService,
     private changeDetectorRef: ChangeDetectorRef,
   ) { }
 
@@ -243,11 +216,6 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
           if (this.subsystems.length >= 2 && this.subsystems[0].ID === "core") {
             this.subsystems.push(this.subsystems.shift() as SubsystemWithExpertise);
           }
-
-          // // Notify the user interface that we're done loading
-          // // the settings.
-          this.loading = false;
-
         }
       )
   }
@@ -258,21 +226,6 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   promptRestart() {
-    this.alertController.create({
-      header: "Shutting Down Portmaster",
-      message: "Restart is requierd for the changes to take effect. You have to manually start portmaster after this.",
-      buttons: [
-        {
-          text: "Ok",
-          handler: () => {
-            GoBridge.Shutdown();
-          }
-        },
-        {
-          text: "Cancel",
-        }]
-    }).then((alert) => {
-      alert.present();
-    });
+    this.shutdownService.promptRestart();
   }
 }
