@@ -48,13 +48,7 @@
   </ion-item>
 
   <ion-list class="notification-list" >
-      <ion-item *ngFor="let notification of notifications" (click)="openNotification(notification)">
-        <div class="notification">
-          <ion-icon class="bell-icon" src="../../assets/menu/bell.svg"></ion-icon>
-          {{notification.Title}}
-          <div class="notification-content">{{notification.Message}}</div>
-        </div>
-      </ion-item>
+      <notification *ngFor="let notification of notifications" [notification]="notification"></notification>
       <p *ngIf="notifications.length == 0" class="notification-placeholder">No new notifications <ion-icon class="bell-icon" src="../../assets/menu/bell.svg"></ion-icon></p>
   </ion-list>
 

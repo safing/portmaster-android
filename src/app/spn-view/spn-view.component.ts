@@ -15,14 +15,14 @@ import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';
 import { NotificationsService } from '../services/notifications.service';
 import { ShutdownService } from '../services/shutdown.service';
-// import { SPNService, SPNStatus, UserProfile } from '@safing/portmaster-api';
+import { NotificationComponent } from './notification/notification.component';
 
 @Component({
   selector: 'spn-view-container',
   templateUrl: './spn-view.component.html',
   styleUrls: ['./spn-view.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, SPNButton, DownloadProgressComponent, SecurityLockComponent]
+  imports: [CommonModule, IonicModule, FormsModule, SPNButton, DownloadProgressComponent, SecurityLockComponent, NotificationComponent]
 })
 export class SPNViewComponent implements OnInit, OnDestroy {
   User: UserProfile;
@@ -180,13 +180,5 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   }
 
   openNotification(notification: Notification) {
-    this.alertController.create({
-      header: notification.Title,
-      subHeader: getNotificationTypeString(notification.Type),
-      message: notification.Message,
-      buttons: ['Close'],
-    }).then((alert) => {
-      alert.present();
-    });
-  }
+    }
 }
