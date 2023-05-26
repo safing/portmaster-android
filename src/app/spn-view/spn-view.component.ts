@@ -9,13 +9,13 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SecurityLockComponent } from './security-lock/security-lock';
 import { FormsModule } from '@angular/forms';
-import { Notification, getNotificationTypeString } from '../services/notifications.types';
+import { Notification } from '../services/notifications.types';
 import { SPNStatus, UserProfile } from '../lib/spn.types';
 import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';
 import { NotificationsService } from '../services/notifications.service';
 import { ShutdownService } from '../services/shutdown.service';
-import { NotificationComponent } from './notification/notification.component';
+import { NotificationComponent } from './notifications/notifications.component';
 
 @Component({
   selector: 'spn-view-container',
@@ -32,8 +32,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   IsGeoIPDataAvailable: boolean = false;
 
   private resumeEventSubscription: Subscription;
-
-  notifications: Notification[];
   
   public environmentInjector = inject(EnvironmentInjector);
 
@@ -43,7 +41,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     private platform: Platform,
     private spnService: SPNService,
     private configService: ConfigService,
-    private notificationService: NotificationsService,
     private router: Router) {
     this.SPNStatus = null;
   }
@@ -82,12 +79,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     this.EnableTunnelPopup();
     this.CheckGeoIPData();
 
-    this.notificationService.new$
-    .subscribe((notifications: Notification[]) => {
-      console.log("New Notification:", JSON.stringify(notifications));
-      this.notifications = notifications;
-      this.changeDetector.detectChanges();
-    });
   }
 
   ngOnDestroy() {
@@ -178,7 +169,4 @@ export class SPNViewComponent implements OnInit, OnDestroy {
       alert.present();
     });
   }
-
-  openNotification(notification: Notification) {
-    }
 }

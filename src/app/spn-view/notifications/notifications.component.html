@@ -1,0 +1,14 @@
+<ion-list class="notification-list">
+  <ion-item *ngFor="let notification of notifications" class="notification" (click)="open(notification)" [class.info]="notification.Type === types.Info"
+    [class.warning]="notification.Type === types.Warning" [class.prompt]="notification.Type === types.Prompt"
+    [class.error]="notification.Type === types.Error">
+
+    <ion-icon class="bell-icon" size="small" slot="start" src="../../../assets/menu/bell.svg"></ion-icon>
+    <div>
+      {{notification.Title}}
+      <div class="notification-content">
+        {{notification.Message}}</div>
+    </div>
+  </ion-item>
+  <p *ngIf="notifications.length == 0" class="notification-placeholder">No new notifications <ion-icon class="bell-icon" src="../../assets/menu/bell.svg"></ion-icon></p>
+</ion-list>
