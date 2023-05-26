@@ -50,11 +50,10 @@ export interface NetqueryAction extends BaseAction {
  * the OpenPageAction.
  */
 export const PageIDs = {
-  'monitor': '/monitor',
-  'support': '/support',
+  'main': '/main',
   'settings': '/settings',
-  'apps': '/app/overview',
-  'spn': '/spn',
+  'help': '/help',
+  'spn': '/login' // TODO(vladimir): this is a quick fix that should have a proper solution. Core should make a difference between desktop and android ui.
 }
 
 export interface OpenSettingAction extends BaseAction {

@@ -42,9 +42,10 @@ export class NotificationsService {
       'open-url': async (a: OpenURLAction) => {
           window.open(a.Payload, '_system');
       },
-      'open-profile': (_a: OpenProfileAction) => this.router.navigate(['/menu/user-info']),
+      'open-profile': (_a: OpenProfileAction) => {
+        return Promise.reject("not yet supported");
+      },
       'open-setting': (a: OpenSettingAction) => {
-        console.log("openning settings");
        return this.router.navigate(['/settings'], {
           queryParams: {
             setting: a.Payload.Key
@@ -82,8 +83,8 @@ export class NotificationsService {
         })
       },
       "call-webhook": (_a: WebhookAction) => {
-        return new Promise((resolve, _reject) => {
-          resolve("Webhooks not implemented");
+        return new Promise((_resolve, reject) => {
+          reject("Webhooks not implemented");
        });
       }
     };
@@ -102,7 +103,6 @@ export class NotificationsService {
       refCount(),
     );
   }
-
 
   /**
    * Watch all notifications that match a query.
