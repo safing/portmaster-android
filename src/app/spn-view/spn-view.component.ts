@@ -9,20 +9,20 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SecurityLockComponent } from './security-lock/security-lock';
 import { FormsModule } from '@angular/forms';
-import { Notification, getNotificationTypeString } from '../services/notifications.types';
+import { Notification } from '../services/notifications.types';
 import { SPNStatus, UserProfile } from '../lib/spn.types';
 import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';
 import { NotificationsService } from '../services/notifications.service';
 import { ShutdownService } from '../services/shutdown.service';
-// import { SPNService, SPNStatus, UserProfile } from '@safing/portmaster-api';
+import { NotificationComponent } from './notifications/notifications.component';
 
 @Component({
   selector: 'spn-view-container',
   templateUrl: './spn-view.component.html',
   styleUrls: ['./spn-view.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, SPNButton, DownloadProgressComponent, SecurityLockComponent]
+  imports: [CommonModule, IonicModule, FormsModule, SPNButton, DownloadProgressComponent, SecurityLockComponent, NotificationComponent]
 })
 export class SPNViewComponent implements OnInit, OnDestroy {
   User: UserProfile;
@@ -32,8 +32,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   IsGeoIPDataAvailable: boolean = false;
 
   private resumeEventSubscription: Subscription;
-
-  notifications: Notification[];
   
   public environmentInjector = inject(EnvironmentInjector);
 
@@ -43,7 +41,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     private platform: Platform,
     private spnService: SPNService,
     private configService: ConfigService,
-    private notificationService: NotificationsService,
     private router: Router) {
     this.SPNStatus = null;
   }
@@ -82,12 +79,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     this.EnableTunnelPopup();
     this.CheckGeoIPData();
 
-    this.notificationService.new$
-    .subscribe((notifications: Notification[]) => {
-      console.log("New Notification:", JSON.stringify(notifications));
-      this.notifications = notifications;
-      this.changeDetector.detectChanges();
-    });
   }
 
   ngOnDestroy() {
@@ -173,17 +164,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
       subHeader: "",
       message: 'Home: ' + this.SPNStatus.HomeHubName + "<br>" +
         this.SPNStatus.ConnectedIP + " " + this.SPNStatus.ConnectedTransport + "<br>",
-      buttons: ['Close'],
-    }).then((alert) => {
-      alert.present();
-    });
-  }
-
-  openNotification(notification: Notification) {
-    this.alertController.create({
-      header: notification.Title,
-      subHeader: getNotificationTypeString(notification.Type),
-      message: notification.Message,
       buttons: ['Close'],
     }).then((alert) => {
       alert.present();

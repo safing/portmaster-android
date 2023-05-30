@@ -31,10 +31,67 @@ export class NotificationsService {
   /** new$ emits new (active) notifications as they arrive */
   readonly new$: Observable<Notification<any>[]>;
 
+ /**
+   * This object contains handler methods for all
+   * notification action types we currently support.
+   */
+  private actionHandler: {
+    [key in Action['Type']]: (a: any) => Promise<any>;
+  } = {
+      '': async () => { },
+      'open-url': async (a: OpenURLAction) => {
+          window.open(a.Payload, '_system');
+      },
+      'open-profile': (_a: OpenProfileAction) => {
+        return Promise.reject("not yet supported");
+      },
+      'open-setting': (a: OpenSettingAction) => {
+       return this.router.navigate(['/settings'], {
+          queryParams: {
+            setting: a.Payload.Key
+          }
+        })
+      },
+      "open-page": (a: OpenPageAction) => {
+        let pageID: keyof typeof PageIDs | null = null;
+        let queryParams: Params | null = null;
+
+        if (typeof a.Payload === 'string') {
+          pageID = a.Payload;
+          queryParams = {};
+        } else {
+          pageID = a.Payload.id;
+          queryParams = a.Payload.query;
+        }
+
+        const url = PageIDs[pageID];
+        if (!!url) {
+          return this.router.navigate([url], {
+            queryParams,
+          })
+        }
+        return Promise.reject('not yet supported');
+      },
+      "ui": (a: ActionHandler<any>) => {
+        return a.Run(a);
+      },
+      "netquery": (a: NetqueryAction) => {
+        return this.router.navigate(['/monitor'], {
+          queryParams: {
+            q: a.Payload,
+          }
+        })
+      },
+      "call-webhook": (_a: WebhookAction) => {
+        return new Promise((_resolve, reject) => {
+          reject("Webhooks not implemented");
+       });
+      }
+    };
+  
   constructor(
     private portapi: PortapiService,
     private router: Router,
-    private http: HttpClient,
   ) {
     this.new$ = this.watchAll().pipe(
       map(msgs => {
@@ -46,7 +103,6 @@ export class NotificationsService {
       refCount(),
     );
   }
-
 
   /**
    * Watch all notifications that match a query.
@@ -122,15 +178,23 @@ export class NotificationsService {
           await this.portapi.update(key, payload).toPromise();
         }
       } catch (err: any) {
-        // TODO: implement action handler
-        
+        // TODO(vladimir): show error
+        console.log(JSON.stringify(err));
       }
     })
   }
 
   async performAction(action: Action) {
     // if there's an action type defined execute the handler.
-    // TODO: implement action handler
+    if (!!action.Type) {
+      const handler = this.actionHandler[action.Type] as (a: Action) => Promise<any>;
+      if (!!handler) {
+        await handler(action);
+      } else {
+        // TODO(vladimir): show error
+        console.log('Cannot handle action type ', action.Type);
+      }
+    }
   }
 
   /**

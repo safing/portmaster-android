@@ -1,5 +1,5 @@
 <ion-accordion-group>
-  <ion-accordion *ngIf="type == 'bool'">
+  <ion-accordion value="element" *ngIf="type == 'bool'">
     <ion-item slot="header" [class.not-default]="!isDefault && !pendingRestart" [class.reboot-mark]="pendingRestart">
       <ion-label>{{_setting.Name}}</ion-label>
       <ion-toggle [checked]="_currentValue" (ionChange)="onToggle($event)" (click)="stopPropagation($event)"></ion-toggle>
@@ -22,7 +22,7 @@
     </ion-label>
   </ion-accordion>-->
 
-  <ion-accordion *ngIf="type == 'select'">
+  <ion-accordion value="element" *ngIf="type == 'select'">
     <ion-item slot="header" [class.not-default]="!isDefault && !pendingRestart" [class.reboot-mark]="pendingRestart">
       <ion-label>{{_setting.Name}}</ion-label>
       <ion-select [value]="_currentValue" (ionChange)="onSelect($event)" (click)="stopPropagation($event)">
@@ -38,7 +38,7 @@
     </div>
   </ion-accordion>
 
-  <ion-accordion *ngIf="type == '[]string'">
+  <ion-accordion value="element" *ngIf="type == '[]string'">
     <ion-item slot="header" [class.not-default]="!isDefault && !pendingRestart" [class.reboot-mark]="pendingRestart">
       <ion-label>{{_setting.Name}}</ion-label>
       <ion-label *ngIf="_currentValue.length > 1" slot="end">

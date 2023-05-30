@@ -152,7 +152,7 @@ func PerformRequest(call PluginCall) {
 
 		log.Debugf("engine: http service response: %q %d", endpoint.Path, response.statusCode)
 		if response.statusCode < http.StatusBadRequest {
-			call.ResolveJson(response.body)
+			call.ResolveJson(fmt.Sprintf(`{"data": %q}`, response.body))
 		} else {
 			// Error if status code is >= 400 (BadRequest)
 			call.Error(response.body)

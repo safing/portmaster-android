@@ -65,8 +65,8 @@ export class HttpGoBackend implements HttpBackend {
       });
 
       // Send request to the go library and wait for a response.
-      GoBridge.PerformRequest({ requestJson: JSON.stringify(requestJson) }).then((body: string) => {
-        subscriber.next(new HttpResponse<any>({ body: body }));
+      GoBridge.PerformRequest({ requestJson: JSON.stringify(requestJson) }).then((body: any) => {
+        subscriber.next(new HttpResponse<any>({ body: body.data }));
       }).catch((err: string) => {
         subscriber.error(err);
       }).finally(() => {

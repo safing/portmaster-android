@@ -40,6 +40,9 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
     this.onSettingsChange.next(v);
   }
 
+  @Input()
+  highlightSettingKey: string | null = null;
+
   @Output()
   save = new EventEmitter<SaveSettingEvent>();
 
@@ -76,6 +79,7 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    console.log("Init:", this.highlightSettingKey);
     this.subscription = combineLatest([
       this.onSettingsChange,
       this.statusService.querySubsystem(),

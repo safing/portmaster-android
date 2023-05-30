@@ -8,6 +8,7 @@ import { Setting } from '../lib/config.types';
 import { Subscription } from 'rxjs';
 import { ConfigSettingsViewComponent } from './setting/config-settings';
 import { SaveSettingEvent } from './setting/edit/edit.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -23,13 +24,30 @@ export class SettingsComponent implements OnInit {
   /** Subscription to watch all available settings. */
   private subscription = Subscription.EMPTY;
 
+  /**
+   * @private
+   * The key of the setting to highligh, if any ...
+   */
+  highlightSettingKey: string | null = null;
+
   constructor(private configService: ConfigService,
-              private changeDetector: ChangeDetectorRef) {}
+              private changeDetector: ChangeDetectorRef,
+              private route: ActivatedRoute) {}
+
 
   ngOnInit() {
     this.subscription = new Subscription();
     this.loadSettings();
-  }
+
+    this.route.queryParamMap
+      .subscribe(
+        params => {
+          this.highlightSettingKey = params.get('setting');
+          console.log(this.highlightSettingKey);
+          this.changeDetector.detectChanges();
+        }
+      );
+   }
 
   private loadSettings() {
     const configSub = this.configService.query('')

@@ -1,8 +1,8 @@
 import { BaseSetting, ExpertiseLevelNumber, ExternalOptionHint, OptionType, optionTypeName, QuickSetting, ReleaseLevel, SettingValueType, WellKnown } from "src/app/lib/config.types";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { IonicModule, ItemReorderEventDetail, ModalController } from "@ionic/angular";
+import { IonAccordionGroup, IonicModule, ItemReorderEventDetail, ModalController } from "@ionic/angular";
 import { SettingsEditComponent } from "../edit/edit.component";
 
 export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
@@ -28,7 +28,7 @@ interface DisplayValue {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonicModule, CommonModule, FormsModule, SettingsEditComponent, ReactiveFormsModule],
 })
-export class GenericSettingComponent<S extends BaseSetting<any, any>> implements OnInit, OnDestroy {
+export class GenericSettingComponent<S extends BaseSetting<any, any>> implements OnInit, OnDestroy, AfterViewInit {
   //
   // Constants used in the template.
   //
@@ -39,10 +39,26 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
   readonly releaseLevel = ReleaseLevel;
   readonly wellKnown = WellKnown;
 
+  @ViewChild(IonAccordionGroup) accordion: IonAccordionGroup;
+  
   _setting: S = null;
   type: string = '';
   isDefault: boolean = true;
   pendingRestart = false;
+  _expand: boolean = false;
+  
+  @Input()
+  set highlightSettingKey(key: string) {
+    this._expand = key === this._setting.Key;
+    if(this.accordion !== undefined) {
+      if(this._expand) {
+        this.accordion.value = "element";
+      } else {
+        this.accordion.value = undefined;
+      }
+    }
+    this.changeDetector.detectChanges();
+  }
 
   /* The currently configured value. Updated by the setting() setter */
   _currentValue: any = null;
@@ -55,7 +71,7 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     if (s.OptType == OptionType.String && !!s.PossibleValues) {
       this.type = 'select';
     }
-    console.log(s.Name, s.Value);
+
     if (s.Value !== undefined) {
       this._currentValue = s.Value;
       this.isDefault = s.Value === this.defaultValue;
@@ -84,18 +100,26 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     private changeDetector: ChangeDetectorRef,
     private modalCtrl: ModalController) { }
 
+ 
   ngOnInit() {}
 
   ngOnDestroy() {}
 
-  handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
-    // The `from` and `to` properties contain the index of the item
-    // when the drag started and ended, respectively
-    console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
+  ngAfterViewInit(): void {
+    if(this.accordion !== undefined) {
+      if(this._expand) {
+        this.accordion.value = "element";
+      } else {
+        this.accordion.value = undefined;
+      }
+    }
+    this.changeDetector.detectChanges();
+  }
 
-    // Finish the reorder and position the item in the DOM based on
-    // where the gesture ended. This method can also be called directly
-    // by the reorder group
+  handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
+    // Swap values
+    [this._currentValue[ev.detail.from], this._currentValue[ev.detail.to]] = [this._currentValue[ev.detail.to], this._currentValue[ev.detail.from]];
+    this.emitChangeEvent();
     ev.detail.complete();
   }
 

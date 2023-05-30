@@ -1,0 +1,74 @@
+@mixin trim($numLines: null) {
+  @if $numLines !=null {
+    display: -webkit-box;
+    -webkit-line-clamp: $numLines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @else {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
+  }
+}
+
+.notification-list {
+  width: 100%;
+  background-color: #181818;
+  // border: solid;
+  border-top: 1px solid rgb(100 100 100);
+  border-bottom: 1px solid rgb(100 100 100);
+  padding: 0 0 0 0;
+  margin: 0 0 0 0;
+}
+
+.notification-placeholder {
+  text-align: center;
+  vertical-align: middle;
+  color: #8c8c8c;
+  margin: 0.2em 0 0.2em 0;
+}
+
+.notification {
+  width: 100%;
+  --background: #252525;
+  margin: 0.1em 0.1em 0.1em 0;
+  padding: 0 0 0 0;
+}
+
+.notification-content {
+  @include trim(1);
+  overflow: ellipsis;
+  color: #8c8c8c;
+}
+
+.notification-text {
+  @include trim(2);
+  overflow: ellipsis;
+  color: #8c8c8c;
+}
+
+.bell-icon {
+  margin-inline-end: 0.5em;
+  margin-inline-start: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.info {
+  border-left: 0.4em solid #727272;
+}
+
+.warning {
+  border-left: 0.4em solid var(--ion-color-disclaimer);
+}
+
+.prompt {
+  border-left: 0.4em solid var(--ion-color-secondary);
+}
+
+.error {
+  border-left: 0.4em solid var(--ion-color-danger);
+}
