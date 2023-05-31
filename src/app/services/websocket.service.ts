@@ -17,12 +17,12 @@ export class WebsocketGoService {
     opts.openObserver.next(null);
     
     let source = {
-      next: (value: T) => {
+      next: (value: T): void => {
         console.log("Observer: ", opts.serializer(value));
         GoBridge.DatabaseMessage(opts.serializer(value) as string);
       },
-      error: () => {},
-      complete: () => {},
+      error: (): void => {},
+      complete: (): void => {},
     };
 
     let destination = new Observable<T>((subscriber: Subscriber<T>) => {

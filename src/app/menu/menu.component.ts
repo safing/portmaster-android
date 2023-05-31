@@ -16,11 +16,11 @@ export class MenuComponent {
   constructor(private router: Router) {}
 
 
-  openVPNSettings() {
+  openVPNSettings(): void {
     this.router.navigate(["/menu/vpn-settings"]);
   }
 
-  openBugReport() {
+  openBugReport(): void {
     this.router.navigate(["/menu/bug-report"]);
   }
   

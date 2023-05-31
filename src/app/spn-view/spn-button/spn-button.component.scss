@@ -2,7 +2,7 @@ $width: 4em;
 $height: 2em;
 $border: 0.05em;
 
-.toggle-container{
+.toggle-container {
   display: inline-block;
   width: $width;
   height: $height;
@@ -13,11 +13,11 @@ $border: 0.05em;
   background-color: rgb(136 136 136);
   transition: border-color 300ms;
 
-  .real-checkbox{
+  .real-checkbox {
     position: absolute;
-    clip: rect(0,0,0,0);
+    clip: rect(0, 0, 0, 0);
 
-    & + .toggle-button{
+    &+.toggle-button {
       position: absolute;
       top: 0;
       left: 0;
@@ -31,46 +31,59 @@ $border: 0.05em;
       display: inline-block;
       width: $height - $border * 2;
       height: $height - $border * 2;
-      background-color: white;
+      // background-color: white;
       border-radius: 50%;
-      box-shadow: 1px 1px 3px rgba(0,0,0,0.5) ;
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
       transition: all 100ms ease-in-out;
-      
+
     }
 
-    &:checked + .toggle-button{
-       background-color: var(--protection-ok-primary);
-       &::before{
+    &:checked+.toggle-button {
+      background-color: var(--protection-ok-primary);
+
+      &::before {
         margin-left: $height;
-       }      
+      }
     }
   }
 }
 
-.toggle-container.connected{
+.toggle-container.connected {
   background-color: var(--protection-ok-primary);
-  .real-checkbox{
-    & + .toggle-button{
-      margin-left: $height;      
+
+  .real-checkbox {
+    &+.toggle-button {
+      margin-left: $height;
     }
   }
 }
 
-.toggle-container.connecting{
+.toggle-container.connecting {
   background-color: var(--ion-color-primary);
-  .real-checkbox{
-    & + .toggle-button{
-      margin-left: $height;      
+
+  .real-checkbox {
+    &+.toggle-button {
+      margin-left: $height;
     }
   }
 }
 
-.toggle-container.failed{
+.toggle-container.failed {
   background-color: var(--protection-fail-primary);
-  .real-checkbox{
-    & + .toggle-button{
-      margin-left: $height;      
+
+  .real-checkbox {
+    &+.toggle-button {
+      margin-left: $height;
     }
   }
 }
 
+.toggle-container.disabled {
+  background-color: rgb(136 136 136);
+
+  .real-checkbox {
+    &+.toggle-button {
+      background-color: rgb(136 136 136);
+    }
+  }
+}

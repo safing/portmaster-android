@@ -61,7 +61,7 @@ func init() {
 	activeNotifications = make(map[string]*app_interface.Notification)
 	activeSubscriptions = sync.Map{}
 
-	module = modules.Register("android-engine", nil, start, nil, "base", "notifications", "updates", "netenv")
+	module = modules.Register("android-engine", nil, start, nil, "base", "status", "notifications", "updates", "netenv")
 	module.Enable()
 }
 

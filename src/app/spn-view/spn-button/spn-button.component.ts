@@ -29,6 +29,10 @@ export class SPNButton {
             return;
         }
 
+        if(!this.IsGeoIPDataAvailable) {
+            return;
+        }
+
         switch(this.SPNStatus.Status) {
             case "disabled": {
                 this.onStateChange.emit(true)
