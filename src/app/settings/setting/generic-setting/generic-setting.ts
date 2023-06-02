@@ -15,8 +15,8 @@ export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
 
 interface DisplayValue {
   color: string,
-  action: String,
-  rule: String,
+  action: string,
+  rule: string,
 }
 
 @Component({
@@ -89,11 +89,15 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
   onValueChanged: EventEmitter<SaveSettingEvent> = new EventEmitter();
   
   /** Returns the symbolMap annoation for endpoint-lists */
-  get symbolMap() {
+  get symbolMap(): Map<String, any> {
     return this._setting?.Annotations[WellKnown.EndpointListVerdictNames] || {
       '+': 'Allow',
       '-': 'Block'
     };
+  }
+
+  getSymbolMapValue(id: string) {
+    return this.symbolMap[id];
   }
 
   constructor(

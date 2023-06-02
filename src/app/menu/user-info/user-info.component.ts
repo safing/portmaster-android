@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, LocationStrategy } from '@angular/common';
 import { UserProfile } from 'src/app/lib/spn.types';
 import { SPNService } from 'src/app/lib/spn.service';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-user-info',
   templateUrl: './user-info.component.html',
   styleUrls: ['./user-info.component.scss'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, IonicModule]
 })
 export class UserInfoComponent implements OnInit {
 

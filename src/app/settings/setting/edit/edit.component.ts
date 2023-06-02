@@ -37,7 +37,7 @@ export class SettingsEditComponent implements OnInit, AfterViewInit {
   help: string;
 
   @Input()
-  quickSettings: QuickSetting<string>;
+  quickSettings: QuickSetting<string>[];
 
   @Output()
   editCompleted = new EventEmitter<Array<String>>();
@@ -115,5 +115,6 @@ export class SettingsEditComponent implements OnInit, AfterViewInit {
     this.updateValue(setting.Value[0]);
     this.changeDetector.checkNoChanges();
   }
+ 
 }
 

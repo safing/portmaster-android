@@ -1,4 +1,6 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
 import JavaBridge from 'src/app/plugins/java.bridge';
 
 @Component({
@@ -6,7 +8,7 @@ import JavaBridge from 'src/app/plugins/java.bridge';
   templateUrl: './vpn-settings.component.html',
   styleUrls: ['./vpn-settings.component.scss'],
   standalone: true,
-  imports: []
+  imports: [CommonModule, IonicModule]
 })
 export class VpnSettingsComponent implements OnInit {
 

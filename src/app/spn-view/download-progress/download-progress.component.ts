@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
 import GoBridge from 'src/app/plugins/go.bridge';
 import { UpdaterService } from 'src/app/services/updater.service';
 import { RegistryState, State } from 'src/app/services/updater.types';
@@ -10,7 +11,7 @@ import { RegistryState, State } from 'src/app/services/updater.types';
   templateUrl: './download-progress.component.html',
   styleUrls: ['./download-progress.component.scss'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, IonicModule]
 })
 export class DownloadProgressComponent implements OnInit, OnDestroy {
   readonly State = State; 

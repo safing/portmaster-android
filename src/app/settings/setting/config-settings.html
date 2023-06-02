@@ -8,7 +8,7 @@
 </ion-item>
 <ion-list>
   <!-- Subsystems -->
-  <ion-list *ngFor="let subsys of subsystems; trackBy: trackSubsystem" [multiple]="true">
+  <ion-list *ngFor="let subsys of subsystems; trackBy: trackSubsystem">
     <ion-item><ion-header><b>{{subsys.Name}}</b></ion-header></ion-item>
 
     <!-- Categories -->
