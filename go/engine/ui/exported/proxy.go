@@ -279,6 +279,27 @@ func IsGeoIPDataAvailable(call engine.PluginCall) {
 	call.ResolveJson(fmt.Sprintf(`{"ret0": %t}`, ret0))
 }
 
+func NewApkAvaliable(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function NewApkAvaliable panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ret0 := ui.NewApkAvaliable()
+	
+	
+	// Resolve the call
+	call.ResolveJson(fmt.Sprintf(`{"ret0": %t}`, ret0))
+}
+
 func PerformRequest(call engine.PluginCall) {
 	// set up recovery
 	defer func() {
@@ -336,6 +357,69 @@ func SubscribeToDatabase(call engine.PluginCall) {
 	}()
 
 	ui.SubscribeToDatabase(call)
+}
+
+func DownloadPendingUpdates(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function DownloadPendingUpdates panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ui.DownloadPendingUpdates()
+	
+	
+	// Resolve the call
+	call.Resolve()
+}
+
+func DownloadUpdatesOnWifiConnected(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function DownloadUpdatesOnWifiConnected panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ui.DownloadUpdatesOnWifiConnected()
+	
+	
+	// Resolve the call
+	call.Resolve()
+}
+
+func IsOnWifiNetwork(call engine.PluginCall) {
+	// set up recovery
+	defer func() {
+		// recover from panic
+		panicVal := recover()
+		if panicVal != nil {
+			log.Errorf("ui: function IsOnWifiNetwork panicked: %s", panicVal)
+			if call != nil {
+				call.Error(fmt.Sprintf("function panicked: %s", panicVal))
+			}
+		}
+	}()
+
+	// Function call
+	ret0 := ui.IsOnWifiNetwork()
+	
+	
+	// Resolve the call
+	call.ResolveJson(fmt.Sprintf(`{"ret0": %t}`, ret0))
 }
 
 

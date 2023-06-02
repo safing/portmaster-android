@@ -65,6 +65,11 @@ public class GoBridge extends Plugin {
 	}
 
 	@PluginMethod()
+	public void NewApkAvaliable(PluginCall call) {
+		exported.Exported.newApkAvaliable(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
 	public void PerformRequest(PluginCall call) {
 		exported.Exported.performRequest(new GoPluginCall(this, call));
 	}
@@ -77,6 +82,21 @@ public class GoBridge extends Plugin {
 	@PluginMethod()
 	public void SubscribeToDatabase(PluginCall call) {
 		exported.Exported.subscribeToDatabase(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void DownloadPendingUpdates(PluginCall call) {
+		exported.Exported.downloadPendingUpdates(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void DownloadUpdatesOnWifiConnected(PluginCall call) {
+		exported.Exported.downloadUpdatesOnWifiConnected(new GoPluginCall(this, call));
+	}
+
+	@PluginMethod()
+	public void IsOnWifiNetwork(PluginCall call) {
+		exported.Exported.isOnWifiNetwork(new GoPluginCall(this, call));
 	}
 
 	public void notifyListener(String name, String data) throws JSONException {

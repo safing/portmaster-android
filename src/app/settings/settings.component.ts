@@ -43,7 +43,6 @@ export class SettingsComponent implements OnInit {
       .subscribe(
         params => {
           this.highlightSettingKey = params.get('setting');
-          console.log(this.highlightSettingKey);
           this.changeDetector.detectChanges();
         }
       );

@@ -60,7 +60,6 @@ export class SettingsEditComponent implements OnInit, AfterViewInit {
       // Adding new value, not updating.
       this.isUpdate = false;
     }
-    console.log("Quick Settings:", JSON.stringify(this.quickSettings));
   }
 
   ngAfterViewInit(): void {

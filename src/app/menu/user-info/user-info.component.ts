@@ -20,7 +20,6 @@ export class UserInfoComponent implements OnInit {
 
   ngOnInit(): void {
     this.spnService.watchProfile().subscribe((user) => {
-      console.log("Updated User: ", JSON.stringify(user));
       if (user?.state !== '') {
         this.User = user || null;
       } else {

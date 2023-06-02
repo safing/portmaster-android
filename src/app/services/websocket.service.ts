@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
+import { WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AnonymousSubject } from 'rxjs/internal/Subject';
 import { Observable, Subscriber } from 'rxjs';
 import GoBridge, { GoInterface } from '../plugins/go.bridge';
@@ -31,11 +31,9 @@ export class WebsocketGoService {
         subscriber.next(opts.deserializer(response));
       });  
       GoBridge.SubscribeToDatabase({});
-      console.log("subscribed to database");
     });
     
     return new AnonymousSubject<T>(source, destination);
-
   }
 }
 

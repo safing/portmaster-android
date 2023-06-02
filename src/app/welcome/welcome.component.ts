@@ -3,7 +3,7 @@ import { PluginListenerHandle } from '@capacitor/core';
 import { IonAccordionGroup, IonSlides, IonicModule} from '@ionic/angular';
 import GoBridge, { GoInterface } from '../plugins/go.bridge';
 import JavaBridge from '../plugins/java.bridge';
-import { UpdateState } from '../types/spn.types';
+import { RegistryState } from '../services/updater.types';
 import { CommonModule, LocationStrategy } from '@angular/common';
 
 
@@ -25,12 +25,10 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   @ViewChild('slides') slides: IonSlides;
   @ViewChild('permissionsGroup', { static: true }) permissionsGroup: IonAccordionGroup;
 
-  private readonly EventID = "welcome-screen-updater";
-  private Listener: PluginListenerHandle;
-  Update: UpdateState = new UpdateState();
+  IsOnWifi: boolean = false;
 
-  NotificationPermissionGranted : boolean = false;
-  VPNPermissionGranted : boolean = false;
+  NotificationPermissionGranted: boolean = false;
+  VPNPermissionGranted: boolean = false;
 
   constructor(private changeDetector: ChangeDetectorRef, private locationStrategy: LocationStrategy) { }
 
@@ -46,16 +44,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     });
     this.permissionsGroup.value = "vpn";
 
-    this.Listener = await GoInterface.addListener(this.EventID, (update: any) => {
-      this.Update = update;
-      this.changeDetector.detectChanges();
+    GoBridge.IsOnWifiNetwork().then((onWifi) => {
+      this.IsOnWifi = onWifi;
     });
-
-    // GoBridge.SubscribeToUpdater({eventID: this.EventID}) 
   }
 
   ngOnDestroy(): void {
-    this.Listener.remove();
   }
 
   public async onActiveIndexChange() {
@@ -70,23 +64,23 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   public Download() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
-    // GoBridge.DownloadPendingUpdates();
+    GoBridge.DownloadPendingUpdates();
     JavaBridge.setWelcomeScreenShowed({showed: true});
   }
 
   public WaitForWifi() {
     this.slides.lockSwipeToNext(false);
     this.slides.slideNext();
-    // GoBridge.DownloadUpdatesOnWifiConnected();
+    GoBridge.DownloadUpdatesOnWifiConnected();
     JavaBridge.setWelcomeScreenShowed({showed: true});
   } 
 
-  public async Continue() {
+  public Continue() {
     this.locationStrategy.back();
   }
 
-  public async RequestVPNPermission() {
-    await JavaBridge.requestVPNPermission();
+  public RequestVPNPermission() {
+    JavaBridge.requestVPNPermission();
     this.permissionsGroup.value = "notifications";
   }
 
