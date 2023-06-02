@@ -133,8 +133,10 @@ github.com/safing/portbase v0.15.2/go.mod h1:5bHi99fz7Hh/wOsZUOI631WF9ePSHk57c4f
 github.com/safing/portbase v0.16.2/go.mod h1:mzNCWqPbO7vIYbbK5PElGbudwd2vx4YPNawymL8Aro8=
 github.com/safing/portbase v0.16.6 h1:6MbK8VGusSKswmbZ031Dher1yijYGxUQ36nNuEIP9P8=
 github.com/safing/portbase v0.16.6/go.mod h1:CJSY+0pgbgh00UcM9myS/l+Bcgqgc6afLJX2BqzD+Ek=
+github.com/safing/portmaster v1.0.9/go.mod h1:I2Tv9vM9qrvGp1jEt443fxLOv8IzWLFpxIwGh9t+dbo=
 github.com/safing/portmaster v1.1.0 h1:wltL1Xi0vLGxqwuVo0utxMPcOUiUQBnHzKBclLTBpN8=
 github.com/safing/portmaster v1.1.0/go.mod h1:/6zsIy2Edad+gQGX0QgH3ijZz2cS1/T/bWs2NKjwBwo=
+github.com/safing/spn v0.6.4/go.mod h1:yq1KfnE6KfyBJ7LjckVrrRvIzbQkfToKLCxDsQxkleA=
 github.com/safing/spn v0.6.8 h1:2obvyMzyw5X3CIYedLBE88kNBBrJumF84q1qtQSFqkc=
 github.com/safing/spn v0.6.8/go.mod h1:Mh9bmkqFhO/dHNi9RWXzoXjQij893I4Lj8Wn4tQ0KZA=
 github.com/satori/go.uuid v1.2.0 h1:0uYX9dsZ2yD7q2RtLRtPSdGDWzjeM3TbMJP9utgA0ww=
@@ -221,6 +223,8 @@ golang.org/x/crypto v0.9.0/go.mod h1:yrmDGqONDYtNj3tH8X9dzUun2m2lzPa9ngI6/RUPGR0
 golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 h1:k/i9J1pBpvlfR+9QsetwPyERsqu1GIbi967PQMq3Ivc=
 golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1/go.mod h1:V1LtkGg67GoY2N1AnLN78QLrzxkLyJw7RJb1gzOOz9w=
 golang.org/x/lint v0.0.0-20200302205851-738671d3881b/go.mod h1:3xt1FjdF8hUf6vQPIChWIBhFzV8gjjsPE/fR3IyQdNY=
+golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda h1:O+EUvnBNPwI4eLthn8W5K+cS8zQZfgTABPLNm6Bna34=
+golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda/go.mod h1:aAjjkJNdrh3PMckS4B10TGS2nag27cbKR1y2BpUxsiY=
 golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
 golang.org/x/mod v0.10.0 h1:lFO9qtOdlre5W1jxS3r/4szv2/6iXxScdzjoBMXNhYk=
 golang.org/x/mod v0.10.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=

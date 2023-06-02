@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Portmaster',
   webDir: 'www',
   bundledWebRuntime: false,
-  loggingBehavior: 'production',
+  loggingBehavior: 'none',
   // server: {
   //   url: "http://192.168.88.11:8100",
   //   cleartext: true

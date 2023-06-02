@@ -26,7 +26,6 @@
     "@capacitor/keyboard": "4.0.1",
     "@capacitor/status-bar": "4.0.1",
     "@ionic/angular": "^6.1.9",
-    "@safing/portmaster-api": "*",
     "ionicons": "^6.0.3",
     "marked": "^4.3.0",
     "ngx-markdown": "^16.0.0",
