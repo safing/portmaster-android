@@ -7,7 +7,7 @@
   </ion-item>
 
   <div class="header">
-    <app-security-lock class="shield"></app-security-lock>
+    <security-lock class="shield"/>
     <ion-item style="text-align: right; "><ion-label >
         <p>Shutdown:</p>
       </ion-label>
@@ -29,7 +29,7 @@
   <ion-item button>
     <ion-label (click)="openConnectionInfo()" [ngSwitch]="SPNStatus?.Status">
       SPN
-      <p>
+      <p *ngIf="IsGeoIPDataAvailable">
         <ng-template ngSwitchCase="disabled">
           Increase privacy protection
         </ng-template>
@@ -43,24 +43,13 @@
           <u>You're protected</u>
         </ng-template>
       </p>
+      <p *ngIf="!IsGeoIPDataAvailable">
+        Missing GeoIP data
+      </p>
     </ion-label>
     <spn-button slot="end" class="spn-button" [User]="User" [SPNStatus]="SPNStatus" [IsGeoIPDataAvailable]="IsGeoIPDataAvailable" (onStateChange)="setSPNEnabled($event)" (onLogin)="openLoginPage()"></spn-button>
   </ion-item>
   <!-- Notifications -->
   <notifications/>
-
-  <ion-item *ngIf="!IsGeoIPDataAvailable">
-    <ion-label class="ion-text-wrap">
-      <p>The GeoIP update is required before you can start using the SPN.</p>
-    </ion-label>
-  </ion-item>
-  <ion-item *ngIf="SPNStatus?.Status == 'failed' && SPNErrorMsg.length > 0">
-    <ion-label class="ion-text-wrap">
-      <p>{{SPNErrorMsg}}</p>
-    </ion-label>
-  </ion-item>
+  <!-- Download notification/progress -->
   <app-download-progress (OnDownloadComplete)="CheckGeoIPData()"></app-download-progress>
-  <div class="link" color="white">
-
-  </div>
-</ion-content>

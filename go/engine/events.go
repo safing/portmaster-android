@@ -12,7 +12,7 @@ import (
 var NET_CAPABILITY_NOT_METERED int32 = 11
 
 var (
-	networkChangeEventChannels []chan bool
+	onNotMatternNetwrokChannel chan struct{}
 	networkChangeMutex         sync.Mutex
 
 	IsCurrentNetworkNotMetered abool.AtomicBool
@@ -22,19 +22,14 @@ type Network interface {
 	HasCapability(int32) bool
 }
 
-func SubscribeToNetworkChangeEvent(c chan bool) {
-	networkChangeMutex.Lock()
-	defer networkChangeMutex.Unlock()
-	networkChangeEventChannels = append(networkChangeEventChannels, c)
+func init() {
+	onNotMatternNetwrokChannel = make(chan struct{})
 }
 
-func UnsubscribeFromNetworkChangeEvent(channelToRemove chan bool) {
-	for i, c := range networkChangeEventChannels {
-		if c == channelToRemove {
-			networkChangeEventChannels = append(networkChangeEventChannels[:i], networkChangeEventChannels[i+1:]...)
-			return
-		}
-	}
+func NotifiOnNotMeterdNetwork() <-chan struct{} {
+	networkChangeMutex.Lock()
+	defer networkChangeMutex.Unlock()
+	return onNotMatternNetwrokChannel
 }
 
 // OnNetworkConnected called from java when new network interface is connected.
@@ -73,11 +68,14 @@ func OnNetworkCapabilitiesChanged(network Network) {
 	defer networkChangeMutex.Unlock()
 
 	isNotMetered := network.HasCapability(NET_CAPABILITY_NOT_METERED)
-	IsCurrentNetworkNotMetered.SetTo(isNotMetered)
-
-	for _, c := range networkChangeEventChannels {
-		c <- isNotMetered
+	if IsCurrentNetworkNotMetered.IsSet() != isNotMetered {
+		if isNotMetered {
+			close(onNotMatternNetwrokChannel)
+		} else {
+			onNotMatternNetwrokChannel = make(chan struct{})
+		}
 	}
+	IsCurrentNetworkNotMetered.SetTo(isNotMetered)
 }
 
 // OnIdleModeChanged is called from java when device switches from or to idle mode.

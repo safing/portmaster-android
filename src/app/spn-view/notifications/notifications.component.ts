@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 
 import { CommonModule } from "@angular/common";
-import { AlertController, IonicModule } from "@ionic/angular";
+import { AlertButton, AlertController, IonicModule } from "@ionic/angular";
 import { Action, Notification, NotificationType, getNotificationTypeString } from "src/app/services/notifications.types";
 import { NotificationsService } from "src/app/services/notifications.service";
 
@@ -24,19 +24,23 @@ export class NotificationComponent implements OnInit {
 
   ngOnInit(): void {
     this.notificationService.new$
-    .subscribe((notifications: Notification[]) => {
+    .subscribe((notifications: Notification[]): void => {
       this.notifications = notifications;
       this.changeDetector.detectChanges();
     });
   }
 
-  open(notification: Notification) {
-    let buttons = [];
+  open(notification: Notification): void {
+    if(!notification.AvailableActions) {
+      return;
+    }
+
+    let buttons: AlertButton[] = [];
     
-    notification.AvailableActions.forEach((action: Action) => {
+    notification.AvailableActions.forEach((action: Action): void => {
       buttons.push({
         text: action.Text,
-        handler: () => {
+        handler: (): void => {
           this.performAction(notification, action);
         }
       });
@@ -52,7 +56,7 @@ export class NotificationComponent implements OnInit {
     });
   }
 
-  performAction(notification: Notification, action: Action) {
+  performAction(notification: Notification, action: Action): void {
     this.notificationService.execute(notification, action).subscribe();
   }
 }

@@ -100,6 +100,10 @@ func IsGeoIPDataAvailable() (bool, error) {
 	return engine.IsGeoIPDataAvailable()
 }
 
+func NewApkAvaliable() bool {
+	return engine.NewApkVersion.IsSet()
+}
+
 func PerformRequest(call PluginCall) {
 	// Parameter requestJson.
 	requestJson, err := call.GetString("requestJson")
@@ -174,4 +178,16 @@ func SubscribeToDatabase(call PluginCall) {
 	call.KeepAlive(true)
 	dbCall = call
 	call.Resolve()
+}
+
+func DownloadPendingUpdates() {
+	engine.DownloadUpdates()
+}
+
+func DownloadUpdatesOnWifiConnected() {
+	engine.DownloadUpdatesOnWifiConnected()
+}
+
+func IsOnWifiNetwork() bool {
+	return engine.IsCurrentNetworkNotMetered.IsSet()
 }

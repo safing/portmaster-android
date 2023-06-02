@@ -79,7 +79,6 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log("Init:", this.highlightSettingKey);
     this.subscription = combineLatest([
       this.onSettingsChange,
       this.statusService.querySubsystem(),
@@ -105,6 +104,9 @@ export class ConfigSettingsViewComponent implements OnInit, OnDestroy {
 
           // Make sure we only display settings that are allowed by the releaselevel setting.
           // settings = settings.filter(setting => setting.ReleaseLevel <= currentReleaseLevel);
+
+          // TODO: Remove when the settings become relevent.
+          settings = settings.filter(setting => setting.Key !== "spn/dnsExitPolicy" && setting.Key !== "spn/usagePolicy" && setting.Key !== "spn/specialAccessCode");
 
           settings.forEach(setting => {
             let pushed = false;

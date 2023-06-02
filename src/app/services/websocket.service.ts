@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
+import { WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AnonymousSubject } from 'rxjs/internal/Subject';
 import { Observable, Subscriber } from 'rxjs';
 import GoBridge, { GoInterface } from '../plugins/go.bridge';
@@ -17,12 +17,12 @@ export class WebsocketGoService {
     opts.openObserver.next(null);
     
     let source = {
-      next: (value: T) => {
+      next: (value: T): void => {
         console.log("Observer: ", opts.serializer(value));
         GoBridge.DatabaseMessage(opts.serializer(value) as string);
       },
-      error: () => {},
-      complete: () => {},
+      error: (): void => {},
+      complete: (): void => {},
     };
 
     let destination = new Observable<T>((subscriber: Subscriber<T>) => {
@@ -31,11 +31,9 @@ export class WebsocketGoService {
         subscriber.next(opts.deserializer(response));
       });  
       GoBridge.SubscribeToDatabase({});
-      console.log("subscribed to database");
     });
     
     return new AnonymousSubject<T>(source, destination);
-
   }
 }
 

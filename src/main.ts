@@ -18,6 +18,7 @@ import { NotificationsService } from './app/services/notifications.service';
 import { StatusService } from './app/services/status.service';
 import { MarkdownService, SECURITY_CONTEXT } from 'ngx-markdown';
 import { ShutdownService } from './app/services/shutdown.service';
+import { UpdaterService } from './app/services/updater.service';
 
 if (environment.production) {
   enableProdMode();
@@ -41,6 +42,7 @@ bootstrapApplication(AppComponent, {
     NotificationsService,
     ConfigService,
     StatusService,
+    UpdaterService,
     MarkdownService,
     ShutdownService,
     provideHttpGoClient(),

@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject, EnvironmentInjector } from '@angular/core';
-import { AlertController, IonicModule, LoadingController, Platform } from '@ionic/angular';
+import { AlertController, IonicModule, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import GoBridge from '../plugins/go.bridge';
@@ -7,13 +7,12 @@ import { SPNButton } from './spn-button/spn-button.component';
 import { DownloadProgressComponent } from './download-progress/download-progress.component';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SecurityLockComponent } from './security-lock/security-lock';
+import { SecurityLockComponent } from './security-lock/security-lock.component';
 import { FormsModule } from '@angular/forms';
 import { Notification } from '../services/notifications.types';
 import { SPNStatus, UserProfile } from '../lib/spn.types';
 import { SPNService } from '../lib/spn.service';
 import { ConfigService } from '../lib/config.service';
-import { NotificationsService } from '../services/notifications.service';
 import { ShutdownService } from '../services/shutdown.service';
 import { NotificationComponent } from './notifications/notifications.component';
 
@@ -28,7 +27,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   User: UserProfile;
 
   SPNStatus: SPNStatus | null;
-  SPNErrorMsg: string = "";
   IsGeoIPDataAvailable: boolean = false;
 
   private resumeEventSubscription: Subscription;
@@ -45,31 +43,23 @@ export class SPNViewComponent implements OnInit, OnDestroy {
     this.SPNStatus = null;
   }
 
-  ngOnInit() {
-    this.spnService.status$.subscribe((status: SPNStatus) => {
+  ngOnInit(): void {
+    this.spnService.status$.subscribe((status: SPNStatus): void => {
       if (status == null) {
         return;
       }
       this.SPNStatus = status;
-      console.log("Spn status update:", JSON.stringify(status));
-      // Update UI.
       this.changeDetector.detectChanges();
     });
 
-    this.spnService.userProfile().subscribe(
-      (user: UserProfile) => {
-        this.User = user;
-
-        this.spnService.watchProfile().subscribe((user: UserProfile) => {
-          this.User = user;
-        });
-
-        // Update UI.
-        this.changeDetector.detectChanges();
-      },
-      (error: string) => {
-        console.log(error);
-      });
+    this.spnService.watchProfile().subscribe((user: UserProfile): void => {
+      if (user?.state !== '') {
+        this.User = user || null;
+      } else {
+        this.User = null;
+      }
+      this.changeDetector.detectChanges();
+    });
 
     this.resumeEventSubscription = this.platform.resume.subscribe(() => {
       this.EnableTunnelPopup();
@@ -94,8 +84,7 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   }
 
   setSPNEnabled(v: boolean) {
-    this.configService.save(`spn/enable`, v)
-      .subscribe();
+    this.configService.save(`spn/enable`, v).subscribe();
   }
 
   isSPNConnected(): boolean {
@@ -143,7 +132,6 @@ export class SPNViewComponent implements OnInit, OnDestroy {
   }
 
   openLoginPage() {
-    console.log("onLogin event");
     this.router.navigate(["/login"])
   }
 

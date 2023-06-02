@@ -17,6 +17,7 @@ import (
 	"github.com/safing/portbase/updater"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster/updates"
+	"github.com/tevino/abool"
 
 	semver "github.com/hashicorp/go-version"
 )
@@ -48,11 +49,7 @@ var (
 	activeNotifications map[string]*app_interface.Notification
 	activeSubscriptions sync.Map // [string]chan struct{}
 
-	updateState                    UpdateState
-	downloadRequestChannel         chan struct{}
-	notifyUserForDownloadedUpdates bool
-
-	GeoIPDataAvailable bool = false
+	NewApkVersion abool.AtomicBool
 )
 
 const eventPrefix = "ui-event-"
@@ -61,7 +58,7 @@ func init() {
 	activeNotifications = make(map[string]*app_interface.Notification)
 	activeSubscriptions = sync.Map{}
 
-	module = modules.Register("android-engine", nil, start, nil, "base", "notifications", "updates", "netenv")
+	module = modules.Register("android-engine", nil, start, nil, "base", "status", "notifications", "updates", "netenv")
 	module.Enable()
 }
 
@@ -81,13 +78,6 @@ func start() error {
 	// Get database interface.
 	dbInterface = database.NewInterface(nil)
 	notificationListener()
-
-	downloadRequestChannel = make(chan struct{})
-
-	updateState = NewUpdateState()
-	updateState.SetWifiState(IsCurrentNetworkNotMetered.IsSet())
-
-	setupUpdateListener()
 
 	return nil
 }
@@ -231,89 +221,17 @@ func RemoveSubscription(eventID string) {
 	}
 }
 
-func setupUpdateListener() {
-	module.StartServiceWorker("update-listener", 0, func(ctx context.Context) error {
-		// Query current update state.
-		query := query.New("runtime:core/updates/state")
-		iter, err := dbInterface.Query(query)
-		if err != nil {
-			log.Errorf("android-engine: failed to query updates state: %s", err)
-		}
-
-		// Subscribe to new events.
-		sub, err := dbInterface.Subscribe(query)
-		if err != nil {
-			log.Errorf("android-engine: failed to subscribe updates state: %s", err)
-		}
-
-		// Parse the current state.
-		for rec := range iter.Next {
-			regState := rec.(*updates.RegistryStateExport)
-			updateStateFromRegistryState(regState)
-		}
-
-		//Subscribe to changes in the network interfaces.
-		networkChangeChannel := make(chan bool)
-		SubscribeToNetworkChangeEvent(networkChangeChannel)
-		defer UnsubscribeFromNetworkChangeEvent(networkChangeChannel)
-
-		for {
-			select {
-			case rec := <-sub.Feed:
-				regState := rec.(*updates.RegistryStateExport)
-				updateStateFromRegistryState(regState)
-
-				// Check for new apk update, and update UI state.
-				err := checkForNewVersionOfApk()
-				if err != nil {
-					log.Errorf("android-engine: failed to check for apk update: %s", err)
-				}
-			case notMetered := <-networkChangeChannel:
-				if notMetered {
-					if updateState.IsWaitingForWifi() {
-						updates.TriggerUpdate(true)
-						notifyUserForDownloadedUpdates = true
-					}
-				}
-				updateState.SetWifiState(notMetered)
-			case <-downloadRequestChannel:
-				updates.TriggerUpdate(true)
-				notifyUserForDownloadedUpdates = true
-			case <-ctx.Done():
-				return nil
-			}
-		}
-	})
-}
-
 func DownloadUpdates() {
 	// Trigger download
-	downloadRequestChannel <- struct{}{}
+	updates.TriggerUpdate(true)
 }
 
 func DownloadUpdatesOnWifiConnected() {
-	// Set flag so download can start as soon as wifi is avaliable.
-	updateState.DownloadOnWifiConnected()
-}
-
-func SubscribeToUpdateListener(eventID string, call PluginCall) {
-	updateState.SetUiSubscription(eventID, call)
-}
-
-func updateStateFromRegistryState(regState *updates.RegistryStateExport) {
-	// Send new state to the UI.
-	switch {
-	case regState.ID != updater.StateDownloading && len(regState.Updates.PendingDownload) > 0:
-		updateState.SetPendingUpdateState(regState.Updates.PendingDownload)
-	case regState.ID == updater.StateDownloading:
-		details, ok := regState.Details.(*updater.StateDownloadingDetails)
-		if ok {
-			updateState.SetDownloadingState(details.FinishedUpTo)
-		}
-	case regState.ID == updater.StateReady:
-		updateState.SetUpToDateState(notifyUserForDownloadedUpdates)
-		notifyUserForDownloadedUpdates = false
-	}
+	// Trigger download when wifi is avaliable.
+	go func() {
+		<-NotifiOnNotMeterdNetwork()
+		updates.TriggerUpdate(true)
+	}()
 }
 
 func checkForNewVersionOfApk() error {
@@ -324,11 +242,7 @@ func checkForNewVersionOfApk() error {
 
 	// Check for new apk version.
 	currentVersion, _ := semver.NewVersion(info.GetInfo().Version)
-	if androidApk.SemVer().GreaterThan(currentVersion) {
-		updateState.SetApkUpdateState(true, "https://safing.io/download")
-	} else {
-		updateState.SetApkUpdateState(false, "")
-	}
+	NewApkVersion.SetTo(androidApk.SemVer().GreaterThan(currentVersion))
 
 	return nil
 }

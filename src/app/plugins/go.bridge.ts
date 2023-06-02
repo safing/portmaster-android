@@ -13,9 +13,13 @@ export interface GoBridgeInterface extends Plugin {
 	CreateIssue(data: any): Promise<any>
 	CreateTicket(data: any): Promise<void>
 	IsGeoIPDataAvailable(): Promise<any>
+	NewApkAvaliable(): Promise<any>
 	PerformRequest(any): Promise<any>
 	DatabaseMessage(data: any): Promise<void>
 	SubscribeToDatabase(any): Promise<any>
+	DownloadPendingUpdates(): Promise<void>
+	DownloadUpdatesOnWifiConnected(): Promise<void>
+	IsOnWifiNetwork(): Promise<any>
 
 }
 export const GoInterface = registerPlugin<GoBridgeInterface>("GoBridge")
@@ -92,6 +96,16 @@ export class GoBridgeClass {
         });
 	}
 	
+	public NewApkAvaliable(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+            GoInterface.NewApkAvaliable().then((result) => {
+               resolve(result.ret0);
+            }, (result) => {
+               reject(result);
+            });
+        });
+	}
+	
 	public PerformRequest(param: any): Promise<any> {
 		return GoInterface.PerformRequest(param);
 	}
@@ -104,6 +118,24 @@ export class GoBridgeClass {
 		return GoInterface.SubscribeToDatabase(param);
 	}
 
+	public DownloadPendingUpdates(): Promise<void> {
+		return GoInterface.DownloadPendingUpdates();
+	}
+	
+	public DownloadUpdatesOnWifiConnected(): Promise<void> {
+		return GoInterface.DownloadUpdatesOnWifiConnected();
+	}
+	
+	public IsOnWifiNetwork(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+            GoInterface.IsOnWifiNetwork().then((result) => {
+               resolve(result.ret0);
+            }, (result) => {
+               reject(result);
+            });
+        });
+	}
+	
 }
 
 var GoBridge = new GoBridgeClass()

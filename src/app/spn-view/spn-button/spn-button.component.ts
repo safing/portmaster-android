@@ -19,13 +19,15 @@ export class SPNButton {
     @Output() onStateChange = new EventEmitter<boolean>();
     @Output() onLogin = new EventEmitter();
 
-    constructor() {
-        console.log("SPN button: " + JSON.stringify(this.User));
-    }
+    constructor() { }
 
     async onClick() {
         if(!this.User?.username) {
             this.onLogin.emit();
+            return;
+        }
+
+        if(!this.IsGeoIPDataAvailable) {
             return;
         }
 

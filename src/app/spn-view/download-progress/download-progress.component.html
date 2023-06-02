@@ -1,5 +1,5 @@
-<ion-card *ngIf="Update.State != 'up-to-date'">
-  <div *ngIf="Update.State == 'pending-update'">
+<ion-card *ngIf="HasUpdates">
+  <div *ngIf="Registry.ID == State.Ready">
     <ion-card-header>
       <ion-card-title>GeoIP Update</ion-card-title>
       <ion-card-subtitle>Around 200MB of assets</ion-card-subtitle>
@@ -9,28 +9,28 @@
       The downloaded GeoIP data is used by Portmaster to see which countries your connections are going to, and to calculate the best routes for SPN.
       <br>
       <br>
-      <div *ngIf="!Update.WaitingForWifi"><b>Do you want to download it now?</b></div>
-      <div *ngIf="Update.WaitingForWifi"><b>Download will start as soon as WiFi is available</b></div>
+      <div *ngIf="!WifiDownloadClicked"><b>Do you want to download it now?</b></div>
+      <div *ngIf="WifiDownloadClicked"><b>Download will start as soon as WiFi is available</b></div>
     </ion-card-content>
 
-    <ion-button fill="clear" (click)="downloadNow()">Download Now</ion-button>
-    <ion-button fill="clear" (click)="downloadOnWifi()" *ngIf="!Update.DeviceIsOnWifi && !Update.WaitingForWifi">Wait for Wifi</ion-button>
+    <ion-button fill="clear" *ngIf="!WifiDownloadClicked" (click)="downloadNow()">Download Now</ion-button>
+    <ion-button fill="clear" *ngIf="!WifiDownloadClicked && !IsOnWifi" (click)="downloadOnWifi()">Wait for Wifi</ion-button>
   </div>
-  <div *ngIf="Update.State == 'downloading' && Update.Resources != null">
+  <div *ngIf="Registry.ID == State.Downloading && Registry.Details.Resources != null">
     <ion-card-header>
       <ion-card-title>Downloading GeoIP Data</ion-card-title>
     </ion-card-header>
 
     <ion-card-content>
-      Downloaded {{Update.FinishedUpTo}}/{{Update.Resources.length}}
+      Downloaded {{Registry.Details.FinishedUpTo}}/{{Registry.Details.Resources.length}}
       <br>
-      {{Update.Resources[Update.FinishedUpTo]}}
+      {{Registry.Details.Resources[Registry.Details.FinishedUpTo]}}
       <ion-progress-bar type="indeterminate"></ion-progress-bar>
     </ion-card-content>
   </div>
 </ion-card>
 
-<ion-card *ngIf="Update.ApkUpdateAvailable">
+<ion-card *ngIf="NewApk">
   <ion-card-header>
     <ion-card-title>New Portmaster update is available</ion-card-title>
   </ion-card-header>
