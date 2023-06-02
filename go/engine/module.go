@@ -14,7 +14,6 @@ import (
 	"github.com/safing/portbase/info"
 	"github.com/safing/portbase/log"
 	"github.com/safing/portbase/modules"
-	"github.com/safing/portbase/updater"
 	"github.com/safing/portmaster-android/go/app_interface"
 	"github.com/safing/portmaster/updates"
 	"github.com/tevino/abool"
