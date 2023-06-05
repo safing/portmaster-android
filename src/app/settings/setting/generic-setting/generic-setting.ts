@@ -200,10 +200,11 @@ export class GenericSettingComponent<S extends BaseSetting<any, any>> implements
     });
 
     modal.present();
-    await modal.onWillDismiss();
-
-    this.emitChangeEvent();
-    this.updateDisplayValues();
+    let response = await modal.onWillDismiss();
+    if(response.role !== "dismiss") {
+      this.emitChangeEvent();
+      this.updateDisplayValues();
+    }
   }
 
   get quickSettings(): QuickSetting<SettingValueType<S>>[] {
